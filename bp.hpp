@@ -4,61 +4,49 @@
 #include <vector>
 #include <string>
 
-//this enum is used to distinguish between the two possible missing labels of a second branch in LLVM during backpatching.
-//for an first branch (which contains only a single label) use first.
-enum class branch_label_index { first, second };
+enum class label_index { first, second };
+
+struct patch_record
+{
+    public:
+
+    int line = 0;
+    label_index index;
+
+    patch_record(int line, label_index index);
+};
 
 class code_buffer
 {
+    private:
+
     std::vector<std::string> buffer;
     std::vector<std::string> global_defs;
 
     code_buffer();
-    code_buffer(code_buffer const&);
-    void operator=(code_buffer const&);
+
+    code_buffer(code_buffer const&) = delete;
+
+    void operator=(code_buffer const&) = delete;
 
     public:
 
     static code_buffer& instance();
 
-    // ******** Methods to handle the code section ******** //
-
-    //generates a jump location label for the next command, writes it to the buffer and returns it
     std::string generate_label();
 
-    //writes command to the buffer, returns its location in the buffer
     int emit(const std::string& command);
 
-    //gets a pair<int,branch_label_index> item of the form {buffer_location, branch_label_index} and creates a list for it
-    static std::vector<std::pair<int, branch_label_index>> make_list(std::pair<int, branch_label_index> item);
+    static std::vector<patch_record> make_list(patch_record item);
 
-    //merges two lists of {buffer_location, branch_label_index} items
-    static std::vector<std::pair<int, branch_label_index>> merge(const std::vector<std::pair<int, branch_label_index>>& l1, const std::vector<std::pair<int, branch_label_index>>& l2);
+    static std::vector<patch_record> merge(const std::vector<patch_record>& first, const std::vector<patch_record>& second);
 
-    /* accepts a list of {buffer_location, branch_label_index} items and a label.
-    For each {buffer_location, branch_label_index} item in address_list, backpatches the branch command
-    at buffer_location, at index branch_label_index (first or second), with the label.
-    note - the function expects to find a '@' char in place of the missing label.
-    note - for first branches (which contain only a single label) use first as the branch_label_index.
-    example #1:
-    int loc1 = emit("br label @");  - first branch missing a label. ~ Note the '@' ~
-    backpatch(make_list({loc1,first}),"my_label"); - location loc1 in the buffer will now contain the command "br label %my_label"
-    note that index first referes to the one and only label in the line.
-    example #2:
-    int loc2 = emit("br i1 %cond, label @, label @"); - second branch missing two labels.
-    backpatch(make_list({loc2,second}),"my_false_label"); - location loc2 in the buffer will now contain the command "br i1 %cond, label @, label %my_false_label"
-    backpatch(make_list({loc2,first}),"my_true_label"); - location loc2 in the buffer will now contain the command "br i1 %cond, label @my_true_label, label %my_false_label"
-    */
-    void backpatch(const std::vector<std::pair<int, branch_label_index>>& address_list, const std::string& label);
+    void backpatch(const std::vector<patch_record>& patch_list, const std::string& label);
 
-    //prints the content of the code buffer to stdout
     void print_code_buffer() const;
 
-    // ******** Methods to handle the data section ******** //
-    //write a line to the global section
-    void emit_global(const std::string& data_line);
+    void emit_global(const std::string& line);
 
-    //print the content of the global buffer to stdout
     void print_global_buffer() const;
 };
 
