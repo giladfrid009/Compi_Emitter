@@ -4,17 +4,17 @@
 #include <sstream>
 using namespace std;
 
-bool replace(string& str, const string& from, const string& to, const BranchLabelIndex index);
+bool replace(string& str, const string& from, const string& to, const branch_label_index index);
 
-CodeBuffer::CodeBuffer(): buffer(), globalDefs() { }
+code_buffer::code_buffer(): buffer(), global_defs() { }
 
-CodeBuffer& CodeBuffer::instance()
+code_buffer& code_buffer::instance()
 {
-    static CodeBuffer inst;//only instance
+    static code_buffer inst;
     return inst;
 }
 
-string CodeBuffer::genLabel()
+string code_buffer::generate_label()
 {
     std::stringstream label;
     label << "label_";
@@ -25,23 +25,23 @@ string CodeBuffer::genLabel()
     return ret;
 }
 
-int CodeBuffer::emit(const string& s)
+int code_buffer::emit(const string& s)
 {
     buffer.push_back(s);
     return buffer.size() - 1;
 }
 
-void CodeBuffer::bpatch(const vector<pair<int, BranchLabelIndex>>& address_list, const std::string& label)
+void code_buffer::backpatch(const vector<pair<int, branch_label_index>>& address_list, const std::string& label)
 {
-    for (vector<pair<int, BranchLabelIndex>>::const_iterator i = address_list.begin(); i != address_list.end(); i++)
+    for (vector<pair<int, branch_label_index>>::const_iterator i = address_list.begin(); i != address_list.end(); i++)
     {
         int address = (*i).first;
-        BranchLabelIndex labelIndex = (*i).second;
-        replace(buffer[address], "@", "%" + label, labelIndex);
+        branch_label_index label_index = (*i).second;
+        replace(buffer[address], "@", "%" + label, label_index);
     }
 }
 
-void CodeBuffer::printCodeBuffer()
+void code_buffer::print_code_buffer() const
 {
     for (std::vector<string>::const_iterator it = buffer.begin(); it != buffer.end(); ++it)
     {
@@ -49,36 +49,34 @@ void CodeBuffer::printCodeBuffer()
     }
 }
 
-vector<pair<int, BranchLabelIndex>> CodeBuffer::makelist(pair<int, BranchLabelIndex> item)
+vector<pair<int, branch_label_index>> code_buffer::make_list(pair<int, branch_label_index> item)
 {
-    vector<pair<int, BranchLabelIndex>> newList;
-    newList.push_back(item);
-    return newList;
+    vector<pair<int, branch_label_index>> new_list;
+    new_list.push_back(item);
+    return new_list;
 }
 
-vector<pair<int, BranchLabelIndex>> CodeBuffer::merge(const vector<pair<int, BranchLabelIndex>>& l1, const vector<pair<int, BranchLabelIndex>>& l2)
+vector<pair<int, branch_label_index>> code_buffer::merge(const vector<pair<int, branch_label_index>>& l1, const vector<pair<int, branch_label_index>>& l2)
 {
-    vector<pair<int, BranchLabelIndex>> newList(l1.begin(), l1.end());
-    newList.insert(newList.end(), l2.begin(), l2.end());
-    return newList;
+    vector<pair<int, branch_label_index>> new_list(l1.begin(), l1.end());
+    new_list.insert(new_list.end(), l2.begin(), l2.end());
+    return new_list;
 }
 
-// ******** Methods to handle the global section ********** //
-void CodeBuffer::emitGlobal(const std::string& dataLine)
+void code_buffer::emit_global(const std::string& data_line)
 {
-    globalDefs.push_back(dataLine);
+    global_defs.push_back(data_line);
 }
 
-void CodeBuffer::printGlobalBuffer()
+void code_buffer::print_global_buffer() const
 {
-    for (vector<string>::const_iterator it = globalDefs.begin(); it != globalDefs.end(); ++it)
+    for (vector<string>::const_iterator it = global_defs.begin(); it != global_defs.end(); ++it)
     {
         cout << *it << endl;
     }
 }
 
-// ******** Helper Methods ********** //
-bool replace(string& str, const string& from, const string& to, const BranchLabelIndex index)
+bool replace(string& str, const string& from, const string& to, const branch_label_index index)
 {
     size_t pos;
     if (index == SECOND)
@@ -94,4 +92,3 @@ bool replace(string& str, const string& from, const string& to, const BranchLabe
     str.replace(pos, from.length(), to);
     return true;
 }
-
