@@ -1,6 +1,7 @@
 #ifndef EX5_CODE_GEN
 #define EX5_CODE_GEN
 
+#include <list>
 #include <vector>
 #include <string>
 #include "formatter.hpp"
@@ -52,11 +53,11 @@ class code_buffer
         return buffer.size() - 1;
     }
 
-    static std::vector<patch_record> make_list(patch_record item);
+    static std::list<patch_record> make_list(patch_record item);
 
-    static std::vector<patch_record> merge(const std::vector<patch_record>& first, const std::vector<patch_record>& second);
+    static std::list<patch_record> merge(const std::list<patch_record>& first, const std::list<patch_record>& second);
 
-    void backpatch(const std::vector<patch_record>& patch_list, const std::string& label);
+    void backpatch(const std::list<patch_record>& patch_list, const std::string& label);
 
     void print_code_buffer() const;
 

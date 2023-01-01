@@ -1,8 +1,9 @@
 #include "bp.hpp"
-#include <vector>
+#include <list>
 #include <iostream>
 
-using namespace std;
+using std::list;
+using std::string;
 
 bool replace(string& str, const string& from, const string& to, const label_index index);
 
@@ -59,7 +60,7 @@ string code_buffer::label_name() const
     return label;
 }
 
-void code_buffer::backpatch(const vector<patch_record>& patch_list, const std::string& label)
+void code_buffer::backpatch(const list<patch_record>& patch_list, const std::string& label)
 {
     for (auto& entry : patch_list)
     {
@@ -71,18 +72,18 @@ void code_buffer::print_code_buffer() const
 {
     for (auto& line : buffer)
     {
-        cout << line << endl;
+        std::cout << line << std::endl;
     }
 }
 
-vector<patch_record> code_buffer::make_list(patch_record item)
+list<patch_record> code_buffer::make_list(patch_record item)
 {
-    return vector<patch_record>({ item });
+    return list<patch_record>({ item });
 }
 
-vector<patch_record> code_buffer::merge(const vector<patch_record>& first, const vector<patch_record>& second)
+list<patch_record> code_buffer::merge(const list<patch_record>& first, const list<patch_record>& second)
 {
-    vector<patch_record> new_list(first.begin(), first.end());
+    list<patch_record> new_list(first.begin(), first.end());
     new_list.insert(new_list.end(), second.begin(), second.end());
     return new_list;
 }
@@ -96,7 +97,7 @@ void code_buffer::print_global_buffer() const
 {
     for (auto& line : global_defs)
     {
-        cout << line << endl;
+        std::cout << line << std::endl;
     }
 }
 
