@@ -75,7 +75,7 @@ void print_current_scope();
 %right LPAREN
 %left RPAREN
 %right <token> ASSIGN
-%nonassoc <token> IF // TODO: VERIFY IF IN RIGHT POSITION
+%nonassoc <token> IF
 %nonassoc <token> ELSE
 %left <token> OR
 %left <token> AND
