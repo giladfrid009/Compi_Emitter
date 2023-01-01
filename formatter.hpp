@@ -32,14 +32,14 @@ class formatter
     private:
 
     template<class T>
-    static T const& strignify(T const& x)
+    static T const& strignify(T const& arg)
     {
-        return x;
+        return arg;
     }
 
-    static const char* strignify(std::string const& x)
+    static const char* strignify(std::string const& arg)
     {
-        return x.c_str();
+        return arg.c_str();
     }
 };
 

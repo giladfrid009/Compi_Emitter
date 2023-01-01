@@ -208,6 +208,11 @@ void arithmetic_expression_syntax::emit()
         child->emit();
     }
 
+    if (oper == arithmetic_operator::Div)
+    {
+        //todo: emit check for zero division.
+    }
+
     if (return_type == fundamental_type::Byte)
     {
         string tmp_reg = codebuf.register_name();
