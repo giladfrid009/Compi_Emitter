@@ -222,7 +222,7 @@ class relational_expression_syntax final: public expression_syntax
 
     relational_expression_syntax& operator=(const relational_expression_syntax& other) = delete;
 
-    string relational_expression_syntax::ir_operator() const;
+    string ir_operator() const;
 
     void emit() override;
 
