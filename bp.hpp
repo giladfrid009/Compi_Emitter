@@ -47,7 +47,7 @@ class code_buffer
     {
         std::string formatted = formatter::format(line, args ...);
 
-        buffer.push_back(line);
+        buffer.push_back(formatted);
 
         return buffer.size() - 1;
     }
