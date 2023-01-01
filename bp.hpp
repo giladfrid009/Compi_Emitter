@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+#include "formatter.hpp"
 
 enum class label_index { first, second };
 
@@ -33,11 +34,23 @@ class code_buffer
 
     static code_buffer& instance();
 
+    std::string register_name() const;
+
+    std::string label_name() const;
+
     std::string emit_label();
 
-    std::string create_variable();
-
     int emit(const std::string& line);
+
+    template<typename ... Args>
+    int emit(const std::string& line, Args ... args)
+    {
+        std::string formatted = formatter::format(line, args ...);
+
+        buffer.push_back(line);
+
+        return buffer.size() - 1;
+    }
 
     static std::vector<patch_record> make_list(patch_record item);
 

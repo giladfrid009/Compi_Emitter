@@ -198,7 +198,11 @@ class arithmetic_expression_syntax final: public expression_syntax
 
     ~arithmetic_expression_syntax();
 
+    private:
+
     static arithmetic_operator parse_operator(std::string str);
+
+    std::string ir_operator() const;
 };
 
 class relational_expression_syntax final: public expression_syntax

@@ -2,13 +2,14 @@
 #include <vector>
 #include <iostream>
 #include <sstream>
+
 using namespace std;
 
 bool replace(string& str, const string& from, const string& to, const label_index index);
 
 patch_record::patch_record(int line, label_index index): line(line), index(index)
 {
-
+    
 }
 
 code_buffer::code_buffer(): buffer(), global_defs()
@@ -24,42 +25,39 @@ code_buffer& code_buffer::instance()
 
 string code_buffer::emit_label()
 {
-    static unsigned long long count = 0;
+    string label = label_name();
 
-    std::stringstream label;
+    emit(label + ":");
 
-    label << "label_" << count;
-
-    count++;
-
-    string ret = label.str();
-
-    label << ":";
-
-    emit(label.str());
-
-    return ret;
+    return label;
 }
 
-//We don't write this to code because it's only creates a register 
-//unlike the above that creates and writes the label
-string code_buffer::create_variable()
-{
-    static unsigned long long count = 0;
-
-    std::stringstream var;
-
-    var << "%var_" << count;
-
-    count++;
-
-    return var.str();
-}
-
-int code_buffer::emit(const string& line)
+int code_buffer::emit(const std::string& line)
 {
     buffer.push_back(line);
     return buffer.size() - 1;
+}
+
+string code_buffer::register_name() const
+{
+    static unsigned long long count = 0;
+
+    string reg = formatter::format("reg_%llu", count);
+
+    count++;
+
+    return reg;
+}
+
+string code_buffer::label_name() const
+{
+    static unsigned long long count = 0;
+
+    string label = formatter::format("label_%llu", count);
+
+    count++;
+
+    return label;
 }
 
 void code_buffer::backpatch(const vector<patch_record>& patch_list, const std::string& label)

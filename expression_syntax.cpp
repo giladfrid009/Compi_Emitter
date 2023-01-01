@@ -10,6 +10,8 @@ using std::vector;
 
 extern int yylineno;
 
+static code_buffer& codebuf = code_buffer::instance();
+
 cast_expression_syntax::cast_expression_syntax(type_syntax* destination_type, expression_syntax* expression):
     expression_syntax(destination_type->type), destination_type(destination_type), expression(expression)
 {
@@ -182,6 +184,23 @@ arithmetic_expression_syntax::arithmetic_operator arithmetic_expression_syntax::
     throw std::invalid_argument("unknown oper");
 }
 
+string arithmetic_expression_syntax::ir_operator() const
+{
+    switch (oper)
+    {
+        case arithmetic_operator::Add: return "add"; 
+        case arithmetic_operator::Sub: return "sub";
+        case arithmetic_operator::Mul: return "mul";
+        case arithmetic_operator::Div:
+        {
+            if (return_type == fundamental_type::Byte) return "udiv";
+            if (return_type == fundamental_type::Int) return "sdiv";
+        }
+    }
+
+    return "";
+}
+
 void arithmetic_expression_syntax::emit()
 {
     for (auto child : get_children())
@@ -189,35 +208,18 @@ void arithmetic_expression_syntax::emit()
         child->emit();
     }
 
-    string oper_str;
-    
-    switch (oper)
+    if (return_type == fundamental_type::Byte)
     {
-        case arithmetic_operator::Add: oper_str = "add"; break; 
-        case arithmetic_operator::Sub: oper_str = "sub"; break; 
-        case arithmetic_operator::Mul: oper_str = "mul"; break; 
-        case arithmetic_operator::Div:
-        {
-            if (return_type == fundamental_type::Byte)
-            {
-                oper_str = "udiv";  
-            }
-            else if (return_type == fundamental_type::Int)
-            {
-                oper_str = "sdiv";
-            }
-            break;
-        }
+        string tmp_reg = codebuf.register_name();
+
+        codebuf.emit("%s = %s i32 %s , %s", tmp_reg, ir_operator(), left->place, right->place);
+
+        codebuf.emit("%s = and i32 255 , %s", this->place, tmp_reg);
     }
-
-    //TODO: should we always have i32 type for everything?
-    string type_str = return_type == fundamental_type::Byte ? "i8" : "i32";
-
-    std::stringstream line;
-
-    line << this->place << " = " << oper_str << " " << type_str << " " << left->place << " , " << right->place;
-
-    code_buffer::instance().emit(line.str());
+    else if (return_type == fundamental_type::Int)
+    {
+        codebuf.emit("%s = %s i32 %s , %s", this->place, ir_operator(), left->place, right->place);
+    }
 }
 
 relational_expression_syntax::relational_expression_syntax(expression_syntax* left, syntax_token* oper_token, expression_syntax* right):
