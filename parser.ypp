@@ -4,6 +4,7 @@
 #include "symbol_table.hpp"
 #include "generic_syntax.hpp" 
 #include "types.hpp"
+#include "bp.hpp"
 #include <list>
 #include <string>
 
@@ -149,8 +150,8 @@ Type 		: INT                                           { $$ = new type_syntax($1
 			;       
 Exp 		: LPAREN Exp RPAREN	                            { $$ = $2; }
             | Exp IF LPAREN Exp RPAREN ELSE Exp             { $$ = new conditional_expression_syntax($1, $2, $4, $6, $7); }
-			| Exp ADDOP Exp                                 { $$ = new arithmetic_expression_syntax($1, $2, $3); }
-            | Exp MULOP Exp                                 { $$ = new arithmetic_expression_syntax($1, $2, $3); }
+			| Exp ADDOP Exp                                 { $$ = new arithmetic_expression_syntax($1, $2, $3); $$->emit(); } //todo: remove emit later
+            | Exp MULOP Exp                                 { $$ = new arithmetic_expression_syntax($1, $2, $3); $$->emit(); } //todo: remove emit later
 			| ID                                            { $$ = new identifier_expression_syntax($1); }
 			| Call                                          { $$ = $1; }
 			| NUM                                           { $$ = new literal_expression_syntax<int>($1); }
@@ -185,6 +186,8 @@ int main()
 
     print_current_scope();
     symtab.close_scope();
+
+    code_buffer::instance().print_code_buffer();
 
     return res;
 }

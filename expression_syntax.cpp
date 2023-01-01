@@ -198,7 +198,7 @@ string arithmetic_expression_syntax::ir_operator() const
         }
     }
 
-    return "";
+    throw runtime_error("unknown oper");
 }
 
 void arithmetic_expression_syntax::emit()

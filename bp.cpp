@@ -41,7 +41,7 @@ string code_buffer::register_name() const
 {
     static unsigned long long count = 0;
 
-    string reg = formatter::format("reg_%llu", count);
+    string reg = formatter::format("%%reg_%llu", count);
 
     count++;
 
