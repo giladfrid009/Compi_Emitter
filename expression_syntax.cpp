@@ -341,7 +341,7 @@ identifier_expression::~identifier_expression()
 void identifier_expression::emit()
 {
     // todo: get identifier address
-    // load identifier from address, can only be numeric or bool
+    // load identifier from address, can only be numeric or bool?
 }
 
 invocation_expression::invocation_expression(syntax_token* identifier_token):
