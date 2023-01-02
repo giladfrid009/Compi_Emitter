@@ -139,4 +139,5 @@ root_syntax::~root_syntax()
 
 void root_syntax::emit()
 {
+    functions->emit();
 }

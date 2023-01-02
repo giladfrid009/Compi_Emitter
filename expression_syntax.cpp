@@ -31,10 +31,7 @@ cast_expression::~cast_expression()
 
 void cast_expression::emit()
 {
-    for (auto child : get_children())
-    {
-        child->emit();
-    }
+    expression->emit();
 
     if (expression->return_type == type_kind::Int && destination_type->kind == type_kind::Byte)
     {
@@ -152,25 +149,22 @@ string arithmetic_expression::ir_operator() const
 
 void arithmetic_expression::emit()
 {
-    for (auto child : get_children())
-    {
-        child->emit();
-    }
+    left->emit();
+    right->emit();
 
     if (oper == operator_kind::Div)
     {
         string cmp_res = codebuf.register_name();
-
-        codebuf.emit("%s = icmp eq i32 0 , %s", cmp_res, right->place);
-
         string true_label = codebuf.label_name();
         string false_label = codebuf.label_name();
+
+        codebuf.emit("%s = icmp eq i32 0 , %s", cmp_res, right->place);
 
         codebuf.emit("br i1 %s , label %s , label %s", cmp_res, true_label, false_label);
 
         codebuf.emit("%s:", true_label);
 
-        codebuf.emit("call void @div_by_zero_error()");
+        codebuf.emit("call void @error_zero_div()");
 
         codebuf.emit("br label %s", false_label);
 
@@ -242,10 +236,8 @@ string relational_expression::ir_operator() const
 
 void relational_expression::emit()
 {
-    for (auto child : get_children())
-    {
-        child->emit();
-    }
+    left->emit();
+    right->emit();
 
     string tmp_reg = codebuf.register_name();
 
@@ -409,4 +401,5 @@ invocation_expression::~invocation_expression()
 
 void invocation_expression::emit()
 {
+    arguments->emit();
 }
