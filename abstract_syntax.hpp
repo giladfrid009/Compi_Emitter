@@ -5,59 +5,51 @@
 #include "types.hpp"
 #include <vector>
 #include <string>
+#include <list>
 
 class syntax_base
 {
     private:
 
+    std::list<syntax_base*> children;
     syntax_base* parent = nullptr;
 
     public:
 
     syntax_base();
-
-    syntax_base(const syntax_base& other) = delete;
-
-    syntax_base& operator=(const syntax_base& other) = delete;
-
-    syntax_base* get_parent() const;
-
-    void set_parent(syntax_base* new_parent);
-
     virtual ~syntax_base() = default;
 
-    virtual std::vector<syntax_base*> get_children() const = 0;
+    syntax_base(const syntax_base& other) = delete;
+    syntax_base& operator=(const syntax_base& other) = delete;
 
-    virtual std::vector<syntax_token*> get_tokens() const = 0;
+    const syntax_base* get_parent() const;
+    const std::list<syntax_base*>& get_children() const;
 
     virtual void emit() = 0;
+
+    protected:
+
+    void push_back_child(syntax_base* child);
+    void push_front_child(syntax_base* child);
 };
 
 class expression_syntax: public syntax_base
 {
     public:
 
+    const type_kind return_type;
     const std::string place;
 
-    const fundamental_type return_type;
-
-    expression_syntax(fundamental_type return_type);
-
-    expression_syntax(const expression_syntax& other) = delete;
-
-    expression_syntax& operator=(const expression_syntax& other) = delete;
-
-    bool is_numeric() const;
-
-    bool is_special() const;
-
+    expression_syntax(type_kind return_type);
     virtual ~expression_syntax() = default;
 
-    virtual std::vector<syntax_base*> get_children() const = 0;
-
-    virtual std::vector<syntax_token*> get_tokens() const = 0;
+    expression_syntax(const expression_syntax& other) = delete;
+    expression_syntax& operator=(const expression_syntax& other) = delete;
 
     virtual void emit() = 0;
+
+    bool is_numeric() const;
+    bool is_special() const;
 };
 
 class statement_syntax: public syntax_base
@@ -65,16 +57,10 @@ class statement_syntax: public syntax_base
     public:
 
     statement_syntax();
-
     virtual ~statement_syntax() = default;
 
     statement_syntax(const statement_syntax& other) = delete;
-
     statement_syntax& operator=(const statement_syntax& other) = delete;
-
-    virtual std::vector<syntax_base*> get_children() const = 0;
-
-    virtual std::vector<syntax_token*> get_tokens() const = 0;
 
     virtual void emit() = 0;
 };

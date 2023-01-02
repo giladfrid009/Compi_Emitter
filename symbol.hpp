@@ -5,41 +5,46 @@
 #include <vector>
 #include "abstract_syntax.hpp"
 
-enum class symbol_type { Var, Func };
+enum class symbol_kind { Variable, Function };
 
 class symbol
 {
     public:
 
-    const symbol_type sym_type;
-
+    const symbol_kind kind;
     const std::string name;
-
     const int offset;
+    const type_kind type;
 
-    const fundamental_type type;
+    protected:
 
-    symbol(std::string name, fundamental_type type, int offset, symbol_type sym_type);
+    symbol(const std::string& name, type_kind type, int offset, symbol_kind kind);
+
+    public:
 
     virtual ~symbol() = default;
+
+    virtual std::string to_string() const = 0;
 };
 
 class variable_symbol: public symbol
 {
     public:
 
-    const std::string ir_pointer_register;
+    variable_symbol(const std::string& name, type_kind type, int offset);
 
-    variable_symbol(std::string name, fundamental_type type, int offset);
+    std::string to_string() const override;
 };
 
 class function_symbol: public symbol
 {
     public:
 
-    const std::vector<fundamental_type> parameter_types;
+    const std::vector<type_kind> parameter_types;
 
-    function_symbol(std::string name, fundamental_type return_type, std::vector<fundamental_type> parameter_types);
+    function_symbol(const std::string& name, type_kind return_type, const std::vector<type_kind>& parameter_types);
+
+    std::string to_string() const override;
 };
 
 #endif

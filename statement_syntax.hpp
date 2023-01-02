@@ -8,197 +8,146 @@
 #include <vector>
 #include <string>
 
-class if_statement_syntax final: public statement_syntax
+class if_statement final: public statement_syntax
 {
     public:
 
-    syntax_token* const if_token;
-    expression_syntax* const condition;
-    statement_syntax* const body;
-    syntax_token* const else_token;
-    statement_syntax* const else_clause;
+    const syntax_token* const if_token;
+    const expression_syntax* const condition;
+    const statement_syntax* const body;
+    const syntax_token* const else_token;
+    const statement_syntax* const else_clause;
 
-    if_statement_syntax(syntax_token* if_token, expression_syntax* condition, statement_syntax* body);
+    if_statement(syntax_token* if_token, expression_syntax* condition, statement_syntax* body);
+    if_statement(syntax_token* if_token, expression_syntax* condition, statement_syntax* body, syntax_token* else_token, statement_syntax* else_clause);
+    ~if_statement();
 
-    if_statement_syntax(syntax_token* if_token, expression_syntax* condition, statement_syntax* body, syntax_token* else_token, statement_syntax* else_clause);
-
-    if_statement_syntax(const if_statement_syntax& other) = delete;
-
-    if_statement_syntax& operator=(const if_statement_syntax& other) = delete;
+    if_statement(const if_statement& other) = delete;
+    if_statement& operator=(const if_statement& other) = delete;
 
     void emit() override;
-    
-    std::vector<syntax_base*> get_children() const override;
-
-    std::vector<syntax_token*> get_tokens() const override;
-
-    ~if_statement_syntax();
 };
 
-class while_statement_syntax final: public statement_syntax
+class while_statement final: public statement_syntax
 {
     public:
 
-    syntax_token* const while_token;
-    expression_syntax* const condition;
-    statement_syntax* const body;
+    const syntax_token* const while_token;
+    const expression_syntax* const condition;
+    const statement_syntax* const body;
 
-    while_statement_syntax(syntax_token* while_token, expression_syntax* condition, statement_syntax* body);
+    while_statement(syntax_token* while_token, expression_syntax* condition, statement_syntax* body);
+    ~while_statement();
 
-    while_statement_syntax(const while_statement_syntax& other) = delete;
-
-    while_statement_syntax& operator=(const while_statement_syntax& other) = delete;
+    while_statement(const while_statement& other) = delete;
+    while_statement& operator=(const while_statement& other) = delete;
 
     void emit() override;
-    
-    std::vector<syntax_base*> get_children() const override;
-
-    std::vector<syntax_token*> get_tokens() const override;
-
-    ~while_statement_syntax();
 };
 
-class branch_statement_syntax final: public statement_syntax
+class branch_statement final: public statement_syntax
 {
     public:
 
-    enum class branch_type { Break, Continue };
+    enum class branch_kind { Break, Continue };
 
-    syntax_token* const branch_token;
-    const branch_type type;
+    const syntax_token* const branch_token;
+    const branch_kind kind;
 
-    branch_statement_syntax(syntax_token* branch_token);
+    branch_statement(syntax_token* branch_token);
+    ~branch_statement();
 
-    branch_statement_syntax(const branch_statement_syntax& other) = delete;
+    branch_statement(const branch_statement& other) = delete;
+    branch_statement& operator=(const branch_statement& other) = delete;
 
-    branch_statement_syntax& operator=(const branch_statement_syntax& other) = delete;
+    static branch_kind parse_kind(std::string str);
 
     void emit() override;
-    
-    std::vector<syntax_base*> get_children() const override;
-
-    std::vector<syntax_token*> get_tokens() const override;
-
-    ~branch_statement_syntax();
-
-    static branch_type parse_type(std::string str);
 };
 
-class return_statement_syntax final: public statement_syntax
+class return_statement final: public statement_syntax
 {
     public:
 
-    syntax_token* const return_token;
-    expression_syntax* const expression;
+    const syntax_token* const return_token;
+    const expression_syntax* const value;
 
-    return_statement_syntax(syntax_token* return_token);
+    return_statement(syntax_token* return_token);
+    return_statement(syntax_token* return_token, expression_syntax* value);
+    ~return_statement();
 
-    return_statement_syntax(syntax_token* return_token, expression_syntax* expression);
-
-    return_statement_syntax(const return_statement_syntax& other) = delete;
-
-    return_statement_syntax& operator=(const return_statement_syntax& other) = delete;
+    return_statement(const return_statement& other) = delete;
+    return_statement& operator=(const return_statement& other) = delete;
 
     void emit() override;
-    
-    std::vector<syntax_base*> get_children() const override;
-
-    std::vector<syntax_token*> get_tokens() const override;
-
-    ~return_statement_syntax();
 };
 
-class expression_statement_syntax final: public statement_syntax
+class expression_statement final: public statement_syntax
 {
     public:
 
-    expression_syntax* const expression;
+    const expression_syntax* const expression;
 
-    expression_statement_syntax(expression_syntax* expression);
+    expression_statement(expression_syntax* expression);
+    ~expression_statement();
 
-    expression_statement_syntax(const expression_statement_syntax& other) = delete;
-
-    expression_statement_syntax& operator=(const expression_statement_syntax& other) = delete;
+    expression_statement(const expression_statement& other) = delete;
+    expression_statement& operator=(const expression_statement& other) = delete;
 
     void emit() override;
-    
-    std::vector<syntax_base*> get_children() const override;
-
-    std::vector<syntax_token*> get_tokens() const override;
-
-    ~expression_statement_syntax();
 };
 
-class assignment_statement_syntax final: public statement_syntax
+class assignment_statement final: public statement_syntax
 {
     public:
 
-    syntax_token* const identifier_token;
+    const syntax_token* const identifier_token;
     const std::string identifier;
-    syntax_token* const assign_token;
-    expression_syntax* const value;
+    const syntax_token* const assign_token;
+    const expression_syntax* const value;
 
-    assignment_statement_syntax(syntax_token* identifier_token, syntax_token* assign_token, expression_syntax* value);
+    assignment_statement(syntax_token* identifier_token, syntax_token* assign_token, expression_syntax* value);
+    ~assignment_statement();
 
-    assignment_statement_syntax(const assignment_statement_syntax& other) = delete;
-
-    assignment_statement_syntax& operator=(const assignment_statement_syntax& other) = delete;
+    assignment_statement(const assignment_statement& other) = delete;
+    assignment_statement& operator=(const assignment_statement& other) = delete;
 
     void emit() override;
-
-    std::vector<syntax_base*> get_children() const override;
-
-    std::vector<syntax_token*> get_tokens() const override;
-
-    ~assignment_statement_syntax();
 };
 
-class declaration_statement_syntax final: public statement_syntax
+class declaration_statement final: public statement_syntax
 {
     public:
 
-    type_syntax* const type;
-    syntax_token* const identifier_token;
+    const type_syntax* const type;
+    const syntax_token* const identifier_token;
     const std::string identifier;
-    syntax_token* const assign_token;
-    expression_syntax* const value;
+    const syntax_token* const assign_token;
+    const expression_syntax* const value;
 
-    declaration_statement_syntax(type_syntax* type, syntax_token* identifier_token);
+    declaration_statement(type_syntax* type, syntax_token* identifier_token);
+    declaration_statement(type_syntax* type, syntax_token* identifier_token, syntax_token* assign_token, expression_syntax* value);
+    ~declaration_statement();
 
-    declaration_statement_syntax(type_syntax* type, syntax_token* identifier_token, syntax_token* assign_token, expression_syntax* value);
-
-    declaration_statement_syntax(const declaration_statement_syntax& other) = delete;
-
-    declaration_statement_syntax& operator=(const declaration_statement_syntax& other) = delete;
+    declaration_statement(const declaration_statement& other) = delete;
+    declaration_statement& operator=(const declaration_statement& other) = delete;
 
     void emit() override;
-    
-    std::vector<syntax_base*> get_children() const override;
-
-    std::vector<syntax_token*> get_tokens() const override;
-
-    ~declaration_statement_syntax();
 };
 
-class block_statement_syntax final: public statement_syntax
+class block_statement final: public statement_syntax
 {
     public:
 
-    list_syntax<statement_syntax>* const statement_list;
+    list_syntax<statement_syntax>* const statements;
 
-    block_statement_syntax(list_syntax<statement_syntax>* statement_list);
+    block_statement(list_syntax<statement_syntax>* statements);
+    ~block_statement();
 
-    block_statement_syntax(const block_statement_syntax& other) = delete;
-
-    block_statement_syntax& operator=(const block_statement_syntax& other) = delete;
+    block_statement(const block_statement& other) = delete;
+    block_statement& operator=(const block_statement& other) = delete;
 
     void emit() override;
-
-    std::vector<syntax_base*> get_children() const override;
-
-    std::vector<syntax_token*> get_tokens() const override;
-
-    ~block_statement_syntax();
 };
 
 #endif

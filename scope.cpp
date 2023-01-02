@@ -1,5 +1,4 @@
 #include "scope.hpp"
-#include "hw3_output.hpp"
 #include <vector>
 #include <string>
 #include <stdexcept>
@@ -9,72 +8,72 @@ using std::string;
 using std::vector;
 using std::list;
 
-scope::scope(int offset, bool is_loop_scope):
-    symbol_list(), symbol_map(), current_offset(offset), formal_offset(offset - 1), is_loop_scope(is_loop_scope)
+scope::scope(int offset, bool loop_scope):
+    symbol_list(), symbol_map(), offset(offset), param_offset(offset - 1), loop_scope(loop_scope)
 {
 }
 
 scope::~scope()
 {
-    for (symbol* sym : symbol_list)
+    for (const symbol* sym : symbol_list)
     {
         delete sym;
     }
 }
 
-bool scope::contains_symbol(string symbol_name) const
+bool scope::contains_symbol(const string& name) const
 {
-    return symbol_map.find(symbol_name) != symbol_map.end();
+    return symbol_map.find(name) != symbol_map.end();
 }
 
-symbol* scope::get_symbol(string symbol_name) const
+const symbol* scope::get_symbol(const string& name) const
 {
-    if (contains_symbol(symbol_name) == false)
+    if (contains_symbol(name) == false)
     {
         return nullptr;
     }
 
-    return symbol_map.at(symbol_name);
+    return symbol_map.at(name);
 }
 
-const list<symbol*>& scope::get_symbols() const
+const list<const symbol*>& scope::get_symbols() const
 {
     return symbol_list;
 }
 
-bool scope::add_variable(string name, fundamental_type type)
+bool scope::add_variable(const string& name, type_kind type)
 {
     if (contains_symbol(name))
     {
         return false;
     }
 
-    symbol* new_symbol = new variable_symbol(name, type, current_offset);
+    symbol* new_symbol = new variable_symbol(name, type, offset);
     symbol_list.push_back(new_symbol);
     symbol_map[name] = new_symbol;
 
-    current_offset += 1;
+    offset += 1;
 
     return true;
 }
 
-bool scope::add_formal(string name, fundamental_type type)
+bool scope::add_parameter(const string& name, type_kind type)
 {
     if (contains_symbol(name))
     {
         return false;
     }
 
-    symbol* new_symbol = new variable_symbol(name, type, formal_offset);
+    symbol* new_symbol = new variable_symbol(name, type, param_offset);
     symbol_list.push_back(new_symbol);
     symbol_map[name] = new_symbol;
 
-    formal_offset -= 1;
+    param_offset -= 1;
 
     return true;
 }
 
-bool scope::add_function(string name, fundamental_type return_type, vector<fundamental_type> parameter_types)
+bool scope::add_function(const string& name, type_kind return_type, const vector<type_kind>& parameter_types)
 {
     if (contains_symbol(name))
     {

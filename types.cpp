@@ -3,49 +3,49 @@
 
 using std::string;
 
-string types::to_string(fundamental_type type)
+string types::to_string(type_kind type)
 {
     switch (type)
     {
-        case (fundamental_type::Bool): return "BOOL";
-        case (fundamental_type::Int): return "INT";
-        case (fundamental_type::Byte): return "BYTE";
-        case (fundamental_type::String): return "STRING";
-        case (fundamental_type::Void): return "VOID";
+        case (type_kind::Bool): return "BOOL";
+        case (type_kind::Int): return "INT";
+        case (type_kind::Byte): return "BYTE";
+        case (type_kind::String): return "STRING";
+        case (type_kind::Void): return "VOID";
 
         default: throw std::invalid_argument("unknown type");
     }
 }
 
-fundamental_type types::from_string(string str)
+type_kind types::parse(const string& str)
 {
-    if (str == "bool") return fundamental_type::Bool;
-    if (str == "int") return fundamental_type::Int;
-    if (str == "byte") return fundamental_type::Byte;
-    if (str == "string") return fundamental_type::String;
-    if (str == "void") return fundamental_type::Void;
+    if (str == "bool") return type_kind::Bool;
+    if (str == "int") return type_kind::Int;
+    if (str == "byte") return type_kind::Byte;
+    if (str == "string") return type_kind::String;
+    if (str == "void") return type_kind::Void;
 
     throw std::invalid_argument("can't parse str");
 }
 
-bool types::is_convertible(fundamental_type source, fundamental_type destiation)
+bool types::is_implictly_convertible(type_kind from, type_kind to)
 {
-    if (source == fundamental_type::Invalid || destiation == fundamental_type::Invalid)
+    if (from == type_kind::Invalid || to == type_kind::Invalid)
     {
         return false;
     }
 
-    if (source == fundamental_type::Void || destiation == fundamental_type::Void)
+    if (from == type_kind::Void || to == type_kind::Void)
     {
         return false;
     }
-    
-    if (source == destiation)
+
+    if (from == to)
     {
         return true;
     }
 
-    if (source == fundamental_type::Byte && destiation == fundamental_type::Int)
+    if (from == type_kind::Byte && to == type_kind::Int)
     {
         return true;
     }
@@ -53,16 +53,16 @@ bool types::is_convertible(fundamental_type source, fundamental_type destiation)
     return false;
 }
 
-fundamental_type types::cast_up(fundamental_type first, fundamental_type second)
+type_kind types::cast_up(type_kind first, type_kind second)
 {
-    if (first == fundamental_type::Invalid || second == fundamental_type::Invalid)
+    if (first == type_kind::Invalid || second == type_kind::Invalid)
     {
-        return fundamental_type::Invalid;
+        return type_kind::Invalid;
     }
 
-    if (first == fundamental_type::Void || second == fundamental_type::Void)
+    if (first == type_kind::Void || second == type_kind::Void)
     {
-        return fundamental_type::Invalid;
+        return type_kind::Invalid;
     }
 
     if (first == second)
@@ -70,30 +70,25 @@ fundamental_type types::cast_up(fundamental_type first, fundamental_type second)
         return first;
     }
 
-    if (first == fundamental_type::Int && second == fundamental_type::Byte)
+    if (first == type_kind::Int && second == type_kind::Byte)
     {
-        return fundamental_type::Int;
+        return type_kind::Int;
     }
 
-    if (first == fundamental_type::Byte && second == fundamental_type::Int)
+    if (first == type_kind::Byte && second == type_kind::Int)
     {
-        return fundamental_type::Int;
+        return type_kind::Int;
     }
 
-    return fundamental_type::Invalid;
+    return type_kind::Invalid;
 }
 
-bool types::is_numeric(fundamental_type type)
+bool types::is_numeric(type_kind type)
 {
-    if (type == fundamental_type::Invalid)
-    {
-        return false;
-    }
-
-    return type == fundamental_type::Int || type == fundamental_type::Byte;
+    return type == type_kind::Int || type == type_kind::Byte;
 }
 
-bool types::is_special(fundamental_type type)
+bool types::is_special(type_kind type)
 {
-    return type == fundamental_type::Invalid || type == fundamental_type::Void || type == fundamental_type::String;
+    return type == type_kind::Invalid || type == type_kind::Void || type == type_kind::String;
 }

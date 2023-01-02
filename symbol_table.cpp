@@ -16,15 +16,15 @@ symbol_table& symbol_table::instance()
     return instance;
 }
 
-void symbol_table::open_scope(bool is_loop_scope)
+void symbol_table::open_scope(bool loop_scope)
 {
     if (scope_list.size() == 0)
     {
-        scope_list.push_back(scope(0, is_loop_scope));
+        scope_list.push_back(scope(0, loop_scope));
     }
     else
     {
-        scope_list.push_back(scope(scope_list.back().current_offset, is_loop_scope));
+        scope_list.push_back(scope(scope_list.back().offset, loop_scope));
     }
 }
 
@@ -39,11 +39,11 @@ const scope& symbol_table::current_scope() const
 }
 
 
-bool symbol_table::contains_symbol(string symbol_name) const
+bool symbol_table::contains_symbol(const string& name) const
 {
     for (const scope& sc : scope_list)
     {
-        if (sc.contains_symbol(symbol_name))
+        if (sc.contains_symbol(name))
         {
             return true;
         }
@@ -52,20 +52,20 @@ bool symbol_table::contains_symbol(string symbol_name) const
     return false;
 }
 
-symbol* symbol_table::get_symbol(string symbol_name) const
+const symbol* symbol_table::get_symbol(const string& name) const
 {
     for (const scope& sc : scope_list)
     {
-        if (sc.contains_symbol(symbol_name))
+        if (sc.contains_symbol(name))
         {
-            return sc.get_symbol(symbol_name);
+            return sc.get_symbol(name);
         }
     }
 
     return nullptr;
 }
 
-bool symbol_table::add_variable(string name, fundamental_type type)
+bool symbol_table::add_variable(const string& name, type_kind type)
 {
     if (scope_list.size() == 0)
     {
@@ -75,17 +75,17 @@ bool symbol_table::add_variable(string name, fundamental_type type)
     return scope_list.back().add_variable(name, type);
 }
 
-bool symbol_table::add_formal(string name, fundamental_type type)
+bool symbol_table::add_parameter(const string& name, type_kind type)
 {
     if (scope_list.size() == 0)
     {
         return false;
     }
 
-    return scope_list.back().add_formal(name, type);
+    return scope_list.back().add_parameter(name, type);
 }
 
-bool symbol_table::add_function(string name, fundamental_type return_type, vector<fundamental_type> parameter_types)
+bool symbol_table::add_function(const string& name, type_kind return_type, const vector<type_kind>& parameter_types)
 {
     if (scope_list.size() == 0)
     {
@@ -95,9 +95,9 @@ bool symbol_table::add_function(string name, fundamental_type return_type, vecto
     return scope_list.back().add_function(name, return_type, parameter_types);
 }
 
-bool symbol_table::add_function(string name, fundamental_type return_type)
+bool symbol_table::add_function(const string& name, type_kind return_type)
 {
-    return add_function(name, return_type, vector<fundamental_type>());
+    return add_function(name, return_type, vector<type_kind>());
 }
 
 const list<scope>& symbol_table::get_scopes() const

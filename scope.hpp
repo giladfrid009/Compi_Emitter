@@ -11,31 +11,32 @@ class scope
 {
     friend class symbol_table;
 
-    std::list<symbol*> symbol_list;
-    std::unordered_map<std::string, symbol*> symbol_map;
+    private:
 
-    int current_offset;
-    int formal_offset;
+    std::list<const symbol*> symbol_list;
+    std::unordered_map<std::string, const symbol*> symbol_map;
+    int offset;
+    int param_offset;
 
     public:
 
-    const bool is_loop_scope;
+    const bool loop_scope;
 
-    scope(int offset, bool is_loop_scope);
+    scope(int offset, bool loop_scope);
 
     ~scope();
 
-    bool contains_symbol(std::string symbol_name) const;
+    bool contains_symbol(const std::string& name) const;
 
-    symbol* get_symbol(std::string symbol_name) const;
+    const symbol* get_symbol(const std::string& name) const;
 
-    const std::list<symbol*>& get_symbols() const;
+    const std::list<const symbol*>& get_symbols() const;
 
-    bool add_variable(std::string name, fundamental_type type);
+    bool add_variable(const std::string& name, type_kind type);
 
-    bool add_formal(std::string name, fundamental_type type);
+    bool add_parameter(const std::string& name, type_kind type);
 
-    bool add_function(std::string name, fundamental_type return_type, std::vector<fundamental_type> parameter_types);
+    bool add_function(const std::string& name, type_kind return_type, const std::vector<type_kind>& parameter_types);
 };
 
 #endif

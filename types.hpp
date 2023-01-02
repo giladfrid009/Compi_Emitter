@@ -3,21 +3,21 @@
 
 #include <string>
 
-enum class fundamental_type { Invalid, Void, Int, Bool, Byte, String };
+enum class type_kind { Invalid, Void, Int, Bool, Byte, String };
 
 namespace types
 {
-    std::string to_string(fundamental_type type);
+    std::string to_string(type_kind type);
 
-    fundamental_type from_string(std::string str);
+    type_kind parse(const std::string& str);
 
-    bool is_convertible(fundamental_type source, fundamental_type destiation);
+    bool is_implictly_convertible(type_kind from, type_kind to);
 
-    bool is_numeric(fundamental_type type);
+    bool is_numeric(type_kind type);
 
-    bool is_special(fundamental_type type);
+    bool is_special(type_kind type);
 
-    fundamental_type cast_up(fundamental_type first, fundamental_type second);
+    type_kind cast_up(type_kind first, type_kind second);
 }
 
 #endif

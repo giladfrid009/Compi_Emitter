@@ -9,13 +9,11 @@ class syntax_token
     public:
 
     const int type;
-
-    const int definition_line;
-
+    const int position;
     const std::string text;
 
-    syntax_token(int type, int definition_line, std::string text):
-        type(type), definition_line(definition_line), text(text)
+    syntax_token(int type, int position, const std::string& text):
+        type(type), position(position), text(text)
     {
 
     }
