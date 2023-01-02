@@ -161,3 +161,18 @@ void label_syntax::emit_node()
 {
     codebuf.emit("%s:", name);
 }
+
+jump_syntax::jump_syntax() : next_list()
+{
+}
+
+jump_syntax::~jump_syntax()
+{
+}
+
+void jump_syntax::emit_node()
+{
+    size_t line = codebuf.emit("br label @");
+    
+    next_list.push_back(patch_record(line, label_index::first));
+}

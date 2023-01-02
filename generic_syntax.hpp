@@ -174,4 +174,21 @@ class label_syntax final: public syntax_base
     void emit_node() override;
 };
 
+class jump_syntax final: public syntax_base
+{
+    public:
+
+    std::list<patch_record> next_list;
+
+    jump_syntax();
+    ~jump_syntax();
+
+    jump_syntax(const root_syntax& other) = delete;
+    jump_syntax& operator=(const root_syntax& other) = delete;
+
+    protected:
+
+    void emit_node() override;
+};
+
 #endif

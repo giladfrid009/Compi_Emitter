@@ -203,13 +203,22 @@ class conditional_expression final: public expression_syntax
 {
     public:
 
-    expression_syntax* const true_value;
-    const syntax_token* const if_token;
+    jump_syntax* const condition_jump;
+    label_syntax* const true_label;
+    expression_syntax* const true_value; 
+    jump_syntax* const true_next; 
+    const syntax_token* const if_token; 
+    label_syntax* const condition_label; 
     expression_syntax* const condition;
     const syntax_token* const else_token;
-    expression_syntax* const false_value;
+    label_syntax* const false_label; 
+    expression_syntax* const false_value; 
+    jump_syntax* const false_next;
 
-    conditional_expression(expression_syntax* true_value, syntax_token* if_token, expression_syntax* condition, syntax_token* const else_token, expression_syntax* false_value);
+    conditional_expression(jump_syntax* condition_jump, label_syntax* true_label, expression_syntax* true_value, 
+        jump_syntax* true_next, syntax_token* if_token, label_syntax* condition_label, expression_syntax* condition, 
+        syntax_token* else_token, label_syntax* false_label, expression_syntax* false_value, jump_syntax* false_next);
+
     ~conditional_expression();
 
     conditional_expression(const conditional_expression& other) = delete;

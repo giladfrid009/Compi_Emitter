@@ -243,8 +243,31 @@ void relational_expression::emit_node()
     false_list.push_back(patch_record(line, label_index::second));
 }
 
-conditional_expression::conditional_expression(expression_syntax* true_value, syntax_token* if_token, expression_syntax* condition, syntax_token* const else_token, expression_syntax* false_value):
-    expression_syntax(types::cast_up(true_value->return_type, false_value->return_type)), true_value(true_value), if_token(if_token), condition(condition), else_token(else_token), false_value(false_value)
+conditional_expression::conditional_expression(
+    jump_syntax* condition_jump, 
+    label_syntax* true_label, 
+    expression_syntax* true_value, 
+    jump_syntax* true_next, 
+    syntax_token* if_token, 
+    label_syntax* condition_label, 
+    expression_syntax* condition, 
+    syntax_token* else_token, 
+    label_syntax* false_label, 
+    expression_syntax* false_value, 
+    jump_syntax* false_next) :
+    
+    expression_syntax(types::cast_up(true_value->return_type, false_value->return_type)), 
+    condition_jump(condition_jump),
+    true_label(true_label),
+    true_value(true_value),
+    true_next(true_next), 
+    if_token(if_token), 
+    condition_label(condition_label),
+    condition(condition), 
+    else_token(else_token), 
+    false_label(false_label),
+    false_value(false_value),
+    false_next(false_next)
 {
     if (return_type == type_kind::Void)
     {
@@ -274,6 +297,26 @@ conditional_expression::~conditional_expression()
 
 void conditional_expression::emit_node()
 {
+    string next_label = codebuf.emit_label();
+
+    codebuf.backpatch(condition_jump->next_list, condition_label->name);
+
+    codebuf.backpatch(condition->true_list, true_label->name);
+    codebuf.backpatch(condition->false_list, false_label->name);
+    
+    codebuf.backpatch(true_next->next_list, next_label);
+    codebuf.backpatch(false_next->next_list, next_label);
+
+    codebuf.emit("%s:", next_label);
+
+    //todo: correct only if return_type != Bool
+    codebuf.emit("%s = phi i32 [ %s , %s ] [ %s , %s ]", this->place, true_value->place, true_label->name, false_value->place, false_label->name);
+
+    condition_jump->next_list.clear();
+    condition->true_list.clear();
+    condition->false_list.clear();
+    true_next->next_list.clear();
+    false_next->next_list.clear();
 }
 
 identifier_expression::identifier_expression(syntax_token* identifier_token):
