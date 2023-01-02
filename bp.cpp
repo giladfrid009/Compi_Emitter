@@ -81,7 +81,12 @@ void code_buffer::backpatch(const list<patch_record>& patch_list, const std::str
 {
     for (auto& entry : patch_list)
     {
-        replace(buffer[entry.line], "@", "%" + label, entry.index);
+        bool res = replace(buffer[entry.line], "@", "%" + label, entry.index); //todo: why the % sign before label?
+
+        if (res == false)
+        {
+            std::runtime_error("nothing to backpatch in the patch record");
+        }
     }
 }
 
