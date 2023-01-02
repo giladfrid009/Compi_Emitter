@@ -2,6 +2,7 @@
 #include "symbol_table.hpp"
 #include "hw3_output.hpp"
 #include "bp.hpp"
+#include "formatter.hpp"
 #include <stdexcept>
 #include <sstream>
 
@@ -87,7 +88,7 @@ vector<syntax_token*> not_expression_syntax::get_tokens() const
 
 void not_expression_syntax::emit()
 {
-    
+
 }
 
 not_expression_syntax::~not_expression_syntax()
@@ -127,7 +128,7 @@ vector<syntax_token*> logical_expression_syntax::get_tokens() const
 
 void logical_expression_syntax::emit()
 {
-    
+
 }
 
 logical_expression_syntax::~logical_expression_syntax()
@@ -288,7 +289,7 @@ string relational_expression_syntax::ir_operator() const
 {
     switch (oper)
     {
-        case relational_operator::Equal: return "add"; 
+        case relational_operator::Equal: return "add";
         case relational_operator::NotEqual: return "ne";
         case relational_operator::Greater: return return_type == fundamental_type::Byte ? "ugt" : "sgt";
         case relational_operator::GreaterEqual: return return_type == fundamental_type::Byte ? "uge" : "sge";
@@ -306,7 +307,11 @@ void relational_expression_syntax::emit()
         child->emit();
     }
 
-    codebuf.emit("%s = icmp %s i32 %s , %s", this->place, ir_operator(), left->place, right->place);
+    string tmp_reg = codebuf.register_name();
+
+    codebuf.emit("%s = icmp %s i32 %s , %s", tmp_reg, ir_operator(), left->place, right->place);
+
+    codebuf.emit("%s = zext i32 %s", this->place, tmp_reg);
 }
 
 relational_expression_syntax::~relational_expression_syntax()
@@ -352,29 +357,7 @@ vector<syntax_token*> conditional_expression_syntax::get_tokens() const
 
 void conditional_expression_syntax::emit()
 {
-    string cmp_res = codebuf.register_name();
 
-    codebuf.emit("%s = icmp eq i1 1 , %s", cmp_res, condition->place);
-
-    string true_label = codebuf.label_name();
-    string false_label = codebuf.label_name();
-    string next_label = codebuf.label_name();
-
-    codebuf.emit("br i1 %s , label %s , label %s", cmp_res, true_label, false_label);
-
-    codebuf.emit("%s:", true_label);
-
-    // todo: assign true value
-
-    codebuf.emit("br label %s", next_label);
-
-    codebuf.emit("%s:", false_label);
-
-    //todo: assign false value
-
-    codebuf.emit("br label %s", next_label);
-
-    codebuf.emit("%s:", next_label);
 }
 
 conditional_expression_syntax::~conditional_expression_syntax()
@@ -425,7 +408,14 @@ fundamental_type identifier_expression_syntax::get_return_type(string identifier
 
 void identifier_expression_syntax::emit()
 {
-    
+    for (auto child : get_children())
+    {
+        child->emit();
+    }
+
+    string ptr_reg = static_cast<variable_symbol*>(symbol_table::instance().get_symbol(identifier))->ir_pointer_register;
+
+    codebuf.emit("%s = load i32 , ptr %s", this->place, ptr_reg);
 }
 
 identifier_expression_syntax::~identifier_expression_syntax()
@@ -522,9 +512,40 @@ fundamental_type invocation_expression_syntax::get_return_type(string identifier
 
     return symbol->type;
 }
+
+string invocation_expression_syntax::ir_function_return_type() const
+{
+    switch (return_type)
+    {
+        case fundamental_type::Int: return "i32";
+        case fundamental_type::Byte: return "i32";
+        case fundamental_type::Bool: return "i32";
+        case fundamental_type::Void: return "void";
+
+        default: throw runtime_error("invalid return type");
+    }
+}
+
 void invocation_expression_syntax::emit()
 {
-    
+    for (auto child : get_children())
+    {
+        child->emit();
+    }
+
+    std::stringstream string_builder;
+
+    if (return_type != fundamental_type::Void)
+    {
+        string_builder << this->place << " = ";
+    }
+
+    string_builder << formatter::format("call %s @%s (", ir_function_return_type(), identifier);
+
+    for (const auto& arg : *expression_list)
+    {
+
+    }
 }
 
 invocation_expression_syntax::~invocation_expression_syntax()

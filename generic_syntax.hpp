@@ -59,6 +59,21 @@ template<typename element_type> class list_syntax final: public syntax_base
         return std::vector<syntax_token*>();
     }
 
+    std::size_t size() const
+    {
+        return elements.size();
+    }
+
+    typename std::list<element_type*>::const_iterator begin() const
+    {
+        return elements.begin();
+    }
+
+    typename std::list<element_type*>::const_iterator end() const
+    {
+        return elements.end();
+    }
+
     void emit() override
     {
         

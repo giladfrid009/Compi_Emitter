@@ -28,6 +28,8 @@ class variable_symbol: public symbol
 {
     public:
 
+    const std::string ir_pointer_register;
+
     variable_symbol(std::string name, fundamental_type type, int offset);
 };
 

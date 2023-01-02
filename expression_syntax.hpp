@@ -312,6 +312,8 @@ class invocation_expression_syntax final: public expression_syntax
 
     std::vector<syntax_token*> get_tokens() const override;
 
+    string ir_function_return_type() const;
+
     ~invocation_expression_syntax();
 
     private:

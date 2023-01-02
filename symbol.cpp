@@ -1,4 +1,5 @@
 #include "symbol.hpp"
+#include "bp.hpp"
 #include <vector>
 
 using std::string;
@@ -11,7 +12,7 @@ symbol::symbol(string name, fundamental_type type, int offset, symbol_type sym_t
 }
 
 variable_symbol::variable_symbol(string name, fundamental_type type, int offset):
-    symbol(name, type, offset, symbol_type::Var)
+    symbol(name, type, offset, symbol_type::Var) , ir_pointer_register(code_buffer::instance().register_name())
 {
 
 }
