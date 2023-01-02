@@ -3,13 +3,10 @@
 
 #include "syntax_token.hpp"
 #include "types.hpp"
+#include "code_buffer.hpp"
 #include <vector>
 #include <string>
 #include <list>
-
-enum class arithmetic_operator { Add, Sub, Mul, Div };
-
-enum class relational_operator { Less, LessEqual, Greater, GreaterEqual, Equal, NotEqual };
 
 class syntax_base
 {
@@ -43,7 +40,10 @@ class expression_syntax: public syntax_base
     public:
 
     const type_kind return_type;
+    
     const std::string place;
+    std::vector<patch_record> true_list;
+    std::vector<patch_record> false_list;
 
     expression_syntax(type_kind return_type);
     virtual ~expression_syntax() = default;

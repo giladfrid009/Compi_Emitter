@@ -57,7 +57,8 @@ void syntax_base::emit_tree()
     this->emit_node();
 }
 
-expression_syntax::expression_syntax(type_kind return_type): return_type(return_type), place(ir_builder::fresh_register())
+expression_syntax::expression_syntax(type_kind return_type): 
+    return_type(return_type), place(ir_builder::fresh_register()), true_list(), false_list()
 {
 
 }
