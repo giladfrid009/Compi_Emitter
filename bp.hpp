@@ -4,6 +4,7 @@
 #include <list>
 #include <vector>
 #include <string>
+#include <fstream>
 #include "formatter.hpp"
 
 enum class label_index { first, second };
@@ -52,6 +53,8 @@ class code_buffer
 
         return buffer.size() - 1;
     }
+
+    int emit_from_file(std::ifstream file);
 
     static std::list<patch_record> make_list(patch_record item);
 

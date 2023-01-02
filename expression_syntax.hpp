@@ -43,7 +43,7 @@ template<typename literal_type> class literal_expression final: public expressio
 
     void emit() override
     {
-        
+
     }
 
     ~literal_expression()

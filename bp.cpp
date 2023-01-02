@@ -1,6 +1,8 @@
 #include "bp.hpp"
 #include <list>
+#include <string>
 #include <iostream>
+#include <stdexcept>
 
 using std::list;
 using std::string;
@@ -9,7 +11,7 @@ bool replace(string& str, const string& from, const string& to, const label_inde
 
 patch_record::patch_record(int line, label_index index): line(line), index(index)
 {
-    
+
 }
 
 code_buffer::code_buffer(): buffer(), global_defs()
@@ -32,9 +34,24 @@ string code_buffer::emit_label()
     return label;
 }
 
-int code_buffer::emit(const std::string& line)
+int code_buffer::emit(const string& line)
 {
     buffer.push_back(line);
+    return buffer.size() - 1;
+}
+
+int code_buffer::emit_from_file(std::ifstream file)
+{
+    if (file.is_open() == false)
+    {
+        throw std::runtime_error("file not open.");
+    }
+
+    for (string line; std::getline(file, line); )
+    {
+        emit(line);
+    }
+
     return buffer.size() - 1;
 }
 
