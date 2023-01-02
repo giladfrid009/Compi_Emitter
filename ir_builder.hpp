@@ -2,6 +2,7 @@
 #define _IR_BUILDER_HPP_
 
 #include "types.hpp"
+#include "expression_syntax.hpp"
 #include <vector>
 #include <string>
 #include <memory>
@@ -34,7 +35,11 @@ class ir_builder
 
     static std::string fresh_label();
 
-    static std::string get_type(type_kind type);
+    static std::string get_register_type(type_kind type);
+
+    static std::string get_binary_instruction(arithmetic_operator oper, bool is_signed);
+
+    static std::string get_icmp_kind(relational_operator oper, bool is_signed);
 
     private:
 

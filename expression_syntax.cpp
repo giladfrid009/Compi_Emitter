@@ -123,32 +123,19 @@ arithmetic_expression::~arithmetic_expression()
     delete oper_token;
 }
 
-arithmetic_expression::operator_kind arithmetic_expression::parse_operator(string str)
+arithmetic_operator arithmetic_expression::parse_operator(string str)
 {
-    if (str == "+") return operator_kind::Add;
-    if (str == "-") return operator_kind::Sub;
-    if (str == "*") return operator_kind::Mul;
-    if (str == "/") return operator_kind::Div;
+    if (str == "+") return arithmetic_operator::Add;
+    if (str == "-") return arithmetic_operator::Sub;
+    if (str == "*") return arithmetic_operator::Mul;
+    if (str == "/") return arithmetic_operator::Div;
 
     throw std::invalid_argument("unknown oper");
 }
 
-string arithmetic_expression::ir_operator() const
-{
-    switch (oper)
-    {
-        case operator_kind::Add: return "add";
-        case operator_kind::Sub: return "sub";
-        case operator_kind::Mul: return "mul";
-        case operator_kind::Div: return return_type == type_kind::Byte ? "udiv" : "sdiv";
-
-        default: throw std::runtime_error("unknown oper");
-    }
-}
-
 void arithmetic_expression::emit_node()
 {
-    if (oper == operator_kind::Div)
+    if (oper == arithmetic_operator::Div)
     {
         string cmp_res = ir_builder::fresh_register();
         string true_label = ir_builder::fresh_label();
@@ -167,17 +154,19 @@ void arithmetic_expression::emit_node()
         codebuf.emit("%s:", false_label);
     }
 
+    string inst = ir_builder::get_binary_instruction(oper, return_type == type_kind::Int);
+
     if (return_type == type_kind::Byte)
     {
         string res_reg = ir_builder::fresh_register();
 
-        codebuf.emit("%s = %s i32 %s , %s", res_reg, ir_operator(), left->place, right->place);
+        codebuf.emit("%s = %s i32 %s , %s", res_reg, inst, left->place, right->place);
 
         codebuf.emit("%s = and i32 255 , %s", this->place, res_reg);
     }
     else if (return_type == type_kind::Int)
     {
-        codebuf.emit("%s = %s i32 %s , %s", this->place, ir_operator(), left->place, right->place);
+        codebuf.emit("%s = %s i32 %s , %s", this->place, inst, left->place, right->place);
     }
 }
 
@@ -203,38 +192,25 @@ relational_expression::~relational_expression()
     delete oper_token;
 }
 
-relational_expression::operator_kind relational_expression::parse_operator(string str)
+relational_operator relational_expression::parse_operator(string str)
 {
-    if (str == "<") return operator_kind::Less;
-    if (str == "<=") return operator_kind::LessEqual;
-    if (str == ">") return operator_kind::Greater;
-    if (str == ">=") return operator_kind::GreaterEqual;
-    if (str == "==") return operator_kind::Equal;
-    if (str == "!=") return operator_kind::NotEqual;
+    if (str == "<") return relational_operator::Less;
+    if (str == "<=") return relational_operator::LessEqual;
+    if (str == ">") return relational_operator::Greater;
+    if (str == ">=") return relational_operator::GreaterEqual;
+    if (str == "==") return relational_operator::Equal;
+    if (str == "!=") return relational_operator::NotEqual;
 
     throw std::invalid_argument("unknown oper");
-}
-
-string relational_expression::ir_operator() const
-{
-    switch (oper)
-    {
-        case operator_kind::Equal: return "add";
-        case operator_kind::NotEqual: return "ne";
-        case operator_kind::Greater: return return_type == type_kind::Byte ? "ugt" : "sgt";
-        case operator_kind::GreaterEqual: return return_type == type_kind::Byte ? "uge" : "sge";
-        case operator_kind::Less: return return_type == type_kind::Byte ? "ult" : "slt";
-        case operator_kind::LessEqual: return return_type == type_kind::Byte ? "ule" : "sle";
-
-        default: throw std::runtime_error("unknown oper");
-    }
 }
 
 void relational_expression::emit_node()
 {
     string res_reg = ir_builder::fresh_register();
 
-    codebuf.emit("%s = icmp %s i32 %s , %s", res_reg, ir_operator(), left->place, right->place);
+    string cmp_kind = ir_builder::get_icmp_kind(oper, return_type == type_kind::Int);
+
+    codebuf.emit("%s = icmp %s i32 %s , %s", res_reg, cmp_kind, left->place, right->place);
 
     codebuf.emit("%s = zext i32 %s", this->place, res_reg);
 }

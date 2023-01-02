@@ -26,7 +26,7 @@ string ir_builder::fresh_label()
     return label;
 }
 
-string get_type(type_kind type)
+string ir_builder::get_register_type(type_kind type)
 {
     switch (type)
     {
@@ -37,5 +37,33 @@ string get_type(type_kind type)
         case type_kind::Void: return "void";
 
         default: throw std::runtime_error("invalid type");
+    }
+}
+
+string ir_builder::get_binary_instruction(arithmetic_operator oper, bool is_signed)
+{
+    switch (oper)
+    {
+        case arithmetic_operator::Add: return "add";
+        case arithmetic_operator::Sub: return "sub";
+        case arithmetic_operator::Mul: return "mul";
+        case arithmetic_operator::Div: return is_signed ? "sdiv" : "udiv";
+
+        default: throw std::runtime_error("unknown oper");
+    }
+}
+
+string ir_builder::get_icmp_kind(relational_operator oper, bool is_signed)
+{
+    switch (oper)
+    {
+        case relational_operator::Equal: return "eq";
+        case relational_operator::NotEqual: return "ne";
+        case relational_operator::Greater: return is_signed ? "sgt" : "ugt";
+        case relational_operator::GreaterEqual: return is_signed ? "sge" : "uge";
+        case relational_operator::Less: return is_signed ? "slt" : "ult";
+        case relational_operator::LessEqual: return is_signed ? "sle" : "ule";
+
+        default: throw std::runtime_error("unknown oper");
     }
 }

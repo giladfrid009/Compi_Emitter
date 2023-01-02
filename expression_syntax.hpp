@@ -9,6 +9,10 @@
 #include <string>
 #include <stdexcept>
 
+enum class arithmetic_operator { Add, Sub, Mul, Div };
+
+enum class relational_operator { Less, LessEqual, Greater, GreaterEqual, Equal, NotEqual };
+
 template<typename literal_type> class literal_expression final: public expression_syntax
 {
     public:
@@ -168,12 +172,10 @@ class arithmetic_expression final: public expression_syntax
 {
     public:
 
-    enum class operator_kind { Add, Sub, Mul, Div };
-
     expression_syntax* const left;
     const syntax_token* const oper_token;
     expression_syntax* const right;
-    const operator_kind oper;
+    const arithmetic_operator oper;
 
     arithmetic_expression(expression_syntax* left, syntax_token* oper_token, expression_syntax* right);
     ~arithmetic_expression();
@@ -183,9 +185,8 @@ class arithmetic_expression final: public expression_syntax
 
     protected:
 
-    static operator_kind parse_operator(std::string str);
+    static arithmetic_operator parse_operator(std::string str);
 
-    std::string ir_operator() const;
     void emit_node() override;
 };
 
@@ -193,12 +194,10 @@ class relational_expression final: public expression_syntax
 {
     public:
 
-    enum class operator_kind { Less, LessEqual, Greater, GreaterEqual, Equal, NotEqual };
-
     expression_syntax* const left;
     const syntax_token* const oper_token;
     expression_syntax* const right;
-    const operator_kind oper;
+    const relational_operator oper;
 
     relational_expression(expression_syntax* left, syntax_token* oper_token, expression_syntax* right);
     ~relational_expression();
@@ -208,9 +207,8 @@ class relational_expression final: public expression_syntax
 
     protected:
 
-    static operator_kind parse_operator(std::string str);
+    static relational_operator parse_operator(std::string str);
     
-    std::string ir_operator() const;
     void emit_node() override;
 };
 
