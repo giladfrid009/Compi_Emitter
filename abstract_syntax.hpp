@@ -25,12 +25,13 @@ class syntax_base
     const syntax_base* get_parent() const;
     const std::list<syntax_base*>& get_children() const;
 
-    virtual void emit() = 0;
-
     protected:
 
     void push_back_child(syntax_base* child);
     void push_front_child(syntax_base* child);
+
+    virtual void emit_node() = 0;
+    void emit_tree();
 };
 
 class expression_syntax: public syntax_base
@@ -46,10 +47,12 @@ class expression_syntax: public syntax_base
     expression_syntax(const expression_syntax& other) = delete;
     expression_syntax& operator=(const expression_syntax& other) = delete;
 
-    virtual void emit() = 0;
-
     bool is_numeric() const;
     bool is_special() const;
+
+    protected:
+
+    virtual void emit_node() = 0;
 };
 
 class statement_syntax: public syntax_base
@@ -62,7 +65,9 @@ class statement_syntax: public syntax_base
     statement_syntax(const statement_syntax& other) = delete;
     statement_syntax& operator=(const statement_syntax& other) = delete;
 
-    virtual void emit() = 0;
+    protected:
+
+    virtual void emit_node() = 0;
 };
 
 #endif

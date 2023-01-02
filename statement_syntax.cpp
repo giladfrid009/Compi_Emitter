@@ -46,7 +46,7 @@ if_statement::~if_statement()
     delete else_token;
 }
 
-void if_statement::emit()
+void if_statement::emit_node()
 {
 }
 
@@ -72,7 +72,7 @@ while_statement::~while_statement()
     delete while_token;
 }
 
-void while_statement::emit()
+void while_statement::emit_node()
 {
 }
 
@@ -115,7 +115,7 @@ branch_statement::branch_kind branch_statement::parse_kind(string str)
     throw std::invalid_argument("unknown type");
 }
 
-void branch_statement::emit()
+void branch_statement::emit_node()
 {
 }
 
@@ -157,7 +157,7 @@ return_statement::~return_statement()
     delete return_token;
 }
 
-void return_statement::emit()
+void return_statement::emit_node()
 {
 }
 
@@ -174,7 +174,7 @@ expression_statement::~expression_statement()
     }
 }
 
-void expression_statement::emit()
+void expression_statement::emit_node()
 {
 }
 
@@ -207,7 +207,7 @@ assignment_statement::~assignment_statement()
     delete assign_token;
 }
 
-void assignment_statement::emit()
+void assignment_statement::emit_node()
 {
 }
 
@@ -264,10 +264,8 @@ declaration_statement::~declaration_statement()
     delete assign_token;
 }
 
-void declaration_statement::emit()
+void declaration_statement::emit_node()
 {
-    // todo: push variable to stack
-    // generate random variable ptr name and save in symbol table? bye-bye decoupling.
 }
 
 block_statement::block_statement(list_syntax<statement_syntax>* statements): statements(statements)
@@ -283,6 +281,6 @@ block_statement::~block_statement()
     }
 }
 
-void block_statement::emit()
+void block_statement::emit_node()
 {
 }

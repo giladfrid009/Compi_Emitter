@@ -101,7 +101,7 @@ void print_current_scope();
 
 %%
 
-Program 	: Funcs END										{ $$ = new root_syntax($1); delete $$; }
+Program 	: Funcs END										{ $$ = new root_syntax($1); $$->emit_tree(); delete $$; }
 			;       
 Funcs   	: %empty                                        { $$ = new list_syntax<function_declaration_syntax>(); }
       		| FuncDecl Funcs					            { $$ = $2->push_front($1); }

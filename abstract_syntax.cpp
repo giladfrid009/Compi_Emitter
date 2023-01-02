@@ -42,6 +42,21 @@ const list<syntax_base*>& syntax_base::get_children() const
     return children;
 }
 
+void syntax_base::emit_tree()
+{
+    for (syntax_base* child : children)
+    {
+        if (child == nullptr) 
+        {
+            continue;
+        }
+
+        child->emit_tree();
+    }
+
+    this->emit_node();
+}
+
 expression_syntax::expression_syntax(type_kind return_type): return_type(return_type), place(code_buffer::instance().register_name())
 {
 

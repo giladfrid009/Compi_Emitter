@@ -21,9 +21,8 @@ bool type_syntax::is_special() const
     return types::is_special(kind);
 }
 
-void type_syntax::emit()
+void type_syntax::emit_node()
 {
-    //todo: probably shouldn't emit anything
 }
 
 type_syntax::~type_syntax()
@@ -62,7 +61,7 @@ parameter_syntax::~parameter_syntax()
     delete identifier_token;
 }
 
-void parameter_syntax::emit()
+void parameter_syntax::emit_node()
 {
 }
 
@@ -107,7 +106,7 @@ function_declaration_syntax::~function_declaration_syntax()
     delete identifier_token;
 }
 
-void function_declaration_syntax::emit()
+void function_declaration_syntax::emit_node()
 {
 }
 
@@ -138,7 +137,11 @@ root_syntax::~root_syntax()
     }
 }
 
-void root_syntax::emit()
+void root_syntax::emit_node()
 {
-    functions->emit();
+}
+
+void root_syntax::emit_tree()
+{
+    syntax_base::emit_tree();
 }

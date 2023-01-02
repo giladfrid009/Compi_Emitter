@@ -25,7 +25,9 @@ class if_statement final: public statement_syntax
     if_statement(const if_statement& other) = delete;
     if_statement& operator=(const if_statement& other) = delete;
 
-    void emit() override;
+    protected:
+
+    void emit_node() override;
 };
 
 class while_statement final: public statement_syntax
@@ -42,7 +44,9 @@ class while_statement final: public statement_syntax
     while_statement(const while_statement& other) = delete;
     while_statement& operator=(const while_statement& other) = delete;
 
-    void emit() override;
+    protected:
+
+    void emit_node() override;
 };
 
 class branch_statement final: public statement_syntax
@@ -60,9 +64,11 @@ class branch_statement final: public statement_syntax
     branch_statement(const branch_statement& other) = delete;
     branch_statement& operator=(const branch_statement& other) = delete;
 
+    protected:
+
     static branch_kind parse_kind(std::string str);
 
-    void emit() override;
+    void emit_node() override;
 };
 
 class return_statement final: public statement_syntax
@@ -79,7 +85,9 @@ class return_statement final: public statement_syntax
     return_statement(const return_statement& other) = delete;
     return_statement& operator=(const return_statement& other) = delete;
 
-    void emit() override;
+    protected:
+
+    void emit_node() override;
 };
 
 class expression_statement final: public statement_syntax
@@ -94,7 +102,9 @@ class expression_statement final: public statement_syntax
     expression_statement(const expression_statement& other) = delete;
     expression_statement& operator=(const expression_statement& other) = delete;
 
-    void emit() override;
+    protected:
+
+    void emit_node() override;
 };
 
 class assignment_statement final: public statement_syntax
@@ -112,7 +122,9 @@ class assignment_statement final: public statement_syntax
     assignment_statement(const assignment_statement& other) = delete;
     assignment_statement& operator=(const assignment_statement& other) = delete;
 
-    void emit() override;
+    protected:
+
+    void emit_node() override;
 };
 
 class declaration_statement final: public statement_syntax
@@ -132,7 +144,9 @@ class declaration_statement final: public statement_syntax
     declaration_statement(const declaration_statement& other) = delete;
     declaration_statement& operator=(const declaration_statement& other) = delete;
 
-    void emit() override;
+    protected:
+
+    void emit_node() override;
 };
 
 class block_statement final: public statement_syntax
@@ -147,7 +161,9 @@ class block_statement final: public statement_syntax
     block_statement(const block_statement& other) = delete;
     block_statement& operator=(const block_statement& other) = delete;
 
-    void emit() override;
+    protected:
+
+    void emit_node() override;
 };
 
 #endif

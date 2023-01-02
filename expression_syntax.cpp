@@ -29,10 +29,8 @@ cast_expression::~cast_expression()
     }
 }
 
-void cast_expression::emit()
+void cast_expression::emit_node()
 {
-    expression->emit();
-
     if (expression->return_type == type_kind::Int && destination_type->kind == type_kind::Byte)
     {
         codebuf.emit("%s = and i32 255 , %s", this->place, expression->place);
@@ -64,7 +62,7 @@ not_expression::~not_expression()
     delete not_token;
 }
 
-void not_expression::emit()
+void not_expression::emit_node()
 {
 }
 
@@ -98,7 +96,7 @@ logical_expression::operator_kind logical_expression::parse_operator(string str)
     throw std::invalid_argument("unknown oper");
 }
 
-void logical_expression::emit()
+void logical_expression::emit_node()
 {
 }
 
@@ -147,11 +145,8 @@ string arithmetic_expression::ir_operator() const
     throw std::runtime_error("unknown oper");
 }
 
-void arithmetic_expression::emit()
+void arithmetic_expression::emit_node()
 {
-    left->emit();
-    right->emit();
-
     if (oper == operator_kind::Div)
     {
         string cmp_res = codebuf.register_name();
@@ -234,11 +229,8 @@ string relational_expression::ir_operator() const
     throw std::runtime_error("unknown oper");
 }
 
-void relational_expression::emit()
+void relational_expression::emit_node()
 {
-    left->emit();
-    right->emit();
-
     string res_reg = codebuf.register_name();
 
     codebuf.emit("%s = icmp %s i32 %s , %s", res_reg, ir_operator(), left->place, right->place);
@@ -275,34 +267,8 @@ conditional_expression::~conditional_expression()
     delete else_token;
 }
 
-void conditional_expression::emit()
+void conditional_expression::emit_node()
 {
-    condition->emit();
-
-    string true_label = codebuf.label_name();
-    string false_label = codebuf.label_name();
-    string exit_label = codebuf.label_name();
-
-    // todo: codebuf.backpatch(condition->true_list, true_tabel) ?
-    // codebuf.backpatch(condition->false_list, false_tabel) ?
-
-    codebuf.emit("%s:", true_label);
-
-    true_value->emit();
-
-    codebuf.emit("br label %s", exit_label);
-
-    codebuf.emit("%s:", false_label);
-
-    false_value->emit();
-
-    codebuf.emit("br label %s", exit_label);
-
-    codebuf.emit("%s:", exit_label);
-
-    string res_type = return_type == type_kind::String ? "i8*" : "i32";
-
-    codebuf.emit("%s = phi %s [ %s , %s ] , [ %s , %s ]", this->place, res_type, true_value->place, true_label, false_value->place, false_label);
 }
 
 identifier_expression::identifier_expression(syntax_token* identifier_token):
@@ -338,10 +304,8 @@ identifier_expression::~identifier_expression()
     delete identifier_token;
 }
 
-void identifier_expression::emit()
+void identifier_expression::emit_node()
 {
-    // todo: get identifier address
-    // load identifier from address, can only be numeric or bool?
 }
 
 invocation_expression::invocation_expression(syntax_token* identifier_token):
@@ -427,7 +391,6 @@ invocation_expression::~invocation_expression()
     delete identifier_token;
 }
 
-void invocation_expression::emit()
+void invocation_expression::emit_node()
 {
-    arguments->emit();
 }

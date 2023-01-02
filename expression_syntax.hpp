@@ -40,11 +40,6 @@ template<typename literal_type> class literal_expression final: public expressio
         throw std::runtime_error("invalid literal_type");
     }
 
-    void emit() override
-    {
-        throw std::runtime_error("invalid literal_type");
-    }
-
     ~literal_expression()
     {
         for (syntax_base* child : get_children())
@@ -53,6 +48,13 @@ template<typename literal_type> class literal_expression final: public expressio
         }
 
         delete value_token;
+    }
+
+    protected:
+
+    void emit_node() override
+    {
+        throw std::runtime_error("invalid literal_type");
     }
 };
 
@@ -86,19 +88,19 @@ template<> inline bool literal_expression<bool>::get_literal_value(syntax_token*
     throw std::runtime_error("invalid value_token text");
 }
 
-template<> inline void literal_expression<int>::emit()
+template<> inline void literal_expression<int>::emit_node()
 {
 }
 
-template<> inline void literal_expression<char>::emit()
+template<> inline void literal_expression<char>::emit_node()
 {
 }
 
-template<> inline void literal_expression<std::string>::emit()
+template<> inline void literal_expression<std::string>::emit_node()
 {
 }
 
-template<> inline void literal_expression<bool>::emit()
+template<> inline void literal_expression<bool>::emit_node()
 {
 }
 
@@ -112,10 +114,12 @@ class cast_expression final: public expression_syntax
     cast_expression(type_syntax* destination_type, expression_syntax* expression);
     ~cast_expression();
 
-    void emit() override;
-
     cast_expression(const cast_expression& other) = delete;
     cast_expression& operator=(const cast_expression& other) = delete;
+
+    protected:
+
+    void emit_node() override;
 };
 
 class not_expression final: public expression_syntax
@@ -131,7 +135,9 @@ class not_expression final: public expression_syntax
     not_expression(const not_expression& other) = delete;
     not_expression& operator=(const not_expression& other) = delete;
 
-    void emit() override;
+    protected:
+
+    void emit_node() override;
 };
 
 class logical_expression final: public expression_syntax
@@ -153,7 +159,9 @@ class logical_expression final: public expression_syntax
 
     static operator_kind parse_operator(std::string str);
 
-    void emit() override;
+    protected:
+
+    void emit_node() override;
 };
 
 class arithmetic_expression final: public expression_syntax
@@ -173,10 +181,12 @@ class arithmetic_expression final: public expression_syntax
     arithmetic_expression(const arithmetic_expression& other) = delete;
     arithmetic_expression& operator=(const arithmetic_expression& other) = delete;
 
+    protected:
+
     static operator_kind parse_operator(std::string str);
 
-    void emit() override;
     std::string ir_operator() const;
+    void emit_node() override;
 };
 
 class relational_expression final: public expression_syntax
@@ -196,10 +206,12 @@ class relational_expression final: public expression_syntax
     relational_expression(const relational_expression& other) = delete;
     relational_expression& operator=(const relational_expression& other) = delete;
 
-    static operator_kind parse_operator(std::string str);
+    protected:
 
-    void emit() override;
+    static operator_kind parse_operator(std::string str);
+    
     std::string ir_operator() const;
+    void emit_node() override;
 };
 
 class conditional_expression final: public expression_syntax
@@ -218,11 +230,11 @@ class conditional_expression final: public expression_syntax
     conditional_expression(const conditional_expression& other) = delete;
     conditional_expression& operator=(const conditional_expression& other) = delete;
 
-    void emit() override;
-
-    private:
+    protected:
 
     static type_kind get_return_type(expression_syntax* left, expression_syntax* right);
+
+    void emit_node() override;
 };
 
 class identifier_expression final: public expression_syntax
@@ -238,11 +250,11 @@ class identifier_expression final: public expression_syntax
     identifier_expression(const identifier_expression& other) = delete;
     identifier_expression& operator=(const identifier_expression& other) = delete;
 
-    void emit() override;
-
-    private:
+    protected:
 
     static type_kind get_return_type(std::string identifier);
+
+    void emit_node() override;
 };
 
 class invocation_expression final: public expression_syntax
@@ -260,11 +272,11 @@ class invocation_expression final: public expression_syntax
     invocation_expression(const invocation_expression& other) = delete;
     invocation_expression& operator=(const invocation_expression& other) = delete;
 
-    void emit() override;
-
-    private:
+    protected:
 
     static type_kind get_return_type(std::string identifier);
+
+    void emit_node() override;
 };
 
 #endif
