@@ -6,7 +6,6 @@
 *.zip
 lex.yy.c
 parser.tab.*pp
-hw3
-Makefile
+hw5
 .vscode
 *test*
