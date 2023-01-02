@@ -303,13 +303,13 @@ void conditional_expression::emit_node()
 
     codebuf.backpatch(condition->true_list, true_label->name);
     codebuf.backpatch(condition->false_list, false_label->name);
-    
+
     codebuf.backpatch(true_next->next_list, next_label);
     codebuf.backpatch(false_next->next_list, next_label);
 
     codebuf.emit("%s:", next_label);
 
-    //todo: correct only if return_type != Bool
+    //todo: correct only if return_type != Bool?
     codebuf.emit("%s = phi i32 [ %s , %s ] [ %s , %s ]", this->place, true_value->place, true_label->name, false_value->place, false_label->name);
 
     condition_jump->next_list.clear();

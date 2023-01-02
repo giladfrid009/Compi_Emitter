@@ -43,7 +43,7 @@ void print_current_scope();
     root_syntax*                              root;
     type_syntax*                              type;  
     jump_syntax*                              jump;
-    label_syntax*                             label;                
+    label_syntax*                             Lab;                
     parameter_syntax*                         param;     
     function_declaration_syntax*              function;            
     statement_syntax*                         statement; 	
@@ -101,7 +101,7 @@ void print_current_scope();
 %type <type>			Type
 %type <expression>      Exp
 %type <expression>      BoolExp
-%type <label>           Label
+%type <Lab>             Lab
 %type <jump>            Jmp
 
 %%
@@ -153,8 +153,8 @@ Type 		: INT                                                   { $$ = new type_s
 			| BOOL                                                  { $$ = new type_syntax($1); }
 			;       
 Exp 		: LPAREN Exp RPAREN	                                    { $$ = $2; }
-            | Jmp Label Exp Jmp IF LPAREN Label Exp RPAREN 
-              ELSE Label Exp Jmp                                    { $$ = new conditional_expression($1, $2, $3, $4, $5, $7, $8, $10, $11, $12, $13); }
+            | Jmp Lab Exp Jmp IF LPAREN Lab Exp RPAREN 
+              ELSE Lab Exp Jmp                                      { $$ = new conditional_expression($1, $2, $3, $4, $5, $7, $8, $10, $11, $12, $13); }
 			| Exp ADDOP Exp                                         { $$ = new arithmetic_expression($1, $2, $3); }
             | Exp MULOP Exp                                         { $$ = new arithmetic_expression($1, $2, $3); }
 			| ID                                                    { $$ = new identifier_expression($1); }
@@ -165,13 +165,15 @@ Exp 		: LPAREN Exp RPAREN	                                    { $$ = $2; }
 			| TRUE                                                  { $$ = new literal_expression<bool>($1); }
 			| FALSE                                                 { $$ = new literal_expression<bool>($1); }
 			| NOT Exp                                               { $$ = new not_expression($1, $2); }
-			| Exp AND Label Exp                                     { $$ = new logical_expression($1, $2, $3, $4); }
-			| Exp OR Label Exp                                      { $$ = new logical_expression($1, $2, $3, $4); }
+			| Exp AND Lab Exp                                       { $$ = new logical_expression($1, $2, $3, $4); }
+			| Exp OR Lab Exp                                        { $$ = new logical_expression($1, $2, $3, $4); }
 			| Exp RELOP Exp                                         { $$ = new relational_expression($1, $2, $3); }
             | Exp EQOP Exp                                          { $$ = new relational_expression($1, $2, $3); } 
 			| LPAREN Type RPAREN Exp %prec NOT                      { $$ = new cast_expression($2, $4); }
 			;
-Label       : %empty                                                { $$ = new label_syntax(); }
+Lab         : %empty                                                { $$ = new label_syntax(); }
+            ;
+Jmp         : %empty                                                { $$ = new jump_syntax(); }
             ;
 BoolExp     : Exp                                                   { $$ = validate_bool_expression($1); }
             ;
