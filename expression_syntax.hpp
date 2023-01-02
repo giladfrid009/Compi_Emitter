@@ -7,7 +7,6 @@
 #include "output.hpp"
 #include <vector>
 #include <string>
-#include <type_traits>
 #include <stdexcept>
 
 template<typename literal_type> class literal_expression final: public expression_syntax

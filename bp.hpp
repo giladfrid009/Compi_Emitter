@@ -1,5 +1,5 @@
-#ifndef EX5_CODE_GEN
-#define EX5_CODE_GEN
+#ifndef _BP_HPP_
+#define _BP_HPP_
 
 #include <list>
 #include <vector>
