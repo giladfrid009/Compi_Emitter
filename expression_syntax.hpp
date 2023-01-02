@@ -42,7 +42,7 @@ template<typename literal_type> class literal_expression final: public expressio
 
     void emit() override
     {
-
+        throw std::runtime_error("invalid literal_type");
     }
 
     ~literal_expression()
@@ -84,6 +84,22 @@ template<> inline bool literal_expression<bool>::get_literal_value(syntax_token*
     if (value_token->text == "false") return false;
 
     throw std::runtime_error("invalid value_token text");
+}
+
+template<> inline void literal_expression<int>::emit()
+{
+}
+
+template<> inline void literal_expression<char>::emit()
+{
+}
+
+template<> inline void literal_expression<std::string>::emit()
+{
+}
+
+template<> inline void literal_expression<bool>::emit()
+{
 }
 
 class cast_expression final: public expression_syntax

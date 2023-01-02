@@ -21,8 +21,8 @@ code_buffer::code_buffer(): buffer(), global_defs()
 
 code_buffer& code_buffer::instance()
 {
-    static code_buffer inst;
-    return inst;
+    static code_buffer instance;
+    return instance;
 }
 
 string code_buffer::emit_label()
