@@ -4,14 +4,11 @@
 #include "syntax_token.hpp"
 #include "abstract_syntax.hpp"
 #include "generic_syntax.hpp"
+#include "code_buffer.hpp"
 #include "output.hpp"
 #include <vector>
 #include <string>
 #include <stdexcept>
-
-enum class arithmetic_operator { Add, Sub, Mul, Div };
-
-enum class relational_operator { Less, LessEqual, Greater, GreaterEqual, Equal, NotEqual };
 
 template<typename literal_type> class literal_expression final: public expression_syntax
 {
@@ -58,7 +55,7 @@ template<typename literal_type> class literal_expression final: public expressio
 
     void emit_node() override
     {
-        throw std::runtime_error("invalid literal_type");
+        code_buffer::instance().emit("%s = add i32 0 , %d", this->place, value);
     }
 };
 
@@ -92,19 +89,7 @@ template<> inline bool literal_expression<bool>::get_literal_value(syntax_token*
     throw std::runtime_error("invalid value_token text");
 }
 
-template<> inline void literal_expression<int>::emit_node()
-{
-}
-
-template<> inline void literal_expression<char>::emit_node()
-{
-}
-
 template<> inline void literal_expression<std::string>::emit_node()
-{
-}
-
-template<> inline void literal_expression<bool>::emit_node()
 {
 }
 

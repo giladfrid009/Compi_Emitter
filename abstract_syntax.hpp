@@ -7,6 +7,10 @@
 #include <string>
 #include <list>
 
+enum class arithmetic_operator { Add, Sub, Mul, Div };
+
+enum class relational_operator { Less, LessEqual, Greater, GreaterEqual, Equal, NotEqual };
+
 class syntax_base
 {
     private:

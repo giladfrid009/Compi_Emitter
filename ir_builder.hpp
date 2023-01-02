@@ -2,7 +2,7 @@
 #define _IR_BUILDER_HPP_
 
 #include "types.hpp"
-#include "expression_syntax.hpp"
+#include "abstract_syntax.hpp"
 #include <vector>
 #include <string>
 #include <memory>
