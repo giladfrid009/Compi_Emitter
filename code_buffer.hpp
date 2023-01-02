@@ -13,10 +13,10 @@ struct patch_record
 {
     public:
 
-    int line = 0;
+    size_t location;
     label_index index;
 
-    patch_record(int line, label_index index);
+    patch_record(size_t line, label_index index);
 };
 
 class code_buffer

@@ -9,7 +9,7 @@ using std::string;
 
 bool replace(string& str, const string& from, const string& to, const label_index index);
 
-patch_record::patch_record(int line, label_index index): line(line), index(index)
+patch_record::patch_record(size_t location, label_index index): location(location), index(index)
 {
 
 }
@@ -59,7 +59,7 @@ void code_buffer::backpatch(const list<patch_record>& patch_list, const std::str
 {
     for (auto& entry : patch_list)
     {
-        bool res = replace(buffer[entry.line], "@", "%" + label, entry.index); //todo: why the % sign before label?
+        bool res = replace(buffer[entry.location], "@", "%" + label, entry.index); //todo: why the % sign before label?
 
         if (res == false)
         {
