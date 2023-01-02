@@ -1,4 +1,4 @@
-#include "bp.hpp"
+#include "code_buffer.hpp"
 #include <list>
 #include <string>
 #include <iostream>
@@ -27,7 +27,7 @@ code_buffer& code_buffer::instance()
 
 string code_buffer::emit_label()
 {
-    string label = label_name();
+    string label = ir_builder::fresh_label();
 
     emit(label + ":");
 
@@ -55,28 +55,6 @@ int code_buffer::emit_from_file(std::ifstream file)
     return buffer.size() - 1;
 }
 
-string code_buffer::register_name() const
-{
-    static unsigned long long count = 0;
-
-    string reg = formatter::format("%%reg_%llu", count);
-
-    count++;
-
-    return reg;
-}
-
-string code_buffer::label_name() const
-{
-    static unsigned long long count = 0;
-
-    string label = formatter::format("label_%llu", count);
-
-    count++;
-
-    return label;
-}
-
 void code_buffer::backpatch(const list<patch_record>& patch_list, const std::string& label)
 {
     for (auto& entry : patch_list)
@@ -90,7 +68,7 @@ void code_buffer::backpatch(const list<patch_record>& patch_list, const std::str
     }
 }
 
-void code_buffer::print_code_buffer() const
+void code_buffer::print() const
 {
     for (auto& line : buffer)
     {
@@ -115,7 +93,7 @@ void code_buffer::emit_global(const std::string& line)
     global_defs.push_back(line);
 }
 
-void code_buffer::print_global_buffer() const
+void code_buffer::print_globals() const
 {
     for (auto& line : global_defs)
     {

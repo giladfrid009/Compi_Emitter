@@ -1,6 +1,6 @@
 #include "abstract_syntax.hpp"
 #include "output.hpp"
-#include "bp.hpp"
+#include "code_buffer.hpp"
 #include <stdexcept>
 #include <string>
 
@@ -57,7 +57,7 @@ void syntax_base::emit_tree()
     this->emit_node();
 }
 
-expression_syntax::expression_syntax(type_kind return_type): return_type(return_type), place(code_buffer::instance().register_name())
+expression_syntax::expression_syntax(type_kind return_type): return_type(return_type), place(ir_builder::fresh_register())
 {
 
 }

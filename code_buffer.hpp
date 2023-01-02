@@ -1,11 +1,11 @@
 #ifndef _BP_HPP_
 #define _BP_HPP_
 
+#include "ir_builder.hpp"
 #include <list>
 #include <vector>
 #include <string>
 #include <fstream>
-#include "formatter.hpp"
 
 enum class label_index { first, second };
 
@@ -36,10 +36,6 @@ class code_buffer
 
     static code_buffer& instance();
 
-    std::string register_name() const;
-
-    std::string label_name() const;
-
     std::string emit_label();
 
     int emit(const std::string& line);
@@ -47,7 +43,7 @@ class code_buffer
     template<typename ... Args>
     int emit(const std::string& line, Args ... args)
     {
-        std::string formatted = formatter::format(line, args ...);
+        std::string formatted = ir_builder::format_string(line, args ...);
 
         buffer.push_back(formatted);
 
@@ -62,11 +58,11 @@ class code_buffer
 
     void backpatch(const std::list<patch_record>& patch_list, const std::string& label);
 
-    void print_code_buffer() const;
+    void print() const;
 
     void emit_global(const std::string& line);
 
-    void print_global_buffer() const;
+    void print_globals() const;
 };
 
 #endif

@@ -1,7 +1,8 @@
 #include "expression_syntax.hpp"
 #include "symbol_table.hpp"
 #include "output.hpp"
-#include "bp.hpp"
+#include "code_buffer.hpp"
+#include "ir_builder.hpp"
 #include <stdexcept>
 
 using std::string;
@@ -140,18 +141,18 @@ string arithmetic_expression::ir_operator() const
         case operator_kind::Sub: return "sub";
         case operator_kind::Mul: return "mul";
         case operator_kind::Div: return return_type == type_kind::Byte ? "udiv" : "sdiv";
-    }
 
-    throw std::runtime_error("unknown oper");
+        default: throw std::runtime_error("unknown oper");
+    }
 }
 
 void arithmetic_expression::emit_node()
 {
     if (oper == operator_kind::Div)
     {
-        string cmp_res = codebuf.register_name();
-        string true_label = codebuf.label_name();
-        string false_label = codebuf.label_name();
+        string cmp_res = ir_builder::fresh_register();
+        string true_label = ir_builder::fresh_label();
+        string false_label = ir_builder::fresh_label();
 
         codebuf.emit("%s = icmp eq i32 0 , %s", cmp_res, right->place);
 
@@ -168,7 +169,7 @@ void arithmetic_expression::emit_node()
 
     if (return_type == type_kind::Byte)
     {
-        string res_reg = codebuf.register_name();
+        string res_reg = ir_builder::fresh_register();
 
         codebuf.emit("%s = %s i32 %s , %s", res_reg, ir_operator(), left->place, right->place);
 
@@ -224,14 +225,14 @@ string relational_expression::ir_operator() const
         case operator_kind::GreaterEqual: return return_type == type_kind::Byte ? "uge" : "sge";
         case operator_kind::Less: return return_type == type_kind::Byte ? "ult" : "slt";
         case operator_kind::LessEqual: return return_type == type_kind::Byte ? "ule" : "sle";
-    }
 
-    throw std::runtime_error("unknown oper");
+        default: throw std::runtime_error("unknown oper");
+    }
 }
 
 void relational_expression::emit_node()
 {
-    string res_reg = codebuf.register_name();
+    string res_reg = ir_builder::fresh_register();
 
     codebuf.emit("%s = icmp %s i32 %s , %s", res_reg, ir_operator(), left->place, right->place);
 
