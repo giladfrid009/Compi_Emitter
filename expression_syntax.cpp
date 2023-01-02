@@ -173,11 +173,11 @@ void arithmetic_expression::emit()
 
     if (return_type == type_kind::Byte)
     {
-        string tmp_reg = codebuf.register_name();
+        string res_reg = codebuf.register_name();
 
-        codebuf.emit("%s = %s i32 %s , %s", tmp_reg, ir_operator(), left->place, right->place);
+        codebuf.emit("%s = %s i32 %s , %s", res_reg, ir_operator(), left->place, right->place);
 
-        codebuf.emit("%s = and i32 255 , %s", this->place, tmp_reg);
+        codebuf.emit("%s = and i32 255 , %s", this->place, res_reg);
     }
     else if (return_type == type_kind::Int)
     {
@@ -239,11 +239,11 @@ void relational_expression::emit()
     left->emit();
     right->emit();
 
-    string tmp_reg = codebuf.register_name();
+    string res_reg = codebuf.register_name();
 
-    codebuf.emit("%s = icmp %s i32 %s , %s", tmp_reg, ir_operator(), left->place, right->place);
+    codebuf.emit("%s = icmp %s i32 %s , %s", res_reg, ir_operator(), left->place, right->place);
 
-    codebuf.emit("%s = zext i32 %s", this->place, tmp_reg);
+    codebuf.emit("%s = zext i32 %s", this->place, res_reg);
 }
 
 conditional_expression::conditional_expression(expression_syntax* true_value, syntax_token* if_token, expression_syntax* condition, syntax_token* const else_token, expression_syntax* false_value):
