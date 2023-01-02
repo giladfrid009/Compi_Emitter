@@ -26,9 +26,9 @@ string ir_builder::fresh_label()
     return label;
 }
 
-string ir_builder::get_register_type(type_kind type)
+string ir_builder::get_register_type(type_kind data_type)
 {
-    switch (type)
+    switch (data_type)
     {
         case type_kind::Bool: return "i32";
         case type_kind::Byte: return "i32";
@@ -36,7 +36,7 @@ string ir_builder::get_register_type(type_kind type)
         case type_kind::String: return "i8*";
         case type_kind::Void: return "void";
 
-        default: throw std::runtime_error("invalid type");
+        default: throw std::runtime_error("invalid data_type");
     }
 }
 
@@ -53,7 +53,7 @@ string ir_builder::get_binary_instruction(arithmetic_operator oper, bool is_sign
     }
 }
 
-string ir_builder::get_icmp_kind(relational_operator oper, bool is_signed)
+string ir_builder::get_comparison_kind(relational_operator oper, bool is_signed)
 {
     switch (oper)
     {

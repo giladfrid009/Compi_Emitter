@@ -208,7 +208,7 @@ void relational_expression::emit_node()
 {
     string res_reg = ir_builder::fresh_register();
 
-    string cmp_kind = ir_builder::get_icmp_kind(oper, return_type == type_kind::Int);
+    string cmp_kind = ir_builder::get_comparison_kind(oper, return_type == type_kind::Int);
 
     codebuf.emit("%s = icmp %s i32 %s , %s", res_reg, cmp_kind, left->place, right->place);
 

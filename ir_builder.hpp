@@ -39,7 +39,7 @@ class ir_builder
 
     static std::string get_binary_instruction(arithmetic_operator oper, bool is_signed);
 
-    static std::string get_icmp_kind(relational_operator oper, bool is_signed);
+    static std::string get_comparison_kind(relational_operator oper, bool is_signed);
 
     private:
 
