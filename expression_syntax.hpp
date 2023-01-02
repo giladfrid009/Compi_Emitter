@@ -138,10 +138,11 @@ class logical_expression final: public expression_syntax
 
     expression_syntax* const left;
     const syntax_token* const oper_token;
+    label_syntax* const label;
     expression_syntax* const right;
     const operator_kind oper;
 
-    logical_expression(expression_syntax* left, syntax_token* oper_token, expression_syntax* right);
+    logical_expression(expression_syntax* left, syntax_token* oper_token, label_syntax*  label, expression_syntax* right);
     ~logical_expression();
 
     logical_expression(const logical_expression& other) = delete;

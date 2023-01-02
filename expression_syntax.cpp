@@ -65,10 +65,15 @@ not_expression::~not_expression()
 
 void not_expression::emit_node()
 {
+    false_list = expression->true_list;
+    true_list = expression->false_list;
+
+    expression->true_list.clear();
+    expression->false_list.clear();
 }
 
-logical_expression::logical_expression(expression_syntax* left, syntax_token* oper_token, expression_syntax* right):
-    expression_syntax(type_kind::Bool), left(left), oper_token(oper_token), right(right), oper(parse_operator(oper_token->text))
+logical_expression::logical_expression(expression_syntax* left, syntax_token* oper_token, label_syntax* label, expression_syntax* right):
+    expression_syntax(type_kind::Bool), left(left), oper_token(oper_token), label(label), right(right), oper(parse_operator(oper_token->text))
 {
     if (left->return_type != type_kind::Bool || right->return_type != type_kind::Bool)
     {
@@ -76,6 +81,7 @@ logical_expression::logical_expression(expression_syntax* left, syntax_token* op
     }
 
     push_back_child(left);
+    push_back_child(label);
     push_back_child(right);
 }
 
@@ -98,7 +104,26 @@ logical_expression::operator_kind logical_expression::parse_operator(string str)
 }
 
 void logical_expression::emit_node()
-{
+{    
+    if(oper == operator_kind::Or)
+    {
+        codebuf.backpatch(left->false_list, label->name);
+        
+        true_list = codebuf.merge(left->true_list, right->true_list);
+        false_list = right->false_list;
+    }
+    else
+    {
+        codebuf.backpatch(left->true_list, label->name);
+
+        true_list = right->true_list;
+        false_list = codebuf.merge(left->false_list, right->false_list);
+    }
+
+    left->true_list.clear();
+    left->false_list.clear();
+    right->true_list.clear();
+    right->false_list.clear();
 }
 
 arithmetic_expression::arithmetic_expression(expression_syntax* left, syntax_token* oper_token, expression_syntax* right):
@@ -212,7 +237,10 @@ void relational_expression::emit_node()
 
     codebuf.emit("%s = icmp %s i32 %s , %s", res_reg, cmp_kind, left->place, right->place);
 
-    codebuf.emit("%s = zext i32 %s", this->place, res_reg);
+    size_t line = codebuf.emit("br i1 eq 0 , %s label @ , label @", res_reg);
+
+    true_list.push_back(patch_record(line, label_index::first));
+    false_list.push_back(patch_record(line, label_index::second));
 }
 
 conditional_expression::conditional_expression(expression_syntax* true_value, syntax_token* if_token, expression_syntax* condition, syntax_token* const else_token, expression_syntax* false_value):

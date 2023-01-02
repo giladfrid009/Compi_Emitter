@@ -6,6 +6,8 @@
 using std::vector;
 using std::string;
 
+static code_buffer& codebuf = code_buffer::instance();
+
 type_syntax::type_syntax(syntax_token* type_token):
     type_token(type_token), kind(types::parse(type_token->text))
 {
@@ -23,6 +25,7 @@ bool type_syntax::is_special() const
 
 void type_syntax::emit_node()
 {
+    //todo: probably shouldn't emit anything
 }
 
 type_syntax::~type_syntax()
@@ -144,4 +147,17 @@ void root_syntax::emit_node()
 void root_syntax::emit_tree()
 {
     syntax_base::emit_tree();
+}
+
+label_syntax::label_syntax() : name(ir_builder::fresh_label())
+{
+}
+
+label_syntax::~label_syntax()
+{
+}
+
+void label_syntax::emit_node()
+{
+    codebuf.emit("%s:", name);
 }

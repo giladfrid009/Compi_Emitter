@@ -13,7 +13,7 @@ struct patch_record
 {
     public:
 
-    size_t location;
+    size_t line;
     label_index index;
 
     patch_record(size_t line, label_index index);
@@ -38,10 +38,10 @@ class code_buffer
 
     std::string emit_label();
 
-    int emit(const std::string& line);
+    size_t emit(const std::string& line);
 
     template<typename ... Args>
-    int emit(const std::string& line, Args ... args)
+    size_t emit(const std::string& line, Args ... args)
     {
         std::string formatted = ir_builder::format_string(line, args ...);
 
@@ -50,7 +50,7 @@ class code_buffer
         return buffer.size() - 1;
     }
 
-    int emit_from_file(std::ifstream file);
+    size_t emit_from_file(std::ifstream file);
 
     static std::list<patch_record> make_list(patch_record item);
 

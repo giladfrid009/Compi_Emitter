@@ -73,7 +73,7 @@ template<typename element_type> class list_syntax final: public syntax_base
 
     void emit_node() override
     {
-        
+
     }
 };
 
@@ -151,6 +151,23 @@ class root_syntax final: public syntax_base
     root_syntax& operator=(const root_syntax& other) = delete;
 
     void emit_tree();
+
+    protected:
+
+    void emit_node() override;
+};
+
+class label_syntax final: public syntax_base
+{
+    public:
+
+    const std::string name;
+
+    label_syntax();
+    ~label_syntax();
+
+    label_syntax(const root_syntax& other) = delete;
+    label_syntax& operator=(const root_syntax& other) = delete;
 
     protected:
 

@@ -40,10 +40,10 @@ class expression_syntax: public syntax_base
     public:
 
     const type_kind return_type;
-    
+
     const std::string place;
-    std::vector<patch_record> true_list;
-    std::vector<patch_record> false_list;
+    std::list<patch_record> true_list;
+    std::list<patch_record> false_list;
 
     expression_syntax(type_kind return_type);
     virtual ~expression_syntax() = default;

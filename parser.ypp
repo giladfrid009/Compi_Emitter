@@ -3,6 +3,7 @@
 #include "output.hpp"
 #include "symbol_table.hpp"
 #include "generic_syntax.hpp" 
+#include "code_buffer.hpp"
 #include "types.hpp"
 #include <list>
 #include <string>
@@ -37,10 +38,11 @@ void print_current_scope();
 }
 
 %union 
-{ 
+{                                    
     syntax_token*                             token;
     root_syntax*                              root;
-    type_syntax*                              type;                  
+    type_syntax*                              type;  
+    label_syntax*                             label;                
     parameter_syntax*                         param;     
     function_declaration_syntax*              function;            
     statement_syntax*                         statement; 	
@@ -98,6 +100,7 @@ void print_current_scope();
 %type <type>			Type
 %type <expression>      Exp
 %type <expression>      BoolExp
+%type <label>           Label
 
 %%
 
@@ -159,12 +162,14 @@ Exp 		: LPAREN Exp RPAREN	                            { $$ = $2; }
 			| TRUE                                          { $$ = new literal_expression<bool>($1); }
 			| FALSE                                         { $$ = new literal_expression<bool>($1); }
 			| NOT Exp                                       { $$ = new not_expression($1, $2); }
-			| Exp AND Exp                                   { $$ = new logical_expression($1, $2, $3); }
-			| Exp OR Exp                                    { $$ = new logical_expression($1, $2, $3); }
+			| Exp AND Label Exp                             { $$ = new logical_expression($1, $2, $3, $4); }
+			| Exp OR Label Exp                              { $$ = new logical_expression($1, $2, $3, $4); }
 			| Exp RELOP Exp                                 { $$ = new relational_expression($1, $2, $3); }
             | Exp EQOP Exp                                  { $$ = new relational_expression($1, $2, $3); } 
 			| LPAREN Type RPAREN Exp %prec NOT              { $$ = new cast_expression($2, $4); }
 			;
+Label       : %empty                                        { $$ = new label_syntax(); }
+            ;
 BoolExp     : Exp                                           { $$ = validate_bool_expression($1); }
             ;
 OS          : %empty                                        { symtab.open_scope(); } 
