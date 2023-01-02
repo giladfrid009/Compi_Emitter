@@ -266,6 +266,8 @@ declaration_statement::~declaration_statement()
 
 void declaration_statement::emit()
 {
+    // todo: push variable to stack
+    // generate random variable ptr name and save in symbol table? bye-bye decoupling.
 }
 
 block_statement::block_statement(list_syntax<statement_syntax>* statements): statements(statements)

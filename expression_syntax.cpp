@@ -277,6 +277,32 @@ conditional_expression::~conditional_expression()
 
 void conditional_expression::emit()
 {
+    condition->emit();
+
+    string true_label = codebuf.label_name();
+    string false_label = codebuf.label_name();
+    string exit_label = codebuf.label_name();
+
+    // todo: codebuf.backpatch(condition->true_list, true_tabel) ?
+    // codebuf.backpatch(condition->false_list, false_tabel) ?
+
+    codebuf.emit("%s:", true_label);
+
+    true_value->emit();
+
+    codebuf.emit("br label %s", exit_label);
+
+    codebuf.emit("%s:", false_label);
+
+    false_value->emit();
+
+    codebuf.emit("br label %s", exit_label);
+
+    codebuf.emit("%s:", exit_label);
+
+    string res_type = return_type == type_kind::String ? "i8*" : "i32";
+
+    codebuf.emit("%s = phi %s [ %s , %s ] , [ %s , %s ]", this->place, res_type, true_value->place, true_label, false_value->place, false_label);
 }
 
 identifier_expression::identifier_expression(syntax_token* identifier_token):
@@ -314,6 +340,8 @@ identifier_expression::~identifier_expression()
 
 void identifier_expression::emit()
 {
+    // todo: get identifier address
+    // load identifier from address, can only be numeric or bool
 }
 
 invocation_expression::invocation_expression(syntax_token* identifier_token):

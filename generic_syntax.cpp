@@ -23,6 +23,7 @@ bool type_syntax::is_special() const
 
 void type_syntax::emit()
 {
+    //todo: probably shouldn't emit anything
 }
 
 type_syntax::~type_syntax()
