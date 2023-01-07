@@ -1,0 +1,12 @@
+*.out
+*.o
+*.sh
+*.in
+*.out
+*.zip
+lex.yy.c
+parser.tab.*pp
+hw3
+Makefile
+.vscode
+*test*
