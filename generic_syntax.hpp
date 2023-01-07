@@ -59,6 +59,11 @@ template<typename element_type> class list_syntax final: public syntax_base
         return std::vector<syntax_token*>();
     }
 
+    void emit() override
+    {
+        
+    }
+
     ~list_syntax()
     {
         for (syntax_base* child : get_children())
@@ -90,6 +95,8 @@ class type_syntax final: public syntax_base
 
     bool is_special() const;
 
+    void emit() override;
+
     std::vector<syntax_base*> get_children() const override;
 
     std::vector<syntax_token*> get_tokens() const override;
@@ -110,6 +117,8 @@ class formal_syntax final: public syntax_base
     formal_syntax(const formal_syntax& other) = delete;
 
     formal_syntax& operator=(const formal_syntax& other) = delete;
+
+    void emit() override;
 
     std::vector<syntax_base*> get_children() const override;
 
@@ -134,6 +143,8 @@ class function_declaration_syntax final: public syntax_base
 
     function_declaration_syntax& operator=(const function_declaration_syntax& other) = delete;
 
+    void emit() override;
+
     std::vector<syntax_base*> get_children() const override;
 
     std::vector<syntax_token*> get_tokens() const override;
@@ -152,6 +163,8 @@ class root_syntax final: public syntax_base
     root_syntax(const root_syntax& other) = delete;
 
     root_syntax& operator=(const root_syntax& other) = delete;
+
+    void emit() override;
 
     std::vector<syntax_base*> get_children() const override;
 

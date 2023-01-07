@@ -22,7 +22,7 @@ code_buffer& code_buffer::instance()
     return inst;
 }
 
-string code_buffer::generate_label()
+string code_buffer::emit_label()
 {
     static unsigned long long count = 0;
 
@@ -39,6 +39,21 @@ string code_buffer::generate_label()
     emit(label.str());
 
     return ret;
+}
+
+//We don't write this to code because it's only creates a register 
+//unlike the above that creates and writes the label
+string code_buffer::create_variable()
+{
+    static unsigned long long count = 0;
+
+    std::stringstream var;
+
+    var << "%var_" << count;
+
+    count++;
+
+    return var.str();
 }
 
 int code_buffer::emit(const string& line)

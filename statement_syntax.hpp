@@ -26,6 +26,8 @@ class if_statement_syntax final: public statement_syntax
 
     if_statement_syntax& operator=(const if_statement_syntax& other) = delete;
 
+    void emit() override;
+    
     std::vector<syntax_base*> get_children() const override;
 
     std::vector<syntax_token*> get_tokens() const override;
@@ -47,6 +49,8 @@ class while_statement_syntax final: public statement_syntax
 
     while_statement_syntax& operator=(const while_statement_syntax& other) = delete;
 
+    void emit() override;
+    
     std::vector<syntax_base*> get_children() const override;
 
     std::vector<syntax_token*> get_tokens() const override;
@@ -69,6 +73,8 @@ class branch_statement_syntax final: public statement_syntax
 
     branch_statement_syntax& operator=(const branch_statement_syntax& other) = delete;
 
+    void emit() override;
+    
     std::vector<syntax_base*> get_children() const override;
 
     std::vector<syntax_token*> get_tokens() const override;
@@ -93,6 +99,8 @@ class return_statement_syntax final: public statement_syntax
 
     return_statement_syntax& operator=(const return_statement_syntax& other) = delete;
 
+    void emit() override;
+    
     std::vector<syntax_base*> get_children() const override;
 
     std::vector<syntax_token*> get_tokens() const override;
@@ -112,6 +120,8 @@ class expression_statement_syntax final: public statement_syntax
 
     expression_statement_syntax& operator=(const expression_statement_syntax& other) = delete;
 
+    void emit() override;
+    
     std::vector<syntax_base*> get_children() const override;
 
     std::vector<syntax_token*> get_tokens() const override;
@@ -133,6 +143,8 @@ class assignment_statement_syntax final: public statement_syntax
     assignment_statement_syntax(const assignment_statement_syntax& other) = delete;
 
     assignment_statement_syntax& operator=(const assignment_statement_syntax& other) = delete;
+
+    void emit() override;
 
     std::vector<syntax_base*> get_children() const override;
 
@@ -159,6 +171,8 @@ class declaration_statement_syntax final: public statement_syntax
 
     declaration_statement_syntax& operator=(const declaration_statement_syntax& other) = delete;
 
+    void emit() override;
+    
     std::vector<syntax_base*> get_children() const override;
 
     std::vector<syntax_token*> get_tokens() const override;
@@ -177,6 +191,8 @@ class block_statement_syntax final: public statement_syntax
     block_statement_syntax(const block_statement_syntax& other) = delete;
 
     block_statement_syntax& operator=(const block_statement_syntax& other) = delete;
+
+    void emit() override;
 
     std::vector<syntax_base*> get_children() const override;
 

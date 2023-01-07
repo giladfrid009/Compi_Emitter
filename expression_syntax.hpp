@@ -52,6 +52,11 @@ template<typename literal_type> class literal_expression_syntax final : public e
         throw std::runtime_error("invalid literal_type");
     }
 
+    void emit() override
+    {
+        
+    }
+
     ~literal_expression_syntax()
     {
         for (syntax_base* child : get_children())
@@ -109,6 +114,8 @@ class cast_expression_syntax final: public expression_syntax
 
     cast_expression_syntax& operator=(const cast_expression_syntax& other) = delete;
 
+    void emit() override;
+
     std::vector<syntax_base*> get_children() const override;
 
     std::vector<syntax_token*> get_tokens() const override;
@@ -128,6 +135,8 @@ class not_expression_syntax final: public expression_syntax
     not_expression_syntax(const not_expression_syntax& other) = delete;
 
     not_expression_syntax& operator=(const not_expression_syntax& other) = delete;
+
+    void emit() override;
 
     std::vector<syntax_base*> get_children() const override;
 
@@ -152,6 +161,8 @@ class logical_expression_syntax final: public expression_syntax
     logical_expression_syntax(const logical_expression_syntax& other) = delete;
 
     logical_expression_syntax& operator=(const logical_expression_syntax& other) = delete;
+
+    void emit() override;
 
     std::vector<syntax_base*> get_children() const override;
 
@@ -179,6 +190,8 @@ class arithmetic_expression_syntax final: public expression_syntax
 
     arithmetic_expression_syntax& operator=(const arithmetic_expression_syntax& other) = delete;
 
+    void emit() override;
+
     std::vector<syntax_base*> get_children() const override;
 
     std::vector<syntax_token*> get_tokens() const override;
@@ -205,6 +218,8 @@ class relational_expression_syntax final: public expression_syntax
 
     relational_expression_syntax& operator=(const relational_expression_syntax& other) = delete;
 
+    void emit() override;
+
     std::vector<syntax_base*> get_children() const override;
 
     std::vector<syntax_token*> get_tokens() const override;
@@ -230,6 +245,8 @@ class conditional_expression_syntax final: public expression_syntax
 
     conditional_expression_syntax& operator=(const conditional_expression_syntax& other) = delete;
 
+    void emit() override;
+    
     std::vector<syntax_base*> get_children() const override;
 
     std::vector<syntax_token*> get_tokens() const override;
@@ -254,6 +271,8 @@ class identifier_expression_syntax final: public expression_syntax
 
     identifier_expression_syntax& operator=(const identifier_expression_syntax& other) = delete;
 
+    void emit() override;
+    
     std::vector<syntax_base*> get_children() const override;
 
     std::vector<syntax_token*> get_tokens() const override;
@@ -281,6 +300,8 @@ class invocation_expression_syntax final: public expression_syntax
 
     invocation_expression_syntax& operator=(const invocation_expression_syntax& other) = delete;
 
+    void emit() override;
+    
     std::vector<syntax_base*> get_children() const override;
 
     std::vector<syntax_token*> get_tokens() const override;

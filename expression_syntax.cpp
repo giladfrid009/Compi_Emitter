@@ -1,7 +1,9 @@
 #include "expression_syntax.hpp"
 #include "symbol_table.hpp"
 #include "hw3_output.hpp"
+#include "bp.hpp"
 #include <stdexcept>
+#include <sstream>
 
 using std::string;
 using std::vector;
@@ -28,6 +30,11 @@ vector<syntax_base*> cast_expression_syntax::get_children() const
 vector<syntax_token*> cast_expression_syntax::get_tokens() const
 {
     return vector<syntax_token*>();
+}
+
+void cast_expression_syntax::emit()
+{
+    
 }
 
 cast_expression_syntax::~cast_expression_syntax()
@@ -62,6 +69,11 @@ vector<syntax_base*> not_expression_syntax::get_children() const
 vector<syntax_token*> not_expression_syntax::get_tokens() const
 {
     return vector<syntax_token*>{not_token};
+}
+
+void not_expression_syntax::emit()
+{
+    
 }
 
 not_expression_syntax::~not_expression_syntax()
@@ -99,6 +111,11 @@ vector<syntax_token*> logical_expression_syntax::get_tokens() const
     return vector<syntax_token*>{oper_token};
 }
 
+void logical_expression_syntax::emit()
+{
+    
+}
+
 logical_expression_syntax::~logical_expression_syntax()
 {
     for (syntax_base* child : get_children())
@@ -112,10 +129,10 @@ logical_expression_syntax::~logical_expression_syntax()
     }
 }
 
-logical_expression_syntax::logical_operator logical_expression_syntax::parse_operator(string str)
+logical_expression_syntax::logical_operator logical_expression_syntax::parse_operator(string line)
 {
-    if (str == "and") return logical_operator::And;
-    if (str == "or") return logical_operator::Or;
+    if (line == "and") return logical_operator::And;
+    if (line == "or") return logical_operator::Or;
 
     throw std::invalid_argument("unknown oper");
 }
@@ -155,14 +172,52 @@ arithmetic_expression_syntax::~arithmetic_expression_syntax()
     }
 }
 
-arithmetic_expression_syntax::arithmetic_operator arithmetic_expression_syntax::parse_operator(string str)
+arithmetic_expression_syntax::arithmetic_operator arithmetic_expression_syntax::parse_operator(string line)
 {
-    if (str == "+") return arithmetic_operator::Add;
-    if (str == "-") return arithmetic_operator::Sub;
-    if (str == "*") return arithmetic_operator::Mul;
-    if (str == "/") return arithmetic_operator::Div;
+    if (line == "+") return arithmetic_operator::Add;
+    if (line == "-") return arithmetic_operator::Sub;
+    if (line == "*") return arithmetic_operator::Mul;
+    if (line == "/") return arithmetic_operator::Div;
 
     throw std::invalid_argument("unknown oper");
+}
+
+void arithmetic_expression_syntax::emit()
+{
+    for (auto child : get_children())
+    {
+        child->emit();
+    }
+
+    string oper_str;
+    
+    switch (oper)
+    {
+        case arithmetic_operator::Add: oper_str = "add"; break; 
+        case arithmetic_operator::Sub: oper_str = "sub"; break; 
+        case arithmetic_operator::Mul: oper_str = "mul"; break; 
+        case arithmetic_operator::Div:
+        {
+            if (return_type == fundamental_type::Byte)
+            {
+                oper_str = "udiv";  
+            }
+            else if (return_type == fundamental_type::Int)
+            {
+                oper_str = "sdiv";
+            }
+            break;
+        }
+    }
+
+    //TODO: should we always have i32 type for everything?
+    string type_str = return_type == fundamental_type::Byte ? "i8" : "i32";
+
+    std::stringstream line;
+
+    line << this->place << " = " << oper_str << " " << type_str << " " << left->place << " , " << right->place;
+
+    code_buffer::instance().emit(line.str());
 }
 
 relational_expression_syntax::relational_expression_syntax(expression_syntax* left, syntax_token* oper_token, expression_syntax* right):
@@ -187,6 +242,11 @@ vector<syntax_token*> relational_expression_syntax::get_tokens() const
     return vector<syntax_token*>{oper_token};
 }
 
+void relational_expression_syntax::emit()
+{
+    
+}
+
 relational_expression_syntax::~relational_expression_syntax()
 {
     for (syntax_base* child : get_children())
@@ -200,14 +260,14 @@ relational_expression_syntax::~relational_expression_syntax()
     }
 }
 
-relational_expression_syntax::relational_operator relational_expression_syntax::parse_operator(string str)
+relational_expression_syntax::relational_operator relational_expression_syntax::parse_operator(string line)
 {
-    if (str == "<") return relational_operator::Less;
-    if (str == "<=") return relational_operator::LessEqual;
-    if (str == ">") return relational_operator::Greater;
-    if (str == ">=") return relational_operator::GreaterEqual;
-    if (str == "==") return relational_operator::Equal;
-    if (str == "!=") return relational_operator::NotEqual;
+    if (line == "<") return relational_operator::Less;
+    if (line == "<=") return relational_operator::LessEqual;
+    if (line == ">") return relational_operator::Greater;
+    if (line == ">=") return relational_operator::GreaterEqual;
+    if (line == "==") return relational_operator::Equal;
+    if (line == "!=") return relational_operator::NotEqual;
 
     throw std::invalid_argument("unknown oper");
 }
@@ -238,6 +298,11 @@ vector<syntax_base*> conditional_expression_syntax::get_children() const
 vector<syntax_token*> conditional_expression_syntax::get_tokens() const
 {
     return vector<syntax_token*>{if_token, else_token};
+}
+
+void conditional_expression_syntax::emit()
+{
+    
 }
 
 conditional_expression_syntax::~conditional_expression_syntax()
@@ -284,6 +349,11 @@ fundamental_type identifier_expression_syntax::get_return_type(string identifier
     }
 
     return symbol->type;
+}
+
+void identifier_expression_syntax::emit()
+{
+    
 }
 
 identifier_expression_syntax::~identifier_expression_syntax()
@@ -380,6 +450,10 @@ fundamental_type invocation_expression_syntax::get_return_type(string identifier
 
     return symbol->type;
 }
+void invocation_expression_syntax::emit()
+{
+    
+}
 
 invocation_expression_syntax::~invocation_expression_syntax()
 {
@@ -393,3 +467,5 @@ invocation_expression_syntax::~invocation_expression_syntax()
         delete token;
     }
 }
+
+

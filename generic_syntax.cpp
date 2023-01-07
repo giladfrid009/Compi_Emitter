@@ -32,6 +32,11 @@ vector<syntax_token*> type_syntax::get_tokens() const
     return vector<syntax_token*>{type_token};
 }
 
+void type_syntax::emit()
+{
+    
+}
+
 type_syntax::~type_syntax()
 {
     for (syntax_base* child : get_children())
@@ -69,6 +74,11 @@ vector<syntax_base*> formal_syntax::get_children() const
 vector<syntax_token*> formal_syntax::get_tokens() const
 {
     return vector<syntax_token*>{identifier_token};
+}
+
+void formal_syntax::emit()
+{
+    
 }
 
 formal_syntax::~formal_syntax()
@@ -126,6 +136,11 @@ vector<syntax_token*> function_declaration_syntax::get_tokens() const
     return vector<syntax_token*>{identifier_token};
 }
 
+void function_declaration_syntax::emit()
+{
+    
+}
+
 function_declaration_syntax::~function_declaration_syntax()
 {
     for (syntax_base* child : get_children())
@@ -166,6 +181,11 @@ vector<syntax_base*> root_syntax::get_children() const
 vector<syntax_token*> root_syntax::get_tokens() const
 {
     return vector<syntax_token*>();
+}
+
+void root_syntax::emit()
+{
+    
 }
 
 root_syntax::~root_syntax()

@@ -33,9 +33,11 @@ class code_buffer
 
     static code_buffer& instance();
 
-    std::string generate_label();
+    std::string emit_label();
 
-    int emit(const std::string& command);
+    std::string create_variable();
+
+    int emit(const std::string& line);
 
     static std::vector<patch_record> make_list(patch_record item);
 

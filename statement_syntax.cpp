@@ -45,6 +45,11 @@ vector<syntax_token*> if_statement_syntax::get_tokens() const
     return vector<syntax_token*>{if_token, else_token};
 }
 
+void if_statement_syntax::emit()
+{
+    
+}
+
 if_statement_syntax::~if_statement_syntax()
 {
     for (syntax_base* child : get_children())
@@ -78,6 +83,11 @@ vector<syntax_base*> while_statement_syntax::get_children() const
 vector<syntax_token*> while_statement_syntax::get_tokens() const
 {
     return vector<syntax_token*>{while_token};
+}
+
+void while_statement_syntax::emit()
+{
+    
 }
 
 while_statement_syntax::~while_statement_syntax()
@@ -122,6 +132,11 @@ vector<syntax_base*> branch_statement_syntax::get_children() const
 vector<syntax_token*> branch_statement_syntax::get_tokens() const
 {
     return vector<syntax_token*>{branch_token};
+}
+
+void branch_statement_syntax::emit()
+{
+    
 }
 
 branch_statement_syntax::~branch_statement_syntax()
@@ -183,6 +198,11 @@ vector<syntax_token*> return_statement_syntax::get_tokens() const
     return vector<syntax_token*>{return_token};
 }
 
+void return_statement_syntax::emit()
+{
+    
+}
+
 return_statement_syntax::~return_statement_syntax()
 {
     for (syntax_base* child : get_children())
@@ -209,6 +229,11 @@ vector<syntax_base*> expression_statement_syntax::get_children() const
 vector<syntax_token*> expression_statement_syntax::get_tokens() const
 {
     return vector<syntax_token*>();
+}
+
+void expression_statement_syntax::emit()
+{
+    
 }
 
 expression_statement_syntax::~expression_statement_syntax()
@@ -250,6 +275,11 @@ vector<syntax_base*> assignment_statement_syntax::get_children() const
 vector<syntax_token*> assignment_statement_syntax::get_tokens() const
 {
     return vector<syntax_token*>{identifier_token, assign_token};
+}
+
+void assignment_statement_syntax::emit()
+{
+    
 }
 
 assignment_statement_syntax::~assignment_statement_syntax()
@@ -317,6 +347,11 @@ vector<syntax_token*> declaration_statement_syntax::get_tokens() const
     return vector<syntax_token*>{identifier_token, assign_token};
 }
 
+void declaration_statement_syntax::emit()
+{
+    
+}
+
 declaration_statement_syntax::~declaration_statement_syntax()
 {
     for (syntax_base* child : get_children())
@@ -344,6 +379,12 @@ vector<syntax_token*> block_statement_syntax::get_tokens() const
 {
     return vector<syntax_token*>();
 }
+
+void block_statement_syntax::emit()
+{
+    
+}
+
 
 block_statement_syntax::~block_statement_syntax()
 {

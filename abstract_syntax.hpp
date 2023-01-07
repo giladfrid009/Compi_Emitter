@@ -29,11 +29,15 @@ class syntax_base
     virtual std::vector<syntax_base*> get_children() const = 0;
 
     virtual std::vector<syntax_token*> get_tokens() const = 0;
+
+    virtual void emit() = 0;
 };
 
 class expression_syntax: public syntax_base
 {
     public:
+
+    const std::string place;
 
     const fundamental_type return_type;
 
@@ -52,6 +56,8 @@ class expression_syntax: public syntax_base
     virtual std::vector<syntax_base*> get_children() const = 0;
 
     virtual std::vector<syntax_token*> get_tokens() const = 0;
+
+    virtual void emit() = 0;
 };
 
 class statement_syntax: public syntax_base
@@ -69,6 +75,8 @@ class statement_syntax: public syntax_base
     virtual std::vector<syntax_base*> get_children() const = 0;
 
     virtual std::vector<syntax_token*> get_tokens() const = 0;
+
+    virtual void emit() = 0;
 };
 
 #endif
