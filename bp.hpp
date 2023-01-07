@@ -4,19 +4,21 @@
 #include <vector>
 #include <string>
 
-using namespace std;
-
 //this enum is used to distinguish between the two possible missing labels of a conditional branch in LLVM during backpatching.
 //for an unconditional branch (which contains only a single label) use FIRST.
 enum BranchLabelIndex {FIRST, SECOND};
 
-class CodeBuffer{
+class CodeBuffer
+{
+    std::vector<std::string> buffer;
+	std::vector<std::string> globalDefs;
+
 	CodeBuffer();
 	CodeBuffer(CodeBuffer const&);
     void operator=(CodeBuffer const&);
-	std::vector<std::string> buffer;
-	std::vector<std::string> globalDefs;
-public:
+    
+    public:
+
 	static CodeBuffer &instance();
 
 	// ******** Methods to handle the code section ******** //
@@ -28,10 +30,10 @@ public:
 	int emit(const std::string &command);
 
 	//gets a pair<int,BranchLabelIndex> item of the form {buffer_location, branch_label_index} and creates a list for it
-	static vector<pair<int,BranchLabelIndex>> makelist(pair<int,BranchLabelIndex> item);
+	static std::vector<std::pair<int,BranchLabelIndex>> makelist(std::pair<int,BranchLabelIndex> item);
 
 	//merges two lists of {buffer_location, branch_label_index} items
-	static vector<pair<int,BranchLabelIndex>> merge(const vector<pair<int,BranchLabelIndex>> &l1,const vector<pair<int,BranchLabelIndex>> &l2);
+	static std::vector<std::pair<int,BranchLabelIndex>> merge(const std::vector<std::pair<int,BranchLabelIndex>> &l1,const std::vector<std::pair<int,BranchLabelIndex>> &l2);
 
 	/* accepts a list of {buffer_location, branch_label_index} items and a label.
 	For each {buffer_location, branch_label_index} item in address_list, backpatches the branch command 
@@ -47,17 +49,17 @@ public:
 	bpatch(makelist({loc2,SECOND}),"my_false_label"); - location loc2 in the buffer will now contain the command "br i1 %cond, label @, label %my_false_label"
 	bpatch(makelist({loc2,FIRST}),"my_true_label"); - location loc2 in the buffer will now contain the command "br i1 %cond, label @my_true_label, label %my_false_label"
 	*/
-	void bpatch(const vector<pair<int,BranchLabelIndex>>& address_list, const std::string &label);
+	void bpatch(const std::vector<std::pair<int,BranchLabelIndex>>& address_list, const std::string &label);
 	
 	//prints the content of the code buffer to stdout
 	void printCodeBuffer();
 
 	// ******** Methods to handle the data section ******** //
 	//write a line to the global section
-	void emitGlobal(const string& dataLine);
+	void emitGlobal(const std::string& dataLine);
+
 	//print the content of the global buffer to stdout
 	void printGlobalBuffer();
-
 };
 
 #endif

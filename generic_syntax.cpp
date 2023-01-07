@@ -2,6 +2,7 @@
 #include "hw3_output.hpp"
 #include "symbol.hpp"
 #include "symbol_table.hpp"
+#include <stdexcept>
 
 using std::vector;
 using std::string;
