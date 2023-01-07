@@ -79,12 +79,12 @@ void code_buffer::print_global_buffer() const
 bool replace(string& str, const string& from, const string& to, const branch_label_index index)
 {
     size_t pos;
-    if (index == SECOND)
+    if (index == branch_label_index::second)
     {
         pos = str.find_last_of(from);
     }
     else
-    { //FIRST
+    { //first
         pos = str.find_first_of(from);
     }
     if (pos == string::npos)

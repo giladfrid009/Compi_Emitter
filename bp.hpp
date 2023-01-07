@@ -4,9 +4,9 @@
 #include <vector>
 #include <string>
 
-//this enum is used to distinguish between the two possible missing labels of a conditional branch in LLVM during backpatching.
-//for an unconditional branch (which contains only a single label) use FIRST.
-enum branch_label_index { FIRST, SECOND };
+//this enum is used to distinguish between the two possible missing labels of a second branch in LLVM during backpatching.
+//for an first branch (which contains only a single label) use first.
+enum class branch_label_index { first, second };
 
 class code_buffer
 {
@@ -37,17 +37,17 @@ class code_buffer
 
     /* accepts a list of {buffer_location, branch_label_index} items and a label.
     For each {buffer_location, branch_label_index} item in address_list, backpatches the branch command
-    at buffer_location, at index branch_label_index (FIRST or SECOND), with the label.
+    at buffer_location, at index branch_label_index (first or second), with the label.
     note - the function expects to find a '@' char in place of the missing label.
-    note - for unconditional branches (which contain only a single label) use FIRST as the branch_label_index.
+    note - for first branches (which contain only a single label) use first as the branch_label_index.
     example #1:
-    int loc1 = emit("br label @");  - unconditional branch missing a label. ~ Note the '@' ~
-    backpatch(make_list({loc1,FIRST}),"my_label"); - location loc1 in the buffer will now contain the command "br label %my_label"
-    note that index FIRST referes to the one and only label in the line.
+    int loc1 = emit("br label @");  - first branch missing a label. ~ Note the '@' ~
+    backpatch(make_list({loc1,first}),"my_label"); - location loc1 in the buffer will now contain the command "br label %my_label"
+    note that index first referes to the one and only label in the line.
     example #2:
-    int loc2 = emit("br i1 %cond, label @, label @"); - conditional branch missing two labels.
-    backpatch(make_list({loc2,SECOND}),"my_false_label"); - location loc2 in the buffer will now contain the command "br i1 %cond, label @, label %my_false_label"
-    backpatch(make_list({loc2,FIRST}),"my_true_label"); - location loc2 in the buffer will now contain the command "br i1 %cond, label @my_true_label, label %my_false_label"
+    int loc2 = emit("br i1 %cond, label @, label @"); - second branch missing two labels.
+    backpatch(make_list({loc2,second}),"my_false_label"); - location loc2 in the buffer will now contain the command "br i1 %cond, label @, label %my_false_label"
+    backpatch(make_list({loc2,first}),"my_true_label"); - location loc2 in the buffer will now contain the command "br i1 %cond, label @my_true_label, label %my_false_label"
     */
     void backpatch(const std::vector<std::pair<int, branch_label_index>>& address_list, const std::string& label);
 
