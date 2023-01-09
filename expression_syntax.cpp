@@ -36,6 +36,11 @@ vector<syntax_token*> cast_expression_syntax::get_tokens() const
 
 void cast_expression_syntax::emit()
 {
+    for (auto child : get_children())
+    {
+        child->emit();
+    }
+
     if (expression->return_type == fundamental_type::Int && destination_type->type == fundamental_type::Byte)
     {
         codebuf.emit("%s = and i32 255 , %s", this->place, expression->place);
@@ -195,14 +200,10 @@ string arithmetic_expression_syntax::ir_operator() const
 {
     switch (oper)
     {
-        case arithmetic_operator::Add: return "add"; 
+        case arithmetic_operator::Add: return "add";
         case arithmetic_operator::Sub: return "sub";
         case arithmetic_operator::Mul: return "mul";
-        case arithmetic_operator::Div:
-        {
-            if (return_type == fundamental_type::Byte) return "udiv";
-            if (return_type == fundamental_type::Int) return "sdiv";
-        }
+        case arithmetic_operator::Div: return return_type == fundamental_type::Byte ? "udiv" : "sdiv";
     }
 
     throw runtime_error("unknown oper");
@@ -271,9 +272,41 @@ vector<syntax_token*> relational_expression_syntax::get_tokens() const
     return vector<syntax_token*>{oper_token};
 }
 
+relational_expression_syntax::relational_operator relational_expression_syntax::parse_operator(string line)
+{
+    if (line == "<") return relational_operator::Less;
+    if (line == "<=") return relational_operator::LessEqual;
+    if (line == ">") return relational_operator::Greater;
+    if (line == ">=") return relational_operator::GreaterEqual;
+    if (line == "==") return relational_operator::Equal;
+    if (line == "!=") return relational_operator::NotEqual;
+
+    throw std::invalid_argument("unknown oper");
+}
+
+string relational_expression_syntax::ir_operator() const
+{
+    switch (oper)
+    {
+        case relational_operator::Equal: return "add"; 
+        case relational_operator::NotEqual: return "ne";
+        case relational_operator::Greater: return return_type == fundamental_type::Byte ? "ugt" : "sgt";
+        case relational_operator::GreaterEqual: return return_type == fundamental_type::Byte ? "uge" : "sge";
+        case relational_operator::Less: return return_type == fundamental_type::Byte ? "ult" : "slt";
+        case relational_operator::LessEqual: return return_type == fundamental_type::Byte ? "ule" : "sle";
+    }
+
+    throw runtime_error("unknown oper");
+}
+
 void relational_expression_syntax::emit()
 {
-    
+    for (auto child : get_children())
+    {
+        child->emit();
+    }
+
+    codebuf.emit("%s = icmp %s i32 %s , %s", this->place, ir_operator(), left->place, right->place);
 }
 
 relational_expression_syntax::~relational_expression_syntax()
@@ -287,18 +320,6 @@ relational_expression_syntax::~relational_expression_syntax()
     {
         delete token;
     }
-}
-
-relational_expression_syntax::relational_operator relational_expression_syntax::parse_operator(string line)
-{
-    if (line == "<") return relational_operator::Less;
-    if (line == "<=") return relational_operator::LessEqual;
-    if (line == ">") return relational_operator::Greater;
-    if (line == ">=") return relational_operator::GreaterEqual;
-    if (line == "==") return relational_operator::Equal;
-    if (line == "!=") return relational_operator::NotEqual;
-
-    throw std::invalid_argument("unknown oper");
 }
 
 conditional_expression_syntax::conditional_expression_syntax(expression_syntax* true_value, syntax_token* if_token, expression_syntax* condition, syntax_token* const else_token, expression_syntax* false_value):
@@ -331,7 +352,29 @@ vector<syntax_token*> conditional_expression_syntax::get_tokens() const
 
 void conditional_expression_syntax::emit()
 {
-    
+    string cmp_res = codebuf.register_name();
+
+    codebuf.emit("%s = icmp eq i1 1 , %s", cmp_res, condition->place);
+
+    string true_label = codebuf.label_name();
+    string false_label = codebuf.label_name();
+    string next_label = codebuf.label_name();
+
+    codebuf.emit("br i1 %s , label %s , label %s", cmp_res, true_label, false_label);
+
+    codebuf.emit("%s:", true_label);
+
+    // todo: assign true value
+
+    codebuf.emit("br label %s", next_label);
+
+    codebuf.emit("%s:", false_label);
+
+    //todo: assign false value
+
+    codebuf.emit("br label %s", next_label);
+
+    codebuf.emit("%s:", next_label);
 }
 
 conditional_expression_syntax::~conditional_expression_syntax()
