@@ -36,7 +36,14 @@ vector<syntax_token*> cast_expression_syntax::get_tokens() const
 
 void cast_expression_syntax::emit()
 {
-    
+    if (expression->return_type == fundamental_type::Int && destination_type->type == fundamental_type::Byte)
+    {
+        codebuf.emit("%s = and i32 255 , %s", this->place, expression->place);
+    }
+    else
+    {
+        codebuf.emit("%s = add i32 0 , %s", this->place, expression->place);
+    }
 }
 
 cast_expression_syntax::~cast_expression_syntax()
@@ -210,7 +217,22 @@ void arithmetic_expression_syntax::emit()
 
     if (oper == arithmetic_operator::Div)
     {
-        //todo: emit check for zero division.
+        string cmp_res = codebuf.register_name();
+
+        codebuf.emit("%s = icmp eq i32 0 , %s", cmp_res, right->place);
+
+        string true_label = codebuf.label_name();
+        string false_label = codebuf.label_name();
+
+        codebuf.emit("br i1 %s , label %s , label %s", cmp_res, true_label, false_label);
+
+        codebuf.emit("%s:", true_label);
+
+        codebuf.emit("call void @div_by_zero_error()");
+
+        codebuf.emit("br label %s", false_label);
+
+        codebuf.emit("%s:", false_label);
     }
 
     if (return_type == fundamental_type::Byte)
