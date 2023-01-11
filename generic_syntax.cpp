@@ -71,16 +71,14 @@ void parameter_syntax::emit_node()
 function_declaration_syntax::function_declaration_syntax(type_syntax* return_type, syntax_token* identifier_token, list_syntax<parameter_syntax>* parameters, list_syntax<statement_syntax>* body):
     return_type(return_type), identifier_token(identifier_token), identifier(identifier_token->text), parameters(parameters), body(body)
 {
-    const symbol* symbol = symtab.get_symbol(identifier);
+    const function_symbol* function = static_cast<const function_symbol*>(symtab.get_symbol(identifier, symbol_kind::Function));
 
-    if (symbol == nullptr || symbol->kind != symbol_kind::Function)
+    if (function == nullptr)
     {
         throw std::logic_error("function should be defined.");
     }
 
-    const function_symbol* func_symbol = static_cast<const function_symbol*>(symbol);
-
-    if (func_symbol->parameter_types.size() != parameters->size())
+    if (function->parameter_types.size() != parameters->size())
     {
         throw std::logic_error("function parameter length mismatch.");
     }
@@ -88,7 +86,7 @@ function_declaration_syntax::function_declaration_syntax(type_syntax* return_typ
     size_t i = 0;
     for (auto param : *parameters)
     {
-        if (func_symbol->parameter_types[i++] != param->type->kind)
+        if (function->parameter_types[i++] != param->type->kind)
         {
             throw std::logic_error("function parameter type mismatch.");
         }
@@ -115,16 +113,14 @@ void function_declaration_syntax::emit_node()
 
 root_syntax::root_syntax(list_syntax<function_declaration_syntax>* functions): functions(functions)
 {
-    const symbol* main_sym = symtab.get_symbol("main");
+    const function_symbol* main = static_cast<const function_symbol*>(symtab.get_symbol("main", symbol_kind::Function));
 
-    if (main_sym == nullptr || main_sym->kind != symbol_kind::Function)
+    if (main == nullptr)
     {
         output::error_main_missing();
     }
 
-    const function_symbol* func_sym = static_cast<const function_symbol*>(main_sym);
-
-    if (func_sym->type != type_kind::Void || func_sym->parameter_types.size() != 0)
+    if (main->type != type_kind::Void || main->parameter_types.size() != 0)
     {
         output::error_main_missing();
     }

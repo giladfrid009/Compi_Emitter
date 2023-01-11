@@ -353,14 +353,14 @@ void identifier_expression::emit_node()
 invocation_expression::invocation_expression(syntax_token* identifier_token):
     expression_syntax(get_return_type(identifier_token->text)), identifier_token(identifier_token), identifier(identifier_token->text), arguments(nullptr)
 {
-    const symbol* symbol = symtab.get_symbol(identifier);
+    const function_symbol* function = static_cast<const function_symbol*>(symtab.get_symbol(identifier, symbol_kind::Function));
 
-    if (symbol == nullptr || symbol->kind != symbol_kind::Function)
+    if (function == nullptr)
     {
         output::error_undef_func(identifier_token->position, identifier);
     }
 
-    vector<type_kind> parameter_types = static_cast<const function_symbol*>(symbol)->parameter_types;
+    vector<type_kind> parameter_types = function->parameter_types;
 
     vector<string> params_str;
 
@@ -378,14 +378,14 @@ invocation_expression::invocation_expression(syntax_token* identifier_token):
 invocation_expression::invocation_expression(syntax_token* identifier_token, list_syntax<expression_syntax>* arguments):
     expression_syntax(get_return_type(identifier_token->text)), identifier_token(identifier_token), identifier(identifier_token->text), arguments(arguments)
 {
-    const symbol* symbol = symtab.get_symbol(identifier);
+    const function_symbol* function = static_cast<const function_symbol*>(symtab.get_symbol(identifier, symbol_kind::Function));
 
-    if (symbol == nullptr || symbol->kind != symbol_kind::Function)
+    if (function == nullptr)
     {
         output::error_undef_func(identifier_token->position, identifier);
     }
 
-    vector<type_kind> parameter_types = static_cast<const function_symbol*>(symbol)->parameter_types;
+    vector<type_kind> parameter_types = function->parameter_types;
 
     vector<string> params_str;
 
@@ -413,14 +413,14 @@ invocation_expression::invocation_expression(syntax_token* identifier_token, lis
 
 type_kind invocation_expression::get_return_type(string identifier)
 {
-    const symbol* symbol = symtab.get_symbol(identifier);
+    const symbol* function = symtab.get_symbol(identifier, symbol_kind::Function);
 
-    if (symbol == nullptr || symbol->kind != symbol_kind::Function)
+    if (function == nullptr)
     {
         return type_kind::Invalid;
     }
 
-    return symbol->type;
+    return function->type;
 }
 
 invocation_expression::~invocation_expression()

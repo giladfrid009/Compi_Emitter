@@ -26,9 +26,31 @@ bool scope::contains_symbol(const string& name) const
     return symbol_map.find(name) != symbol_map.end();
 }
 
+bool scope::contains_symbol(const string& name, symbol_kind kind) const
+{
+    auto key_val = symbol_map.find(name);
+
+    if (key_val == symbol_map.end() || key_val->second->kind != kind)
+    {
+        return false;
+    }
+
+    return true;
+}
+
 const symbol* scope::get_symbol(const string& name) const
 {
     if (contains_symbol(name) == false)
+    {
+        return nullptr;
+    }
+
+    return symbol_map.at(name);
+}
+
+const symbol* scope::get_symbol(const string& name, symbol_kind kind) const
+{
+    if (contains_symbol(name, kind) == false)
     {
         return nullptr;
     }
@@ -49,11 +71,10 @@ bool scope::add_variable(const string& name, type_kind type)
     }
 
     symbol* new_symbol = new variable_symbol(name, type, offset);
+
     symbol_list.push_back(new_symbol);
     symbol_map[name] = new_symbol;
-
     offset += 1;
-
     return true;
 }
 
@@ -64,12 +85,11 @@ bool scope::add_parameter(const string& name, type_kind type)
         return false;
     }
 
-    symbol* new_symbol = new variable_symbol(name, type, param_offset);
+    symbol* new_symbol = new parameter_symbol(name, type, param_offset);
+
     symbol_list.push_back(new_symbol);
     symbol_map[name] = new_symbol;
-
     param_offset -= 1;
-
     return true;
 }
 
@@ -81,8 +101,8 @@ bool scope::add_function(const string& name, type_kind return_type, const vector
     }
 
     symbol* new_symbol = new function_symbol(name, return_type, parameter_types);
+
     symbol_list.push_back(new_symbol);
     symbol_map[name] = new_symbol;
-
     return true;
 }

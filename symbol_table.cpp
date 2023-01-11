@@ -52,6 +52,19 @@ bool symbol_table::contains_symbol(const string& name) const
     return false;
 }
 
+bool symbol_table::contains_symbol(const string& name, symbol_kind kind) const
+{
+    for (const scope& sc : scope_list)
+    {
+        if (sc.contains_symbol(name, kind))
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 const symbol* symbol_table::get_symbol(const string& name) const
 {
     for (const scope& sc : scope_list)
@@ -59,6 +72,19 @@ const symbol* symbol_table::get_symbol(const string& name) const
         if (sc.contains_symbol(name))
         {
             return sc.get_symbol(name);
+        }
+    }
+
+    return nullptr;
+}
+
+const symbol* symbol_table::get_symbol(const string& name, symbol_kind kind) const
+{
+    for (const scope& sc : scope_list)
+    {
+        if (sc.contains_symbol(name))
+        {
+            return sc.get_symbol(name, kind);
         }
     }
 
