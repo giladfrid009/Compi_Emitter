@@ -60,7 +60,15 @@ void syntax_base::emit_tree()
 
     this->emit_node();
 
-    emit_cleanup();
+    for (syntax_base* child : children)
+    {
+        if (child == nullptr) 
+        {
+            continue;
+        }
+
+        child->emit_cleanup();
+    }
 }
 
 expression_syntax::expression_syntax(type_kind return_type): 
