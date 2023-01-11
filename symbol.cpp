@@ -53,3 +53,18 @@ string function_symbol::to_string() const
 
     return res.str();
 }
+
+parameter_symbol::parameter_symbol(const string& name, type_kind type, int offset):
+    symbol(name, type, offset, symbol_kind::Parameter)
+{
+    
+}
+
+std::string parameter_symbol::to_string() const
+{
+    stringstream res;
+
+    res << name << " " << types::to_string(type) << " " << offset;
+
+    return res.str();
+}

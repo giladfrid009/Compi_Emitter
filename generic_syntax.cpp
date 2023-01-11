@@ -5,6 +5,7 @@
 
 using std::string;
 
+static symbol_table& symtab = symbol_table::instance();
 static code_buffer& codebuf = code_buffer::instance();
 
 type_syntax::type_syntax(syntax_token* type_token):
@@ -45,7 +46,7 @@ parameter_syntax::parameter_syntax(type_syntax* type, syntax_token* identifier_t
         output::error_mismatch(identifier_token->position);
     }
 
-    if (symbol_table::instance().contains_symbol(identifier))
+    if (symtab.contains_symbol(identifier))
     {
         output::error_def(identifier_token->position, identifier);
     }
@@ -70,7 +71,7 @@ void parameter_syntax::emit_node()
 function_declaration_syntax::function_declaration_syntax(type_syntax* return_type, syntax_token* identifier_token, list_syntax<parameter_syntax>* parameters, list_syntax<statement_syntax>* body):
     return_type(return_type), identifier_token(identifier_token), identifier(identifier_token->text), parameters(parameters), body(body)
 {
-    const symbol* symbol = symbol_table::instance().get_symbol(identifier);
+    const symbol* symbol = symtab.get_symbol(identifier);
 
     if (symbol == nullptr || symbol->kind != symbol_kind::Function)
     {
@@ -114,7 +115,7 @@ void function_declaration_syntax::emit_node()
 
 root_syntax::root_syntax(list_syntax<function_declaration_syntax>* functions): functions(functions)
 {
-    const symbol* main_sym = symbol_table::instance().get_symbol("main");
+    const symbol* main_sym = symtab.get_symbol("main");
 
     if (main_sym == nullptr || main_sym->kind != symbol_kind::Function)
     {

@@ -5,7 +5,7 @@
 #include <vector>
 #include "abstract_syntax.hpp"
 
-enum class symbol_kind { Variable, Function };
+enum class symbol_kind { Variable, Parameter, Function };
 
 class symbol
 {
@@ -32,6 +32,15 @@ class variable_symbol: public symbol
     public:
 
     variable_symbol(const std::string& name, type_kind type, int offset);
+
+    std::string to_string() const override;
+};
+
+class parameter_symbol: public symbol
+{
+    public:
+
+    parameter_symbol(const std::string& name, type_kind type, int offset);
 
     std::string to_string() const override;
 };

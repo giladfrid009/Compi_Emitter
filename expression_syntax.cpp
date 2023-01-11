@@ -8,6 +8,7 @@
 using std::string;
 using std::vector;
 
+static symbol_table& symtab = symbol_table::instance();
 static code_buffer& codebuf = code_buffer::instance();
 
 cast_expression::cast_expression(type_syntax* destination_type, expression_syntax* expression):
@@ -305,9 +306,14 @@ void conditional_expression::emit_node()
 identifier_expression::identifier_expression(syntax_token* identifier_token):
     expression_syntax(get_return_type(identifier_token->text)), identifier_token(identifier_token), identifier(identifier_token->text)
 {
-    const symbol* symbol = symbol_table::instance().get_symbol(identifier);
+    const symbol* symbol = symtab.get_symbol(identifier);
 
-    if (symbol == nullptr || symbol->kind != symbol_kind::Variable)
+    if (symbol == nullptr)
+    {
+        output::error_undef(identifier_token->position, identifier);
+    }
+
+    if (symbol->kind != symbol_kind::Variable && symbol->kind != symbol_kind::Parameter)
     {
         output::error_undef(identifier_token->position, identifier);
     }
@@ -315,9 +321,14 @@ identifier_expression::identifier_expression(syntax_token* identifier_token):
 
 type_kind identifier_expression::get_return_type(string identifier)
 {
-    const symbol* symbol = symbol_table::instance().get_symbol(identifier);
+    const symbol* symbol = symtab.get_symbol(identifier);
 
-    if (symbol == nullptr || symbol->kind != symbol_kind::Variable)
+    if (symbol == nullptr)
+    {
+        return type_kind::Invalid;
+    }
+
+    if (symbol->kind != symbol_kind::Variable && symbol->kind != symbol_kind::Parameter)
     {
         return type_kind::Invalid;
     }
@@ -342,7 +353,7 @@ void identifier_expression::emit_node()
 invocation_expression::invocation_expression(syntax_token* identifier_token):
     expression_syntax(get_return_type(identifier_token->text)), identifier_token(identifier_token), identifier(identifier_token->text), arguments(nullptr)
 {
-    const symbol* symbol = symbol_table::instance().get_symbol(identifier);
+    const symbol* symbol = symtab.get_symbol(identifier);
 
     if (symbol == nullptr || symbol->kind != symbol_kind::Function)
     {
@@ -367,7 +378,7 @@ invocation_expression::invocation_expression(syntax_token* identifier_token):
 invocation_expression::invocation_expression(syntax_token* identifier_token, list_syntax<expression_syntax>* arguments):
     expression_syntax(get_return_type(identifier_token->text)), identifier_token(identifier_token), identifier(identifier_token->text), arguments(arguments)
 {
-    const symbol* symbol = symbol_table::instance().get_symbol(identifier);
+    const symbol* symbol = symtab.get_symbol(identifier);
 
     if (symbol == nullptr || symbol->kind != symbol_kind::Function)
     {
@@ -402,7 +413,7 @@ invocation_expression::invocation_expression(syntax_token* identifier_token, lis
 
 type_kind invocation_expression::get_return_type(string identifier)
 {
-    const symbol* symbol = symbol_table::instance().get_symbol(identifier);
+    const symbol* symbol = symtab.get_symbol(identifier);
 
     if (symbol == nullptr || symbol->kind != symbol_kind::Function)
     {

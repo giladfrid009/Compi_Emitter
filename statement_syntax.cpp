@@ -9,6 +9,8 @@
 using std::string;
 using std::list;
 
+static symbol_table& symtab = symbol_table::instance();
+
 if_statement::if_statement(syntax_token* if_token, expression_syntax* condition, statement_syntax* body):
     if_token(if_token), condition(condition), body(body), else_token(nullptr), else_clause(nullptr)
 {
@@ -78,7 +80,7 @@ void while_statement::emit_node()
 branch_statement::branch_statement(syntax_token* branch_token):
     branch_token(branch_token), kind(parse_kind(branch_token->text))
 {
-    const list<scope>& scopes = symbol_table::instance().get_scopes();
+    const list<scope>& scopes = symtab.get_scopes();
 
     if (std::all_of(scopes.rbegin(), scopes.rend(), [](const scope& sc) { return sc.loop_scope == false; }))
     {
@@ -121,7 +123,7 @@ void branch_statement::emit_node()
 return_statement::return_statement(syntax_token* return_token):
     return_token(return_token), value(nullptr)
 {
-    auto& global_symbols = symbol_table::instance().get_scopes().front().get_symbols();
+    auto& global_symbols = symtab.get_scopes().front().get_symbols();
 
     const symbol* func_sym = global_symbols.back();
 
@@ -134,7 +136,7 @@ return_statement::return_statement(syntax_token* return_token):
 return_statement::return_statement(syntax_token* return_token, expression_syntax* value):
     return_token(return_token), value(value)
 {
-    auto& global_symbols = symbol_table::instance().get_scopes().front().get_symbols();
+    auto& global_symbols = symtab.get_scopes().front().get_symbols();
 
     const symbol* func_sym = global_symbols.back();
 
@@ -180,14 +182,19 @@ void expression_statement::emit_node()
 assignment_statement::assignment_statement(syntax_token* identifier_token, syntax_token* assign_token, expression_syntax* value):
     identifier_token(identifier_token), identifier(identifier_token->text), assign_token(assign_token), value(value)
 {
-    const symbol* identifier_symbol = symbol_table::instance().get_symbol(identifier);
+    const symbol* symbol = symtab.get_symbol(identifier);
 
-    if (identifier_symbol == nullptr || identifier_symbol->kind != symbol_kind::Variable)
+    if (symbol == nullptr)
     {
         output::error_undef(identifier_token->position, identifier);
     }
 
-    if (types::is_implictly_convertible(value->return_type, identifier_symbol->type) == false)
+    if (symbol->kind != symbol_kind::Variable && symbol->kind != symbol_kind::Parameter)
+    {
+        output::error_undef(identifier_token->position, identifier);
+    }
+
+    if (types::is_implictly_convertible(value->return_type, symbol->type) == false)
     {
         output::error_mismatch(assign_token->position);
     }
@@ -218,12 +225,12 @@ declaration_statement::declaration_statement(type_syntax* type, syntax_token* id
         output::error_mismatch(identifier_token->position);
     }
 
-    if (symbol_table::instance().contains_symbol(identifier))
+    if (symtab.contains_symbol(identifier))
     {
         output::error_def(identifier_token->position, identifier);
     }
 
-    symbol_table::instance().add_variable(identifier, type->kind);
+    symtab.add_variable(identifier, type->kind);
 
     push_back_child(type);
 }
@@ -241,12 +248,12 @@ declaration_statement::declaration_statement(type_syntax* type, syntax_token* id
         output::error_mismatch(identifier_token->position);
     }
 
-    if (symbol_table::instance().contains_symbol(identifier))
+    if (symtab.contains_symbol(identifier))
     {
         output::error_def(identifier_token->position, identifier);
     }
 
-    symbol_table::instance().add_variable(identifier, type->kind);
+    symtab.add_variable(identifier, type->kind);
 
     push_back_child(type);
     push_back_child(value);
