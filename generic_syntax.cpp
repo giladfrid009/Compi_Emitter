@@ -3,7 +3,6 @@
 #include "symbol.hpp"
 #include "symbol_table.hpp"
 
-using std::vector;
 using std::string;
 
 static code_buffer& codebuf = code_buffer::instance();

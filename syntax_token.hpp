@@ -1,4 +1,3 @@
-
 #ifndef _SYNTAX_TOKEN_HPP_
 #define _SYNTAX_TOKEN_HPP_
 

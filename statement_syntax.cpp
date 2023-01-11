@@ -7,7 +7,6 @@
 #include <stdexcept>
 
 using std::string;
-using std::vector;
 using std::list;
 
 if_statement::if_statement(syntax_token* if_token, expression_syntax* condition, statement_syntax* body):
