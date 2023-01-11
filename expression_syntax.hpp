@@ -194,7 +194,7 @@ class relational_expression final: public expression_syntax
     protected:
 
     static relational_operator parse_operator(std::string str);
-    
+
     void emit_node() override;
 };
 
@@ -202,11 +202,11 @@ class conditional_expression final: public expression_syntax
 {
     public:
 
-    expression_syntax* const true_value; 
-    const syntax_token* const if_token; 
+    expression_syntax* const true_value;
+    const syntax_token* const if_token;
     expression_syntax* const condition;
     const syntax_token* const else_token;
-    expression_syntax* const false_value; 
+    expression_syntax* const false_value;
 
     conditional_expression(expression_syntax* true_value, syntax_token* if_token, expression_syntax* condition, syntax_token* else_token, expression_syntax* false_value);
     ~conditional_expression();

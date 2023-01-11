@@ -19,7 +19,7 @@ class symbol_table
 
     void open_scope(bool loop_scope = false);
     void close_scope();
-    
+
     const scope& current_scope() const;
 
     bool contains_symbol(const std::string& name) const;

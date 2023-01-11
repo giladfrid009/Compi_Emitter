@@ -46,7 +46,7 @@ size_t code_buffer::emit_from_file(std::string file_path)
     ifstream file;
 
     file.open(file_path.c_str());
-    
+
     if (file.is_open() == false)
     {
         throw std::runtime_error("couldn't open file.");

@@ -21,9 +21,7 @@ variable_symbol::variable_symbol(const string& name, type_kind type, int offset)
 string variable_symbol::to_string() const
 {
     stringstream res;
-
     res << name << " " << types::to_string(type) << " " << offset;
-
     return res.str();
 }
 
@@ -57,14 +55,12 @@ string function_symbol::to_string() const
 parameter_symbol::parameter_symbol(const string& name, type_kind type, int offset):
     symbol(name, type, offset, symbol_kind::Parameter)
 {
-    
+
 }
 
 std::string parameter_symbol::to_string() const
 {
     stringstream res;
-
     res << name << " " << types::to_string(type) << " " << offset;
-
     return res.str();
 }

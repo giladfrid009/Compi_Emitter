@@ -50,7 +50,7 @@ void syntax_base::emit_tree()
 {
     for (syntax_base* child : children)
     {
-        if (child == nullptr) 
+        if (child == nullptr)
         {
             continue;
         }
@@ -62,7 +62,7 @@ void syntax_base::emit_tree()
 
     for (syntax_base* child : children)
     {
-        if (child == nullptr) 
+        if (child == nullptr)
         {
             continue;
         }
@@ -71,7 +71,7 @@ void syntax_base::emit_tree()
     }
 }
 
-expression_syntax::expression_syntax(type_kind return_type): 
+expression_syntax::expression_syntax(type_kind return_type):
     return_type(return_type), place(ir_builder::fresh_register()), true_list(), false_list()
 {
 
