@@ -297,7 +297,8 @@ void conditional_expression::emit_node()
     }
     else
     {
-        codebuf.emit("%s = phi i32 [ %s , %s ] [ %s , %s ]", this->place, true_value->place, true_label->name, false_value->place, false_label->name);
+        string res_type = ir_builder.get_register_type(return_type);
+        codebuf.emit("%s = phi %s [ %s , %s ] [ %s , %s ]", this->place, res_type, true_value->place, true_label->name, false_value->place, false_label->name);
     }*/
 }
 
