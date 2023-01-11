@@ -8,8 +8,7 @@ using std::string;
 static symbol_table& symtab = symbol_table::instance();
 static code_buffer& codebuf = code_buffer::instance();
 
-type_syntax::type_syntax(syntax_token* type_token):
-    type_token(type_token), kind(types::parse(type_token->text))
+type_syntax::type_syntax(syntax_token* type_token): type_token(type_token), kind(types::parse(type_token->text))
 {
 }
 

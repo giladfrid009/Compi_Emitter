@@ -8,8 +8,7 @@ using std::string;
 using std::vector;
 using std::list;
 
-scope::scope(int offset, bool loop_scope):
-    symbol_list(), symbol_map(), offset(offset), param_offset(offset - 1), loop_scope(loop_scope)
+scope::scope(int offset, bool loop_scope): symbol_list(), symbol_map(), offset(offset), param_offset(offset - 1), loop_scope(loop_scope)
 {
 }
 

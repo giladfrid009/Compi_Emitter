@@ -11,8 +11,7 @@ class syntax_token
     const int position;
     const std::string text;
 
-    syntax_token(int type, int position, const std::string& text):
-        type(type), position(position), text(text)
+    syntax_token(int type, int position, const std::string& text): type(type), position(position), text(text)
     {
 
     }

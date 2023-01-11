@@ -77,8 +77,7 @@ void while_statement::emit_node()
 {
 }
 
-branch_statement::branch_statement(syntax_token* branch_token):
-    branch_token(branch_token), kind(parse_kind(branch_token->text))
+branch_statement::branch_statement(syntax_token* branch_token): branch_token(branch_token), kind(parse_kind(branch_token->text))
 {
     const list<scope>& scopes = symtab.get_scopes();
 
@@ -120,8 +119,7 @@ void branch_statement::emit_node()
 {
 }
 
-return_statement::return_statement(syntax_token* return_token):
-    return_token(return_token), value(nullptr)
+return_statement::return_statement(syntax_token* return_token): return_token(return_token), value(nullptr)
 {
     auto& global_symbols = symtab.get_scopes().front().get_symbols();
 
@@ -133,8 +131,7 @@ return_statement::return_statement(syntax_token* return_token):
     }
 }
 
-return_statement::return_statement(syntax_token* return_token, expression_syntax* value):
-    return_token(return_token), value(value)
+return_statement::return_statement(syntax_token* return_token, expression_syntax* value): return_token(return_token), value(value)
 {
     auto& global_symbols = symtab.get_scopes().front().get_symbols();
 
