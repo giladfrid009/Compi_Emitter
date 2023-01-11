@@ -172,13 +172,13 @@ void arithmetic_expression::emit_node()
 
         codebuf.emit("%s = icmp eq i32 0 , %s", cmp_res, right->place);
 
-        codebuf.emit("br i1 %s , label %s , label %s", cmp_res, true_label, false_label);
+        codebuf.emit("br i1 %s , label %%%s , label %%%s", cmp_res, true_label, false_label);
 
         codebuf.emit("%s:", true_label);
 
         codebuf.emit("call void @error_zero_div()");
 
-        codebuf.emit("br label %s", false_label);
+        codebuf.emit("br label %%%s", false_label);
 
         codebuf.emit("%s:", false_label);
     }
