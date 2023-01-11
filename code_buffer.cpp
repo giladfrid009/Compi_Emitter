@@ -6,6 +6,7 @@
 
 using std::list;
 using std::string;
+using std::ifstream;
 
 bool replace(string& str, const string& from, const string& to, const label_index index);
 
@@ -40,11 +41,15 @@ size_t code_buffer::emit(const string& line)
     return buffer.size() - 1;
 }
 
-size_t code_buffer::emit_from_file(std::ifstream file)
+size_t code_buffer::emit_from_file(std::string file_path)
 {
+    ifstream file;
+
+    file.open(file_path.c_str());
+    
     if (file.is_open() == false)
     {
-        throw std::runtime_error("file not open.");
+        throw std::runtime_error("couldn't open file.");
     }
 
     for (string line; std::getline(file, line); )

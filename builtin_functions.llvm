@@ -18,7 +18,7 @@ define void @print(i8*) {
 
 define void @error_zero_div() {
     %spec_ptr = getelementptr [23 x i8], [23 x i8]* @.str_zero_div, i32 0, i32 0
-    call i32 @printf(i8* %spec_ptr)
+    call i32 (i8*, ...) @printf(i8* %spec_ptr)
     call void @exit(i32 0)
     ret void
 }

@@ -50,7 +50,7 @@ class code_buffer
         return buffer.size() - 1;
     }
 
-    size_t emit_from_file(std::ifstream file);
+    size_t emit_from_file(std::string file_path);
 
     static std::list<patch_record> make_list(patch_record item);
 

@@ -17,8 +17,11 @@ extern int yylineno;
 extern int yylex();
 
 static symbol_table& symtab = symbol_table::instance();
+static code_buffer& codebuf = code_buffer::instance();
 
 void yyerror(const char* message);
+
+void add_builtin_functions();
 
 void add_function_symbol(type_syntax* return_type, syntax_token* indentifier_token, list_syntax<parameter_syntax>* parameters);
 
@@ -179,8 +182,8 @@ CS          : %empty                                                { print_curr
 int main()
 {
     symtab.open_scope();
-    symtab.add_function("print", type_kind::Void, vector<type_kind>{type_kind::String});
-    symtab.add_function("printi", type_kind::Void, vector<type_kind>{type_kind::Int});
+    
+    add_builtin_functions();
 
 	int res = yyparse();
 
@@ -195,6 +198,14 @@ int main()
 void yyerror(const char* message)
 {
     output::error_syn(yylineno);
+}
+
+void add_builtin_functions()
+{
+    symtab.add_function("print", type_kind::Void, vector<type_kind>{type_kind::String});
+    symtab.add_function("printi", type_kind::Void, vector<type_kind>{type_kind::Int});
+
+    codebuf.emit_from_file("builtin_functions.llvm");
 }
 
 void add_function_symbol(type_syntax* return_type, syntax_token* indentifier_token, list_syntax<parameter_syntax>* parameters)
