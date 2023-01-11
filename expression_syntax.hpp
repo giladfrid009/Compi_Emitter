@@ -138,11 +138,10 @@ class logical_expression final: public expression_syntax
 
     expression_syntax* const left;
     const syntax_token* const oper_token;
-    label_syntax* const label;
     expression_syntax* const right;
     const operator_kind oper;
 
-    logical_expression(expression_syntax* left, syntax_token* oper_token, label_syntax*  label, expression_syntax* right);
+    logical_expression(expression_syntax* left, syntax_token* oper_token, expression_syntax* right);
     ~logical_expression();
 
     logical_expression(const logical_expression& other) = delete;
@@ -203,22 +202,13 @@ class conditional_expression final: public expression_syntax
 {
     public:
 
-    jump_syntax* const condition_jump;
-    label_syntax* const true_label;
     expression_syntax* const true_value; 
-    jump_syntax* const true_next; 
     const syntax_token* const if_token; 
-    label_syntax* const condition_label; 
     expression_syntax* const condition;
     const syntax_token* const else_token;
-    label_syntax* const false_label; 
     expression_syntax* const false_value; 
-    jump_syntax* const false_next;
 
-    conditional_expression(jump_syntax* condition_jump, label_syntax* true_label, expression_syntax* true_value, 
-        jump_syntax* true_next, syntax_token* if_token, label_syntax* condition_label, expression_syntax* condition, 
-        syntax_token* else_token, label_syntax* false_label, expression_syntax* false_value, jump_syntax* false_next);
-
+    conditional_expression(expression_syntax* true_value, syntax_token* if_token, expression_syntax* condition, syntax_token* else_token, expression_syntax* false_value);
     ~conditional_expression();
 
     conditional_expression(const conditional_expression& other) = delete;

@@ -42,6 +42,10 @@ const list<syntax_base*>& syntax_base::get_children() const
     return children;
 }
 
+void syntax_base::emit_cleanup()
+{
+}
+
 void syntax_base::emit_tree()
 {
     for (syntax_base* child : children)
@@ -55,6 +59,8 @@ void syntax_base::emit_tree()
     }
 
     this->emit_node();
+
+    emit_cleanup();
 }
 
 expression_syntax::expression_syntax(type_kind return_type): 
@@ -73,6 +79,16 @@ bool expression_syntax::is_special() const
     return types::is_special(return_type);
 }
 
+void expression_syntax::emit_cleanup()
+{
+    true_list.clear();
+    false_list.clear();
+}
+
 statement_syntax::statement_syntax()
+{
+}
+
+void statement_syntax::emit_cleanup()
 {
 }

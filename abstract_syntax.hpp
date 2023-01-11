@@ -32,6 +32,7 @@ class syntax_base
     void push_front_child(syntax_base* child);
 
     virtual void emit_node() = 0;
+    virtual void emit_cleanup();
     void emit_tree();
 };
 
@@ -56,7 +57,7 @@ class expression_syntax: public syntax_base
 
     protected:
 
-    virtual void emit_node() = 0;
+    void emit_cleanup() override;
 };
 
 class statement_syntax: public syntax_base
@@ -71,7 +72,7 @@ class statement_syntax: public syntax_base
 
     protected:
 
-    virtual void emit_node() = 0;
+    void emit_cleanup() override;
 };
 
 #endif

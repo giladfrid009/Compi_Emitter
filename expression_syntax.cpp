@@ -67,13 +67,10 @@ void not_expression::emit_node()
 {
     false_list = expression->true_list;
     true_list = expression->false_list;
-
-    expression->true_list.clear();
-    expression->false_list.clear();
 }
 
-logical_expression::logical_expression(expression_syntax* left, syntax_token* oper_token, label_syntax* label, expression_syntax* right):
-    expression_syntax(type_kind::Bool), left(left), oper_token(oper_token), label(label), right(right), oper(parse_operator(oper_token->text))
+logical_expression::logical_expression(expression_syntax* left, syntax_token* oper_token, expression_syntax* right):
+    expression_syntax(type_kind::Bool), left(left), oper_token(oper_token), right(right), oper(parse_operator(oper_token->text))
 {
     if (left->return_type != type_kind::Bool || right->return_type != type_kind::Bool)
     {
@@ -81,7 +78,6 @@ logical_expression::logical_expression(expression_syntax* left, syntax_token* op
     }
 
     push_back_child(left);
-    push_back_child(label);
     push_back_child(right);
 }
 
@@ -104,11 +100,12 @@ logical_expression::operator_kind logical_expression::parse_operator(string str)
 }
 
 void logical_expression::emit_node()
-{    
-    if(oper == operator_kind::Or)
+{
+    /*
+    if (oper == operator_kind::Or)
     {
         codebuf.backpatch(left->false_list, label->name);
-        
+
         true_list = codebuf.merge(left->true_list, right->true_list);
         false_list = right->false_list;
     }
@@ -119,11 +116,7 @@ void logical_expression::emit_node()
         true_list = right->true_list;
         false_list = codebuf.merge(left->false_list, right->false_list);
     }
-
-    left->true_list.clear();
-    left->false_list.clear();
-    right->true_list.clear();
-    right->false_list.clear();
+    */
 }
 
 arithmetic_expression::arithmetic_expression(expression_syntax* left, syntax_token* oper_token, expression_syntax* right):
@@ -243,31 +236,8 @@ void relational_expression::emit_node()
     false_list.push_back(patch_record(line, label_index::second));
 }
 
-conditional_expression::conditional_expression(
-    jump_syntax* condition_jump, 
-    label_syntax* true_label, 
-    expression_syntax* true_value, 
-    jump_syntax* true_next, 
-    syntax_token* if_token, 
-    label_syntax* condition_label, 
-    expression_syntax* condition, 
-    syntax_token* else_token, 
-    label_syntax* false_label, 
-    expression_syntax* false_value, 
-    jump_syntax* false_next) :
-    
-    expression_syntax(types::cast_up(true_value->return_type, false_value->return_type)), 
-    condition_jump(condition_jump),
-    true_label(true_label),
-    true_value(true_value),
-    true_next(true_next), 
-    if_token(if_token), 
-    condition_label(condition_label),
-    condition(condition), 
-    else_token(else_token), 
-    false_label(false_label),
-    false_value(false_value),
-    false_next(false_next)
+conditional_expression::conditional_expression(expression_syntax* true_value, syntax_token* if_token, expression_syntax* condition, syntax_token* else_token, expression_syntax* false_value):
+    expression_syntax(types::cast_up(true_value->return_type, false_value->return_type)), true_value(true_value), if_token(if_token), condition(condition), else_token(else_token), false_value(false_value)
 {
     if (return_type == type_kind::Void)
     {
@@ -297,7 +267,7 @@ conditional_expression::~conditional_expression()
 
 void conditional_expression::emit_node()
 {
-    string next_label = codebuf.emit_label();
+    /*string next_label = codebuf.emit_label();
 
     codebuf.backpatch(condition_jump->next_list, condition_label->name);
 
@@ -309,14 +279,15 @@ void conditional_expression::emit_node()
 
     codebuf.emit("%s:", next_label);
 
-    //todo: correct only if return_type != Bool?
-    codebuf.emit("%s = phi i32 [ %s , %s ] [ %s , %s ]", this->place, true_value->place, true_label->name, false_value->place, false_label->name);
-
-    condition_jump->next_list.clear();
-    condition->true_list.clear();
-    condition->false_list.clear();
-    true_next->next_list.clear();
-    false_next->next_list.clear();
+    if (return_type == type_kind::Bool)
+    {
+        true_list = codebuf.merge(true_value->true_list, false_value->true_list);
+        false_list = codebuf.merge(true_value->false_list, false_value->false_list);
+    }
+    else
+    {
+        codebuf.emit("%s = phi i32 [ %s , %s ] [ %s , %s ]", this->place, true_value->place, true_label->name, false_value->place, false_label->name);
+    }*/
 }
 
 identifier_expression::identifier_expression(syntax_token* identifier_token):
