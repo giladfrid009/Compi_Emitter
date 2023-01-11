@@ -105,11 +105,11 @@ bool replace(string& str, const string& from, const string& to, const label_inde
 {
     size_t pos = string::npos;
 
-    if (index == label_index::first)
+    if (index == label_index::First)
     {
         pos = str.find_first_of(from);
     }
-    else if (index == label_index::second)
+    else if (index == label_index::Second)
     {
         pos = str.find_last_of(from);
     }

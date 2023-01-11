@@ -241,10 +241,10 @@ void relational_expression::emit_node()
 
     codebuf.emit("%s = icmp %s i32 %s , %s", res_reg, cmp_kind, left->place, right->place);
 
-    size_t line = codebuf.emit("br i1 eq 0 , %s label @ , label @", res_reg);
+    size_t line = codebuf.emit("br i1 %s , label @ , label @", res_reg);
 
-    true_list.push_back(patch_record(line, label_index::first));
-    false_list.push_back(patch_record(line, label_index::second));
+    true_list.push_back(patch_record(line, label_index::First));
+    false_list.push_back(patch_record(line, label_index::Second));
 }
 
 conditional_expression::conditional_expression(expression_syntax* true_value, syntax_token* if_token, expression_syntax* condition, syntax_token* else_token, expression_syntax* false_value):

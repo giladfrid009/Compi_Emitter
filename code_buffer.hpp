@@ -7,7 +7,7 @@
 #include <string>
 #include <fstream>
 
-enum class label_index { first, second };
+enum class label_index { First, Second };
 
 struct patch_record
 {
