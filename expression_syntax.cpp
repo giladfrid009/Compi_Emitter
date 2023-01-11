@@ -101,6 +101,17 @@ logical_expression::operator_kind logical_expression::parse_operator(string str)
 
 void logical_expression::emit_node()
 {
+    //todo: VERY IMPROTANT
+
+    /* IMPORTANT:
+    each expression must emit at the beggining:
+        size_t line = codebuf.emit(br label @);
+        jump_list.append(patch_entry(line, patch_index::first));
+        string label = codebuf.emit("%s:", this->label);
+
+    each node in the syntax tree mush patch all of the expressions in it.
+    */
+
     /*
     if (oper == operator_kind::Or)
     {
