@@ -6,7 +6,7 @@
 #include "generic_syntax.hpp"
 #include "code_buffer.hpp"
 #include "syntax_operators.hpp"
-#include "output.hpp"
+#include "hw3_output.hpp"
 #include <vector>
 #include <string>
 #include <stdexcept>

@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string>
 #include "parser.tab.hpp"
-#include "output.hpp"
+#include "hw3_output.hpp"
 #include "syntax_token.hpp"
 
 yytoken_kind_t new_token(yytoken_kind_t kind);

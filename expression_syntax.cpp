@@ -1,6 +1,6 @@
 #include "expression_syntax.hpp"
 #include "symbol_table.hpp"
-#include "output.hpp"
+#include "hw3_output.hpp"
 #include "code_buffer.hpp"
 #include "ir_builder.hpp"
 #include <stdexcept>
