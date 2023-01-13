@@ -403,11 +403,7 @@ block_statement::~block_statement()
 
 void block_statement::emit_node()
 {
-    next_list = statements->back()->next_list;
-
-    for (auto statement : *statements)
-    {
-        break_list = codebuf.merge(break_list, statement->break_list);
-        continue_list = codebuf.merge(continue_list, statement->continue_list);
-    }
+    next_list = statements->next_list;
+    break_list = statements->break_list;
+    continue_list = statements->continue_list;
 }

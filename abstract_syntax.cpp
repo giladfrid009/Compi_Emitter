@@ -84,7 +84,7 @@ string syntax_base::emit_get_bool(const expression_syntax* bool_expression)
 
     codebuf.emit("%s:", false_label);
 
-    codebuf.emit("%s = phi i32 [ 1 , %s ] [ 0 , %s ]", bool_reg, true_label, false_label);
+    codebuf.emit("%s = phi i32 [ 1 , %s ] , [ 0 , %s ]", bool_reg, true_label, false_label);
 
     return bool_reg;
 }

@@ -321,7 +321,7 @@ void conditional_expression::emit_node()
     {
         string res_type = ir_builder::get_type(return_type);
 
-        codebuf.emit("%s = phi %s [ %s , %s ] [ %s , %s ]", this->place, res_type, true_value->place, true_value->label, false_value->place, false_value->label);
+        codebuf.emit("%s = phi %s [ %s , %s ] , [ %s , %s ]", this->place, res_type, true_value->place, true_value->label, false_value->place, false_value->label);
     }
 }
 

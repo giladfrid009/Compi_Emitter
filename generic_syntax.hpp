@@ -16,20 +16,18 @@ template<typename element_type> class list_syntax final: public syntax_base
 
     public:
 
-    list_syntax(): elements()
+    std::list<patch_record> next_list;
+    std::list<patch_record> break_list;
+    std::list<patch_record> continue_list;
+
+    list_syntax(): elements(), next_list(), break_list(), continue_list()
     {
         static_assert(std::is_base_of<syntax_base, element_type>::value, "must be of type syntax_base");
-
-        emit();
     }
 
-    list_syntax(element_type* element): elements{ element }
+    list_syntax(element_type* element): list_syntax()
     {
-        static_assert(std::is_base_of<syntax_base, element_type>::value, "must be of type syntax_base");
-
-        add_child(element);
-
-        emit(); //todo: emittibg before adding all elements.
+        push_back(element);
     }
 
     list_syntax(const list_syntax& other) = delete;
@@ -48,36 +46,22 @@ template<typename element_type> class list_syntax final: public syntax_base
 
     list_syntax<element_type>* push_back(element_type* element)
     {
-        if (size() == 0)
-        {
-            emit_element_back(nullptr, element);
-        }
-        else
-        {
-            emit_element_back(back(), element);
-        }
-
         elements.push_back(element);
 
         add_child(element);
+
+        emit_element(element);
 
         return this;
     }
 
     list_syntax<element_type>* push_front(element_type* element)
     {
-        if (size() == 0)
-        {
-            emit_element_front(nullptr, element);
-        }
-        else
-        {
-            emit_element_front(front(), element);
-        }
-
         elements.push_front(element);
 
         add_child_front(element);
+
+        emit_element(element);
 
         return this;
     }
@@ -107,12 +91,7 @@ template<typename element_type> class list_syntax final: public syntax_base
 
     protected:
 
-    void emit_element_front(element_type* old_front, element_type* new_front)
-    {
-
-    }
-
-    void emit_element_back(element_type* old_back, element_type* new_back)
+    void emit_element(element_type* element)
     {
     }
 
@@ -121,30 +100,18 @@ template<typename element_type> class list_syntax final: public syntax_base
     }
 };
 
-template<> inline void list_syntax<expression_syntax>::emit_element_front(expression_syntax* old_front, expression_syntax* new_front)
+template<> inline void list_syntax<expression_syntax>::emit_element(expression_syntax* element)
 {
-    code_buffer::instance().backpatch(new_front->jump_list, new_front->label);
+    code_buffer::instance().backpatch(element->jump_list, element->label);
 }
 
-template<> inline void list_syntax<expression_syntax>::emit_element_back(expression_syntax* old_back, expression_syntax* new_back)
+template<> inline void list_syntax<statement_syntax>::emit_element(statement_syntax* element)
 {
-    code_buffer::instance().backpatch(new_back->jump_list, new_back->label);
-}
+    code_buffer& codebuf = code_buffer::instance();
 
-template<> inline void list_syntax<statement_syntax>::emit_element_front(statement_syntax* old_front, statement_syntax* new_front)
-{
-    if (old_front != nullptr)
-    {
-        code_buffer::instance().backpatch(old_front->next_list, new_front->label);
-    }
-}
-
-template<> inline void list_syntax<statement_syntax>::emit_element_back(statement_syntax* old_back, statement_syntax* new_back)
-{
-    if (old_back != nullptr)
-    {
-        code_buffer::instance().backpatch(new_back->next_list, old_back->label);
-    }
+    next_list = codebuf.merge(next_list, element->next_list);
+    continue_list = codebuf.merge(continue_list, element->continue_list);
+    break_list = codebuf.merge(continue_list, element->break_list);
 }
 
 class type_syntax final: public syntax_base
