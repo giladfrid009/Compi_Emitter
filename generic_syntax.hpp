@@ -27,7 +27,7 @@ template<typename element_type> class list_syntax final: public syntax_base
     {
         static_assert(std::is_base_of<syntax_base, element_type>::value, "must be of type syntax_base");
 
-        push_back_child(element);
+        add_child(element);
 
         emit(); //todo: emittibg before adding all elements.
     }
@@ -49,14 +49,14 @@ template<typename element_type> class list_syntax final: public syntax_base
     list_syntax<element_type>* push_back(element_type* element)
     {
         elements.push_back(element);
-        push_back_child(element);
+        add_child(element);
         return this;
     }
 
     list_syntax<element_type>* push_front(element_type* element)
     {
         elements.push_front(element);
-        push_front_child(element);
+        add_child_front(element);
         return this;
     }
 

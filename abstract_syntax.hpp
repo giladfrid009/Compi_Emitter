@@ -8,6 +8,8 @@
 #include <string>
 #include <list>
 
+class expression_syntax;
+
 class syntax_base
 {
     private:
@@ -31,10 +33,12 @@ class syntax_base
     virtual void emit_node() = 0;
     virtual void emit_clean();
 
+    std::string emit_get_bool(const expression_syntax* bool_expression);
+
     protected:
 
-    void push_back_child(syntax_base* child);
-    void push_front_child(syntax_base* child);
+    void add_child(syntax_base* child);
+    void add_child_front(syntax_base* child);
 };
 
 class expression_syntax: public syntax_base
@@ -72,7 +76,7 @@ class statement_syntax: public syntax_base
     std::list<patch_record> break_list;
     std::list<patch_record> continue_list;
     const std::string label;
-    
+
     statement_syntax();
     virtual ~statement_syntax() = default;
 

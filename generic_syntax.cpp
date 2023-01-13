@@ -50,7 +50,7 @@ parameter_syntax::parameter_syntax(type_syntax* type, syntax_token* identifier_t
         output::error_def(identifier_token->position, identifier);
     }
 
-    push_back_child(type);
+    add_child(type);
 
     emit();
 }
@@ -93,9 +93,9 @@ function_declaration_syntax::function_declaration_syntax(type_syntax* return_typ
         }
     }
 
-    push_back_child(return_type);
-    push_back_child(parameters);
-    push_back_child(body);
+    add_child(return_type);
+    add_child(parameters);
+    add_child(body);
 
     emit();
 }
@@ -128,7 +128,7 @@ root_syntax::root_syntax(list_syntax<function_declaration_syntax>* functions): f
         output::error_main_missing();
     }
 
-    push_back_child(functions);
+    add_child(functions);
 
     emit();
 }

@@ -20,8 +20,8 @@ if_statement::if_statement(syntax_token* if_token, expression_syntax* condition,
         output::error_mismatch(if_token->position);
     }
 
-    push_back_child(condition);
-    push_back_child(body);
+    add_child(condition);
+    add_child(body);
 
     emit();
 }
@@ -34,9 +34,9 @@ if_statement::if_statement(syntax_token* if_token, expression_syntax* condition,
         output::error_mismatch(if_token->position);
     }
 
-    push_back_child(condition);
-    push_back_child(body);
-    push_back_child(else_clause);
+    add_child(condition);
+    add_child(body);
+    add_child(else_clause);
 
     emit();
 }
@@ -68,7 +68,7 @@ void if_statement::emit_node()
     {
         codebuf.backpatch(condition->true_list, body->label);
         codebuf.backpatch(condition->false_list, else_clause->label);
-        
+
         next_list = codebuf.merge(body->next_list, else_clause->next_list);
         break_list = codebuf.merge(body->break_list, else_clause->continue_list);
         continue_list = codebuf.merge(body->continue_list, else_clause->continue_list);
@@ -83,8 +83,8 @@ while_statement::while_statement(syntax_token* while_token, expression_syntax* c
         output::error_mismatch(while_token->position);
     }
 
-    push_back_child(condition);
-    push_back_child(body);
+    add_child(condition);
+    add_child(body);
 
     emit();
 }
@@ -105,7 +105,7 @@ void while_statement::emit_node()
     codebuf.backpatch(body->next_list, condition->label);
     codebuf.backpatch(condition->true_list, body->label);
     codebuf.backpatch(body->continue_list, condition->label);
-    
+
     next_list = codebuf.merge(condition->false_list, body->break_list);
 
     codebuf.emit("br label %%%s", condition->label);
@@ -156,7 +156,7 @@ void branch_statement::emit_node()
     size_t line = codebuf.emit("br label @");
 
     if (kind == branch_kind::Continue)
-    {        
+    {
         continue_list.push_back(patch_record(line, label_index::First));
     }
     else
@@ -190,7 +190,7 @@ return_statement::return_statement(syntax_token* return_token, expression_syntax
         output::error_mismatch(return_token->position);
     }
 
-    push_back_child(value);
+    add_child(value);
 
     emit();
 }
@@ -214,40 +214,21 @@ void return_statement::emit_node()
     }
 
     codebuf.backpatch(value->jump_list, value->label);
-    
-    if (value->return_type == type_kind::Bool)
-    {
-        string bool_reg = ir_builder::fresh_register();
-        string true_label = ir_builder::fresh_label();
-        string false_label = ir_builder::fresh_label();
-        string next_label = ir_builder::fresh_label();
 
-        codebuf.backpatch(value->true_list, true_label);
-        codebuf.backpatch(value->false_list, false_label);
-
-        codebuf.emit("%s:", true_label);
-
-        codebuf.emit("br label %%%s", next_label);
-
-        codebuf.emit("%s:", false_label);
-
-        codebuf.emit("br label %%%s", next_label);
-
-        codebuf.emit("%s:", false_label);
-
-        codebuf.emit("%s = phi i32 [ 1 , %s ] [ 0 , %s ]", bool_reg, true_label, false_label);
-
-        codebuf.emit("ret i32 %s", bool_reg);
-    }
-    else
+    if (value->return_type != type_kind::Bool)
     {
         codebuf.emit("ret %s %s", ir_builder::get_type(value->return_type), value->place);
+        return;
     }
+
+    string bool_reg = emit_get_bool(value);
+
+    codebuf.emit("ret i32 %s", bool_reg);
 }
 
 expression_statement::expression_statement(expression_syntax* expression): expression(expression)
 {
-    push_back_child(expression);
+    add_child(expression);
 
     emit();
 }
@@ -285,7 +266,7 @@ assignment_statement::assignment_statement(syntax_token* identifier_token, synta
         output::error_mismatch(assign_token->position);
     }
 
-    push_back_child(value);
+    add_child(value);
 
     emit();
 }
@@ -309,36 +290,18 @@ void assignment_statement::emit_node()
 
     string ptr_reg = static_cast<const variable_symbol*>(symbol)->ptr_reg;
 
-    if (value->return_type == type_kind::Bool)
-    {
-        string bool_reg = ir_builder::fresh_register();
-        string true_label = ir_builder::fresh_label();
-        string false_label = ir_builder::fresh_label();
-        string next_label = ir_builder::fresh_label();
-
-        codebuf.backpatch(value->true_list, true_label);
-        codebuf.backpatch(value->false_list, false_label);
-
-        codebuf.emit("%s:", true_label);
-
-        codebuf.emit("br label %%%s", next_label);
-
-        codebuf.emit("%s:", false_label);
-
-        codebuf.emit("br label %%%s", next_label);
-
-        codebuf.emit("%s:", false_label);
-
-        codebuf.emit("%s = phi i32 [ 1 , %s ] [ 0 , %s ]", bool_reg, true_label, false_label);
-
-        codebuf.emit("store i32 %s , i32* %s", bool_reg, ptr_reg);
-    }
-    else
+    if (value->return_type != type_kind::Bool)
     {
         string type = ir_builder::get_type(value->return_type);
 
         codebuf.emit("store %s %s , %s* %s", type, value->place, type, ptr_reg);
+
+        return;
     }
+
+    string bool_reg = emit_get_bool(value);
+
+    codebuf.emit("store i32 %s , i32* %s", bool_reg, ptr_reg);
 }
 
 declaration_statement::declaration_statement(type_syntax* type, syntax_token* identifier_token):
@@ -356,7 +319,7 @@ declaration_statement::declaration_statement(type_syntax* type, syntax_token* id
 
     symtab.add_variable(identifier, type->kind);
 
-    push_back_child(type);
+    add_child(type);
 
     emit();
 }
@@ -381,8 +344,8 @@ declaration_statement::declaration_statement(type_syntax* type, syntax_token* id
 
     symtab.add_variable(identifier, type->kind);
 
-    push_back_child(type);
-    push_back_child(value);
+    add_child(type);
+    add_child(value);
 
     emit();
 }
@@ -417,34 +380,16 @@ void declaration_statement::emit_node()
         codebuf.emit("store i32 %s , i32* %s", value->place, ptr_reg);
         return;
     }
-    
-    string bool_reg = ir_builder::fresh_register();
-    string true_label = ir_builder::fresh_label();
-    string false_label = ir_builder::fresh_label();
-    string next_label = ir_builder::fresh_label();
 
-    codebuf.backpatch(value->true_list, true_label);
-    codebuf.backpatch(value->false_list, false_label);
-
-    codebuf.emit("%s:", true_label);
-
-    codebuf.emit("br label %%%s", next_label);
-
-    codebuf.emit("%s:", false_label);
-
-    codebuf.emit("br label %%%s", next_label);
-
-    codebuf.emit("%s:", false_label);
-
-    codebuf.emit("%s = phi i32 [ 1 , %s ] [ 0 , %s ]", bool_reg, true_label, false_label);
+    string bool_reg = emit_get_bool(value);
 
     codebuf.emit("store i32 %s , i32* %s", bool_reg, ptr_reg);
 }
 
 block_statement::block_statement(list_syntax<statement_syntax>* statements): statements(statements)
 {
-    push_back_child(statements);
-    
+    add_child(statements);
+
     emit();
 }
 

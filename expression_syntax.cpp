@@ -6,6 +6,7 @@
 #include <stdexcept>
 #include <list>
 #include <sstream>
+#include <cassert>
 
 using std::string;
 using std::vector;
@@ -23,8 +24,8 @@ cast_expression::cast_expression(type_syntax* destination_type, expression_synta
         output::error_mismatch(destination_type->type_token->position);
     }
 
-    push_back_child(destination_type);
-    push_back_child(value);
+    add_child(destination_type);
+    add_child(value);
 
     emit();
 }
@@ -59,7 +60,7 @@ not_expression::not_expression(syntax_token* not_token, expression_syntax* expre
         output::error_mismatch(not_token->position);
     }
 
-    push_back_child(expression);
+    add_child(expression);
 
     emit();
 }
@@ -90,8 +91,8 @@ logical_expression::logical_expression(expression_syntax* left, syntax_token* op
         output::error_mismatch(oper_token->position);
     }
 
-    push_back_child(left);
-    push_back_child(right);
+    add_child(left);
+    add_child(right);
 
     emit();
 }
@@ -143,8 +144,8 @@ arithmetic_expression::arithmetic_expression(expression_syntax* left, syntax_tok
         output::error_mismatch(oper_token->position);
     }
 
-    push_back_child(left);
-    push_back_child(right);
+    add_child(left);
+    add_child(right);
 
     emit();
 }
@@ -173,6 +174,11 @@ void arithmetic_expression::emit_node()
 {
     codebuf.backpatch(left->jump_list, left->label);
     codebuf.backpatch(right->jump_list, right->label);
+
+    assert(left->true_list.size() == 0);
+    assert(left->false_list.size() == 0);
+    assert(right->true_list.size() == 0);
+    assert(right->false_list.size() == 0);
 
     if (oper == arithmetic_operator::Div)
     {
@@ -217,8 +223,8 @@ relational_expression::relational_expression(expression_syntax* left, syntax_tok
         output::error_mismatch(oper_token->position);
     }
 
-    push_back_child(left);
-    push_back_child(right);
+    add_child(left);
+    add_child(right);
 
     emit();
 }
@@ -250,6 +256,11 @@ void relational_expression::emit_node()
     codebuf.backpatch(left->jump_list, left->label);
     codebuf.backpatch(right->jump_list, right->label);
 
+    assert(left->true_list.size() == 0);
+    assert(left->false_list.size() == 0);
+    assert(right->true_list.size() == 0);
+    assert(right->false_list.size() == 0);
+
     string res_reg = ir_builder::fresh_register();
 
     string cmp_kind = ir_builder::get_comparison_kind(oper, return_type == type_kind::Int);
@@ -275,9 +286,9 @@ conditional_expression::conditional_expression(expression_syntax* true_value, sy
         output::error_mismatch(if_token->position);
     }
 
-    push_back_child(true_value);
-    push_back_child(condition);
-    push_back_child(false_value);
+    add_child(true_value);
+    add_child(condition);
+    add_child(false_value);
 
     emit();
 }
@@ -447,7 +458,7 @@ invocation_expression::invocation_expression(syntax_token* identifier_token, lis
         }
     }
 
-    push_back_child(arguments);
+    add_child(arguments);
 
     emit();
 }
@@ -485,31 +496,12 @@ void invocation_expression::emit_node()
         if (arg->return_type != type_kind::Bool)
         {
             arg_regs.push_back(arg->place);
+            continue;
         }
-        else
-        {
-            string bool_reg = ir_builder::fresh_register();
-            string true_label = ir_builder::fresh_label();
-            string false_label = ir_builder::fresh_label();
-            string next_label = ir_builder::fresh_label();
 
-            codebuf.backpatch(arg->true_list, true_label);
-            codebuf.backpatch(arg->false_list, false_label);
+        string bool_reg = emit_get_bool(arg);
 
-            codebuf.emit("%s:", true_label);
-
-            codebuf.emit("br label %%%s", next_label);
-
-            codebuf.emit("%s:", false_label);
-
-            codebuf.emit("br label %%%s", next_label);
-
-            codebuf.emit("%s:", false_label);
-
-            codebuf.emit("%s = phi i32 [ 1 , %s ] [ 0 , %s ]", bool_reg, true_label, false_label);
-
-            arg_regs.push_back(bool_reg);
-        }
+        arg_regs.push_back(bool_reg);
     }
 
     string ret_type = ir_builder::get_type(return_type);

@@ -100,10 +100,10 @@ template<> inline void literal_expression<std::string>::emit_node()
     std::string arr_content = value.substr(1, value.length() - 2);
 
     std::string arr_type = ir_builder::format_string("[%d x i8]", arr_content.length() + 1);
-    
+
     codebuf.emit_global(ir_builder::format_string("%s = constant %s c\"%s\\00\"", arr_name, arr_type, arr_content));
 
-    codebuf.emit(ir_builder::format_string("%s = getelementptr %s , %s* %s , i32 0 , i32 0", this->place, arr_type, arr_type ,arr_name));
+    codebuf.emit(ir_builder::format_string("%s = getelementptr %s , %s* %s , i32 0 , i32 0", this->place, arr_type, arr_type, arr_name));
 }
 
 class cast_expression final: public expression_syntax

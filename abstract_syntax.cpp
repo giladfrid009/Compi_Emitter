@@ -4,6 +4,7 @@
 #include <stdexcept>
 #include <string>
 
+using std::string;
 using std::list;
 
 static code_buffer& codebuf = code_buffer::instance();
@@ -17,7 +18,7 @@ const syntax_base* syntax_base::get_parent() const
     return parent;
 }
 
-void syntax_base::push_back_child(syntax_base* child)
+void syntax_base::add_child(syntax_base* child)
 {
     if (child == nullptr)
     {
@@ -28,7 +29,7 @@ void syntax_base::push_back_child(syntax_base* child)
     child->parent = this;
 }
 
-void syntax_base::push_front_child(syntax_base* child)
+void syntax_base::add_child_front(syntax_base* child)
 {
     if (child == nullptr)
     {
@@ -63,10 +64,35 @@ void syntax_base::emit_init()
 {
 }
 
+string syntax_base::emit_get_bool(const expression_syntax* bool_expression)
+{
+    string bool_reg = ir_builder::fresh_register();
+    string true_label = ir_builder::fresh_label();
+    string false_label = ir_builder::fresh_label();
+    string next_label = ir_builder::fresh_label();
+
+    codebuf.backpatch(bool_expression->true_list, true_label);
+    codebuf.backpatch(bool_expression->false_list, false_label);
+
+    codebuf.emit("%s:", true_label);
+
+    codebuf.emit("br label %%%s", next_label);
+
+    codebuf.emit("%s:", false_label);
+
+    codebuf.emit("br label %%%s", next_label);
+
+    codebuf.emit("%s:", false_label);
+
+    codebuf.emit("%s = phi i32 [ 1 , %s ] [ 0 , %s ]", bool_reg, true_label, false_label);
+
+    return bool_reg;
+}
+
 expression_syntax::expression_syntax(type_kind return_type):
     return_type(return_type), place(ir_builder::fresh_register()), label(ir_builder::fresh_label()), true_list(), false_list(), jump_list()
 {
-    
+
 }
 
 bool expression_syntax::is_numeric() const
@@ -84,7 +110,7 @@ void expression_syntax::emit_init()
     size_t line = codebuf.emit("br label @");
 
     codebuf.emit("%s:", this->label);
-    
+
     jump_list.push_back(patch_record(line, label_index::First));
 }
 
@@ -95,7 +121,7 @@ void expression_syntax::emit_clean()
     jump_list.clear();
 }
 
-statement_syntax::statement_syntax() : next_list(), break_list(), continue_list(), label(ir_builder::fresh_label())
+statement_syntax::statement_syntax(): next_list(), break_list(), continue_list(), label(ir_builder::fresh_label())
 {
 }
 
