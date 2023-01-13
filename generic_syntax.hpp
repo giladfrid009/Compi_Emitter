@@ -48,6 +48,16 @@ template<typename element_type> class list_syntax final: public syntax_base
 
     list_syntax& operator=(const list_syntax& other) = delete;
 
+    const element_type* front()
+    {
+        return elements.front();
+    }
+
+    const element_type* back()
+    {
+        return elements.back();
+    }
+
     list_syntax<element_type>* push_back(element_type* element)
     {
         elements.push_back(element);

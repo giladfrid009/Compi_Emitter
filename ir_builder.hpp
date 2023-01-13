@@ -37,7 +37,7 @@ class ir_builder
 
     static std::string fresh_const();
 
-    static std::string get_register_type(type_kind type);
+    static std::string get_type(type_kind type);
 
     static std::string get_binary_instruction(arithmetic_operator oper, bool is_signed);
 

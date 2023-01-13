@@ -37,7 +37,7 @@ std::string ir_builder::fresh_const()
     return label;
 }
 
-string ir_builder::get_register_type(type_kind data_type)
+string ir_builder::get_type(type_kind data_type)
 {
     switch (data_type)
     {

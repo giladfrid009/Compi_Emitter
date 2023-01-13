@@ -66,6 +66,8 @@ if_statement::~if_statement()
 
 void if_statement::emit_code()
 {
+    codebuf.backpatch(condition->jump_list, condition->label);
+
     if (else_token == nullptr)
     {
         codebuf.backpatch(condition->true_list, body->label);
@@ -113,7 +115,13 @@ while_statement::~while_statement()
 
 void while_statement::emit_code()
 {
+    codebuf.backpatch(condition->jump_list, condition->label);
+    codebuf.backpatch(body->next_list, condition->label);
+    codebuf.backpatch(condition->true_list, body->label);
 
+    this->next_list = condition->false_list;
+
+    codebuf.emit("br label %%%s", condition->label);
 }
 
 branch_statement::branch_statement(syntax_token* branch_token): branch_token(branch_token), kind(parse_kind(branch_token->text))
@@ -162,8 +170,16 @@ branch_statement::branch_kind branch_statement::parse_kind(string str)
     throw std::invalid_argument("unknown type");
 }
 
-void branch_statement::emit_code()
+void branch_statement::emit_code() //todo: implement
 {
+    if (kind == branch_kind::Break)
+    {
+
+    }
+    else
+    {
+        
+    }
 }
 
 return_statement::return_statement(syntax_token* return_token): return_token(return_token), value(nullptr)
@@ -212,6 +228,42 @@ return_statement::~return_statement()
 
 void return_statement::emit_code()
 {
+    if (value == nullptr)
+    {
+        codebuf.emit("ret void");
+        return;
+    }
+
+    codebuf.backpatch(value->jump_list, value->label);
+    
+    if (value->return_type == type_kind::Bool)
+    {
+        string bool_reg = ir_builder::fresh_register();
+        string true_label = ir_builder::fresh_label();
+        string false_label = ir_builder::fresh_label();
+        string next_label = ir_builder::fresh_label();
+
+        codebuf.backpatch(value->true_list, true_label);
+        codebuf.backpatch(value->false_list, false_label);
+
+        codebuf.emit("%s:", true_label);
+
+        codebuf.emit("br label %%%s", next_label);
+
+        codebuf.emit("%s:", false_label);
+
+        codebuf.emit("br label %%%s", next_label);
+
+        codebuf.emit("%s:", false_label);
+
+        codebuf.emit("%s = phi i32 [ 1 , %s ] [ 0 , %s ]", bool_reg, true_label, false_label);
+
+        codebuf.emit("ret i32 %s", bool_reg);
+    }
+    else
+    {
+        codebuf.emit("ret %s %s", ir_builder::get_type(value->return_type), value->place);
+    }
 }
 
 expression_statement::expression_statement(expression_syntax* expression): expression(expression)
@@ -237,6 +289,7 @@ expression_statement::~expression_statement()
 
 void expression_statement::emit_code()
 {
+    codebuf.backpatch(expression->jump_list, expression->label);
 }
 
 assignment_statement::assignment_statement(syntax_token* identifier_token, syntax_token* assign_token, expression_syntax* value):
@@ -283,6 +336,42 @@ assignment_statement::~assignment_statement()
 
 void assignment_statement::emit_code()
 {
+    codebuf.backpatch(value->jump_list, value->label);
+
+    const symbol* symbol = symtab.get_symbol(identifier);
+
+    string ptr_reg = static_cast<const variable_symbol*>(symbol)->ptr_reg;
+
+    if (value->return_type == type_kind::Bool)
+    {
+        string bool_reg = ir_builder::fresh_register();
+        string true_label = ir_builder::fresh_label();
+        string false_label = ir_builder::fresh_label();
+        string next_label = ir_builder::fresh_label();
+
+        codebuf.backpatch(value->true_list, true_label);
+        codebuf.backpatch(value->false_list, false_label);
+
+        codebuf.emit("%s:", true_label);
+
+        codebuf.emit("br label %%%s", next_label);
+
+        codebuf.emit("%s:", false_label);
+
+        codebuf.emit("br label %%%s", next_label);
+
+        codebuf.emit("%s:", false_label);
+
+        codebuf.emit("%s = phi i32 [ 1 , %s ] [ 0 , %s ]", bool_reg, true_label, false_label);
+
+        codebuf.emit("store i32 %s , i32* %s", bool_reg, ptr_reg);
+    }
+    else
+    {
+        string type = ir_builder::get_type(value->return_type);
+
+        codebuf.emit("store %s %s , %s* %s", type, value->place, type, ptr_reg);
+    }
 }
 
 declaration_statement::declaration_statement(type_syntax* type, syntax_token* identifier_token):
@@ -354,8 +443,12 @@ declaration_statement::~declaration_statement()
     delete assign_token;
 }
 
-void declaration_statement::emit_code()
+void declaration_statement::emit_code() //todo: implement
 {
+    if(value != nullptr)
+    {
+        codebuf.backpatch(value->jump_list, value->label);
+    }
 }
 
 block_statement::block_statement(list_syntax<statement_syntax>* statements): statements(statements)
@@ -381,4 +474,5 @@ block_statement::~block_statement()
 
 void block_statement::emit_code()
 {
+    next_list = statements->back()->next_list;
 }

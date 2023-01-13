@@ -117,7 +117,7 @@ class cast_expression final: public expression_syntax
     public:
 
     type_syntax* const destination_type;
-    expression_syntax* const expression;
+    expression_syntax* const value;
 
     cast_expression(type_syntax* destination_type, expression_syntax* expression);
     ~cast_expression();

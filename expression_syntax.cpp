@@ -15,16 +15,16 @@ using std::stringstream;
 static symbol_table& symtab = symbol_table::instance();
 static code_buffer& codebuf = code_buffer::instance();
 
-cast_expression::cast_expression(type_syntax* destination_type, expression_syntax* expression):
-    expression_syntax(destination_type->kind), destination_type(destination_type), expression(expression)
+cast_expression::cast_expression(type_syntax* destination_type, expression_syntax* value):
+    expression_syntax(destination_type->kind), destination_type(destination_type), value(value)
 {
-    if (expression->is_numeric() == false || destination_type->is_numeric() == false)
+    if (value->is_numeric() == false || destination_type->is_numeric() == false)
     {
         output::error_mismatch(destination_type->type_token->position);
     }
 
     push_back_child(destination_type);
-    push_back_child(expression);
+    push_back_child(value);
 
     emit_init();
     emit_code();
@@ -45,15 +45,15 @@ cast_expression::~cast_expression()
 
 void cast_expression::emit_code()
 {
-    codebuf.backpatch(expression->jump_list, expression->label);
+    codebuf.backpatch(value->jump_list, value->label);
 
-    if (expression->return_type == type_kind::Int && destination_type->kind == type_kind::Byte)
+    if (value->return_type == type_kind::Int && destination_type->kind == type_kind::Byte)
     {
-        codebuf.emit("%s = and i32 255 , %s", this->place, expression->place);
+        codebuf.emit("%s = and i32 255 , %s", this->place, value->place);
     }
     else
     {
-        codebuf.emit("%s = add i32 0 , %s", this->place, expression->place);
+        codebuf.emit("%s = add i32 0 , %s", this->place, value->place);
     }
 }
 
@@ -344,7 +344,7 @@ void conditional_expression::emit_code()
     }
     else
     {
-        string res_type = ir_builder::get_register_type(return_type);
+        string res_type = ir_builder::get_type(return_type);
 
         codebuf.emit("%s = phi %s [ %s , %s ] [ %s , %s ]", this->place, res_type, true_value->place, true_value->label, false_value->place, false_value->label);
     }
@@ -403,12 +403,7 @@ identifier_expression::~identifier_expression()
 
 void identifier_expression::emit_code()
 {
-    const symbol* symbol = symtab.get_symbol(identifier); 
-
-    if (symbol == nullptr)
-    {
-        throw std::logic_error("wtf");
-    }
+    const symbol* symbol = symtab.get_symbol(identifier);
 
     if (symbol->kind == symbol_kind::Parameter)
     {
@@ -420,7 +415,7 @@ void identifier_expression::emit_code()
     {
         string ptr_reg = static_cast<const variable_symbol*>(symbol)->ptr_reg;
 
-        string res_type = ir_builder::get_register_type(return_type);
+        string res_type = ir_builder::get_type(return_type);
 
         codebuf.emit("%s = load %s , %s* %s", this->place, res_type, res_type, ptr_reg);
     }
@@ -571,7 +566,7 @@ void invocation_expression::emit_code()
         }
     }
 
-    string ret_type = ir_builder::get_register_type(return_type);
+    string ret_type = ir_builder::get_type(return_type);
 
     stringstream instr;
 
@@ -589,7 +584,7 @@ void invocation_expression::emit_code()
 
     for (; arg_reg != arg_regs.end() && arg != arguments->end(); arg_reg++, arg++)
     {
-        string arg_type = ir_builder::get_register_type((*arg)->return_type);
+        string arg_type = ir_builder::get_type((*arg)->return_type);
 
         instr << ir_builder::format_string("%s %s", arg_type, *arg_reg);
 
