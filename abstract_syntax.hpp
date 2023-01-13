@@ -31,9 +31,10 @@ class syntax_base
     void push_back_child(syntax_base* child);
     void push_front_child(syntax_base* child);
 
+    void emit_tree();
+    virtual void emit_init();
     virtual void emit_node() = 0;
     virtual void emit_cleanup();
-    void emit_tree();
 };
 
 class expression_syntax: public syntax_base
@@ -43,8 +44,10 @@ class expression_syntax: public syntax_base
     const type_kind return_type;
 
     const std::string place;
+    const std::string label;
     std::list<patch_record> true_list;
     std::list<patch_record> false_list;
+    std::list<patch_record> jump_list;
 
     expression_syntax(type_kind return_type);
     virtual ~expression_syntax() = default;
@@ -57,6 +60,7 @@ class expression_syntax: public syntax_base
 
     protected:
 
+    void emit_init() override;
     void emit_cleanup() override;
 };
 

@@ -31,6 +31,8 @@ class variable_symbol: public symbol
 {
     public:
 
+    const std::string ptr_reg;
+
     variable_symbol(const std::string& name, type_kind type, int offset);
 
     std::string to_string() const override;

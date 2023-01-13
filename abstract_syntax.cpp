@@ -6,6 +6,8 @@
 
 using std::list;
 
+static code_buffer& codebuf = code_buffer::instance();
+
 syntax_base::syntax_base(): children(), parent(nullptr)
 {
 }
@@ -58,6 +60,7 @@ void syntax_base::emit_tree()
         child->emit_tree();
     }
 
+    this->emit_init();
     this->emit_node();
 
     for (syntax_base* child : children)
@@ -71,10 +74,14 @@ void syntax_base::emit_tree()
     }
 }
 
-expression_syntax::expression_syntax(type_kind return_type):
-    return_type(return_type), place(ir_builder::fresh_register()), true_list(), false_list()
+void syntax_base::emit_init()
 {
+}
 
+expression_syntax::expression_syntax(type_kind return_type):
+    return_type(return_type), place(ir_builder::fresh_register()), label(ir_builder::fresh_label()), true_list(), false_list(), jump_list()
+{
+    
 }
 
 bool expression_syntax::is_numeric() const
@@ -87,10 +94,20 @@ bool expression_syntax::is_special() const
     return types::is_special(return_type);
 }
 
+void expression_syntax::emit_init()
+{
+    size_t line = codebuf.emit("br label @");
+
+    codebuf.emit("%s:", this->label);
+    
+    jump_list.push_back(patch_record(line, label_index::First));
+}
+
 void expression_syntax::emit_cleanup()
 {
     true_list.clear();
     false_list.clear();
+    jump_list.clear();
 }
 
 statement_syntax::statement_syntax()

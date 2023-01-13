@@ -9,13 +9,11 @@ using std::stringstream;
 symbol::symbol(const string& name, type_kind type, int offset, symbol_kind kind):
     kind(kind), name(name), offset(offset), type(type)
 {
-
 }
 
 variable_symbol::variable_symbol(const string& name, type_kind type, int offset):
-    symbol(name, type, offset, symbol_kind::Variable)
+    symbol(name, type, offset, symbol_kind::Variable), ptr_reg(ir_builder::fresh_register())
 {
-
 }
 
 string variable_symbol::to_string() const
@@ -55,7 +53,6 @@ string function_symbol::to_string() const
 parameter_symbol::parameter_symbol(const string& name, type_kind type, int offset):
     symbol(name, type, offset, symbol_kind::Parameter)
 {
-
 }
 
 std::string parameter_symbol::to_string() const

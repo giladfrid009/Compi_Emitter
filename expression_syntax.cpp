@@ -4,9 +4,13 @@
 #include "code_buffer.hpp"
 #include "ir_builder.hpp"
 #include <stdexcept>
+#include <list>
+#include <sstream>
 
 using std::string;
 using std::vector;
+using std::list;
+using std::stringstream;
 
 static symbol_table& symtab = symbol_table::instance();
 static code_buffer& codebuf = code_buffer::instance();
@@ -33,6 +37,8 @@ cast_expression::~cast_expression()
 
 void cast_expression::emit_node()
 {
+    codebuf.backpatch(expression->jump_list, expression->label);
+
     if (expression->return_type == type_kind::Int && destination_type->kind == type_kind::Byte)
     {
         codebuf.emit("%s = and i32 255 , %s", this->place, expression->place);
@@ -66,6 +72,8 @@ not_expression::~not_expression()
 
 void not_expression::emit_node()
 {
+    codebuf.backpatch(expression->jump_list, expression->label);
+
     false_list = expression->true_list;
     true_list = expression->false_list;
 }
@@ -102,33 +110,23 @@ logical_expression::operator_kind logical_expression::parse_operator(string str)
 
 void logical_expression::emit_node()
 {
-    //todo: VERY IMPROTANT
+    codebuf.backpatch(left->jump_list, left->label);
+    codebuf.backpatch(right->jump_list, right->label);
 
-    /* IMPORTANT:
-    each expression must emit at the beggining:
-        size_t line = codebuf.emit(br label @);
-        jump_list.append(patch_entry(line, patch_index::first));
-        string label = codebuf.emit("%s:", this->label);
-
-    each node in the syntax tree mush patch all of the expressions in it.
-    */
-
-    /*
     if (oper == operator_kind::Or)
     {
-        codebuf.backpatch(left->false_list, label->name);
+        codebuf.backpatch(left->false_list, right->label);
 
         true_list = codebuf.merge(left->true_list, right->true_list);
         false_list = right->false_list;
     }
     else
     {
-        codebuf.backpatch(left->true_list, label->name);
+        codebuf.backpatch(left->true_list, right->label);
 
         true_list = right->true_list;
         false_list = codebuf.merge(left->false_list, right->false_list);
     }
-    */
 }
 
 arithmetic_expression::arithmetic_expression(expression_syntax* left, syntax_token* oper_token, expression_syntax* right):
@@ -165,6 +163,9 @@ arithmetic_operator arithmetic_expression::parse_operator(string str)
 
 void arithmetic_expression::emit_node()
 {
+    codebuf.backpatch(left->jump_list, left->label);
+    codebuf.backpatch(right->jump_list, right->label);
+
     if (oper == arithmetic_operator::Div)
     {
         string cmp_res = ir_builder::fresh_register();
@@ -236,6 +237,9 @@ relational_operator relational_expression::parse_operator(string str)
 
 void relational_expression::emit_node()
 {
+    codebuf.backpatch(left->jump_list, left->label);
+    codebuf.backpatch(right->jump_list, right->label);
+
     string res_reg = ir_builder::fresh_register();
 
     string cmp_kind = ir_builder::get_comparison_kind(oper, return_type == type_kind::Int);
@@ -279,17 +283,11 @@ conditional_expression::~conditional_expression()
 
 void conditional_expression::emit_node()
 {
-    /*string next_label = codebuf.emit_label();
-
-    codebuf.backpatch(condition_jump->next_list, condition_label->name);
-
-    codebuf.backpatch(condition->true_list, true_label->name);
-    codebuf.backpatch(condition->false_list, false_label->name);
-
-    codebuf.backpatch(true_next->next_list, next_label);
-    codebuf.backpatch(false_next->next_list, next_label);
-
-    codebuf.emit("%s:", next_label);
+    codebuf.backpatch(true_value->jump_list, condition->label);
+    codebuf.backpatch(condition->jump_list, this->label);
+    codebuf.backpatch(false_value->jump_list, this->label);
+    codebuf.backpatch(condition->true_list, true_value->label);
+    codebuf.backpatch(condition->false_list, false_value->label);
 
     if (return_type == type_kind::Bool)
     {
@@ -298,9 +296,10 @@ void conditional_expression::emit_node()
     }
     else
     {
-        string res_type = ir_builder.get_register_type(return_type);
-        codebuf.emit("%s = phi %s [ %s , %s ] [ %s , %s ]", this->place, res_type, true_value->place, true_label->name, false_value->place, false_label->name);
-    }*/
+        string res_type = ir_builder::get_register_type(return_type);
+
+        codebuf.emit("%s = phi %s [ %s , %s ] [ %s , %s ]", this->place, res_type, true_value->place, true_value->label, false_value->place, false_value->label);
+    }
 }
 
 identifier_expression::identifier_expression(syntax_token* identifier_token):
@@ -348,6 +347,30 @@ identifier_expression::~identifier_expression()
 
 void identifier_expression::emit_node()
 {
+    const symbol* symbol = symtab.get_symbol(identifier);
+
+    if (symbol->kind == symbol_kind::Parameter)
+    {
+        string param_reg = ir_builder::format_string("%%%d", -symbol->offset - 1);
+
+        codebuf.emit("%s = add i32 0 , %s", this->place, param_reg);
+    }
+    else if (symbol->kind == symbol_kind::Variable)
+    {
+        string ptr_reg = static_cast<const variable_symbol*>(symbol)->ptr_reg;
+
+        string res_type = ir_builder::get_register_type(return_type);
+
+        codebuf.emit("%s = load %s , %s* %s", this->place, res_type, res_type, ptr_reg);
+    }
+
+    if (return_type == type_kind::Bool)
+    {
+        size_t line = codebuf.emit("br i1 %s , label @ , label @", this->place);
+
+        true_list.push_back(patch_record(line, label_index::First));
+        false_list.push_back(patch_record(line, label_index::Second));
+    }
 }
 
 invocation_expression::invocation_expression(syntax_token* identifier_token):
@@ -435,4 +458,64 @@ invocation_expression::~invocation_expression()
 
 void invocation_expression::emit_node()
 {
+    list<string> arg_regs;
+
+    for (auto arg : *arguments)
+    {
+        codebuf.backpatch(arg->jump_list, arg->label);
+
+        if (arg->return_type != type_kind::Bool)
+        {
+            arg_regs.push_back(arg->place);
+        }
+        else
+        {
+            string bool_reg = ir_builder::fresh_register();
+            string true_label = ir_builder::fresh_label();
+            string false_label = ir_builder::fresh_label();
+            string next_label = ir_builder::fresh_label();
+
+            codebuf.backpatch(arg->true_list, true_label);
+            codebuf.backpatch(arg->false_list, false_label);
+
+            codebuf.emit("%s:", true_label);
+
+            codebuf.emit("br label %%%s", next_label);
+
+            codebuf.emit("%s:", false_label);
+
+            codebuf.emit("br label %%%s", next_label);
+
+            codebuf.emit("%s:", false_label);
+
+            codebuf.emit("%s = phi i32 [ 1 , %s ] [ 0 , %s ]", bool_reg, true_label, false_label);
+
+            arg_regs.push_back(bool_reg);
+        }
+    }
+
+    string ret_type = ir_builder::get_register_type(return_type);
+
+    stringstream instr;
+
+    instr << ir_builder::format_string("%s = call %s @%s(", this->place, ret_type, identifier);
+
+    auto arg_reg = arg_regs.begin();
+    auto arg = arguments->begin();
+
+    for (; arg_reg != arg_regs.end() && arg != arguments->end(); arg_reg++, arg++)
+    {
+        string arg_type = ir_builder::get_register_type((*arg)->return_type);
+
+        instr << ir_builder::format_string("%s %s", arg_type, *arg_reg);
+
+        if (std::distance(arg_reg, arg_regs.end()) > 1)
+        {
+            instr << " , ";
+        }
+    }
+
+    instr << ")";
+
+    codebuf.emit(instr.str());
 }
