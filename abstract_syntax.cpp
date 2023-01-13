@@ -84,14 +84,16 @@ void expression_syntax::emit_clean()
     jump_list.clear();
 }
 
-statement_syntax::statement_syntax()
+statement_syntax::statement_syntax() : next_list(), label(ir_builder::fresh_label())
 {
 }
 
 void statement_syntax::emit_init()
 {
+    codebuf.emit("%s:", this->label);
 }
 
 void statement_syntax::emit_clean()
 {
+    next_list.clear();
 }

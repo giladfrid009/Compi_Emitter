@@ -67,6 +67,9 @@ class statement_syntax: public syntax_base
 {
     public:
 
+    std::list<patch_record> next_list;
+    const std::string label;
+    
     statement_syntax();
     virtual ~statement_syntax() = default;
 
