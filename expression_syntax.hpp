@@ -101,7 +101,7 @@ template<> inline void literal_expression<std::string>::emit_code()
 {
     code_buffer& codebuf = code_buffer::instance();
 
-    std::string arr_name = ir_builder::fresh_const();
+    std::string arr_name = ir_builder::fresh_global();
 
     std::string arr_content = value.substr(1, value.length() - 2);
 

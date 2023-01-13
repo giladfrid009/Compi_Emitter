@@ -35,7 +35,7 @@ class ir_builder
 
     static std::string fresh_label();
 
-    static std::string fresh_const();
+    static std::string fresh_global();
 
     static std::string get_type(type_kind type);
 
