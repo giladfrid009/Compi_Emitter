@@ -44,34 +44,8 @@ const list<syntax_base*>& syntax_base::get_children() const
     return children;
 }
 
-void syntax_base::emit_cleanup()
+void syntax_base::emit_clean()
 {
-}
-
-void syntax_base::emit_tree()
-{
-    for (syntax_base* child : children)
-    {
-        if (child == nullptr)
-        {
-            continue;
-        }
-
-        child->emit_tree();
-    }
-
-    this->emit_init();
-    this->emit_node();
-
-    for (syntax_base* child : children)
-    {
-        if (child == nullptr)
-        {
-            continue;
-        }
-
-        child->emit_cleanup();
-    }
 }
 
 void syntax_base::emit_init()
@@ -103,7 +77,7 @@ void expression_syntax::emit_init()
     jump_list.push_back(patch_record(line, label_index::First));
 }
 
-void expression_syntax::emit_cleanup()
+void expression_syntax::emit_clean()
 {
     true_list.clear();
     false_list.clear();
@@ -114,6 +88,10 @@ statement_syntax::statement_syntax()
 {
 }
 
-void statement_syntax::emit_cleanup()
+void statement_syntax::emit_init()
+{
+}
+
+void statement_syntax::emit_clean()
 {
 }

@@ -10,6 +10,13 @@ static code_buffer& codebuf = code_buffer::instance();
 
 type_syntax::type_syntax(syntax_token* type_token): type_token(type_token), kind(types::parse(type_token->text))
 {
+    emit_init();
+    emit_code();
+
+    for (syntax_base* child : get_children())
+    {
+        child->emit_clean();
+    }
 }
 
 bool type_syntax::is_numeric() const
@@ -22,7 +29,7 @@ bool type_syntax::is_special() const
     return types::is_special(kind);
 }
 
-void type_syntax::emit_node()
+void type_syntax::emit_code()
 {
     //todo: probably shouldn't emit anything
 }
@@ -51,6 +58,14 @@ parameter_syntax::parameter_syntax(type_syntax* type, syntax_token* identifier_t
     }
 
     push_back_child(type);
+
+    emit_init();
+    emit_code();
+
+    for (syntax_base* child : get_children())
+    {
+        child->emit_clean();
+    }
 }
 
 parameter_syntax::~parameter_syntax()
@@ -63,7 +78,7 @@ parameter_syntax::~parameter_syntax()
     delete identifier_token;
 }
 
-void parameter_syntax::emit_node()
+void parameter_syntax::emit_code()
 {
 }
 
@@ -94,6 +109,14 @@ function_declaration_syntax::function_declaration_syntax(type_syntax* return_typ
     push_back_child(return_type);
     push_back_child(parameters);
     push_back_child(body);
+
+    emit_init();
+    emit_code();
+
+    for (syntax_base* child : get_children())
+    {
+        child->emit_clean();
+    }
 }
 
 function_declaration_syntax::~function_declaration_syntax()
@@ -106,7 +129,7 @@ function_declaration_syntax::~function_declaration_syntax()
     delete identifier_token;
 }
 
-void function_declaration_syntax::emit_node()
+void function_declaration_syntax::emit_code()
 {
 }
 
@@ -125,6 +148,14 @@ root_syntax::root_syntax(list_syntax<function_declaration_syntax>* functions): f
     }
 
     push_back_child(functions);
+
+    emit_init();
+    emit_code();
+
+    for (syntax_base* child : get_children())
+    {
+        child->emit_clean();
+    }
 }
 
 root_syntax::~root_syntax()
@@ -135,11 +166,6 @@ root_syntax::~root_syntax()
     }
 }
 
-void root_syntax::emit_node()
+void root_syntax::emit_code()
 {
-}
-
-void root_syntax::emit_tree()
-{
-    syntax_base::emit_tree();
 }

@@ -26,15 +26,14 @@ class syntax_base
     const syntax_base* get_parent() const;
     const std::list<syntax_base*>& get_children() const;
 
+    virtual void emit_init();
+    virtual void emit_code() = 0;
+    virtual void emit_clean();
+
     protected:
 
     void push_back_child(syntax_base* child);
     void push_front_child(syntax_base* child);
-
-    void emit_tree();
-    virtual void emit_init();
-    virtual void emit_node() = 0;
-    virtual void emit_cleanup();
 };
 
 class expression_syntax: public syntax_base
@@ -61,7 +60,7 @@ class expression_syntax: public syntax_base
     protected:
 
     void emit_init() override;
-    void emit_cleanup() override;
+    void emit_clean() override;
 };
 
 class statement_syntax: public syntax_base
@@ -76,7 +75,8 @@ class statement_syntax: public syntax_base
 
     protected:
 
-    void emit_cleanup() override;
+    void emit_init() override;
+    void emit_clean() override;
 };
 
 #endif

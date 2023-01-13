@@ -19,6 +19,14 @@ template<typename element_type> class list_syntax final: public syntax_base
     list_syntax(): elements()
     {
         static_assert(std::is_base_of<syntax_base, element_type>::value, "must be of type syntax_base");
+
+        emit_init();
+        emit_code();
+
+        for (syntax_base* child : get_children())
+        {
+            child->emit_clean();
+        }
     }
 
     list_syntax(element_type* element): elements{ element }
@@ -26,6 +34,14 @@ template<typename element_type> class list_syntax final: public syntax_base
         static_assert(std::is_base_of<syntax_base, element_type>::value, "must be of type syntax_base");
 
         push_back_child(element);
+
+        emit_init();
+        emit_code();
+
+        for (syntax_base* child : get_children())
+        {
+            child->emit_clean();
+        }
     }
 
     list_syntax(const list_syntax& other) = delete;
@@ -71,7 +87,7 @@ template<typename element_type> class list_syntax final: public syntax_base
 
     protected:
 
-    void emit_node() override
+    void emit_code() override
     {
 
     }
@@ -95,7 +111,7 @@ class type_syntax final: public syntax_base
 
     protected:
 
-    void emit_node() override;
+    void emit_code() override;
 };
 
 class parameter_syntax final: public syntax_base
@@ -114,7 +130,7 @@ class parameter_syntax final: public syntax_base
 
     protected:
 
-    void emit_node() override;
+    void emit_code() override;
 };
 
 class function_declaration_syntax final: public syntax_base
@@ -135,7 +151,7 @@ class function_declaration_syntax final: public syntax_base
 
     protected:
 
-    void emit_node() override;
+    void emit_code() override;
 };
 
 class root_syntax final: public syntax_base
@@ -150,11 +166,9 @@ class root_syntax final: public syntax_base
     root_syntax(const root_syntax& other) = delete;
     root_syntax& operator=(const root_syntax& other) = delete;
 
-    void emit_tree();
-
     protected:
 
-    void emit_node() override;
+    void emit_code() override;
 };
 
 #endif

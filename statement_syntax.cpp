@@ -21,6 +21,8 @@ if_statement::if_statement(syntax_token* if_token, expression_syntax* condition,
 
     push_back_child(condition);
     push_back_child(body);
+    emit_init();
+    emit_code();
 }
 
 if_statement::if_statement(syntax_token* if_token, expression_syntax* condition, statement_syntax* body, syntax_token* else_token, statement_syntax* else_clause):
@@ -34,6 +36,8 @@ if_statement::if_statement(syntax_token* if_token, expression_syntax* condition,
     push_back_child(condition);
     push_back_child(body);
     push_back_child(else_clause);
+    emit_init();
+    emit_code();
 }
 
 if_statement::~if_statement()
@@ -47,7 +51,7 @@ if_statement::~if_statement()
     delete else_token;
 }
 
-void if_statement::emit_node()
+void if_statement::emit_code()
 {
 }
 
@@ -61,6 +65,8 @@ while_statement::while_statement(syntax_token* while_token, expression_syntax* c
 
     push_back_child(condition);
     push_back_child(body);
+    emit_init();
+    emit_code();
 }
 
 while_statement::~while_statement()
@@ -73,7 +79,7 @@ while_statement::~while_statement()
     delete while_token;
 }
 
-void while_statement::emit_node()
+void while_statement::emit_code()
 {
 }
 
@@ -95,6 +101,8 @@ branch_statement::branch_statement(syntax_token* branch_token): branch_token(bra
 
         throw std::runtime_error("unknown branch_kind");
     }
+    emit_init();
+    emit_code();
 }
 
 branch_statement::~branch_statement()
@@ -115,7 +123,7 @@ branch_statement::branch_kind branch_statement::parse_kind(string str)
     throw std::invalid_argument("unknown type");
 }
 
-void branch_statement::emit_node()
+void branch_statement::emit_code()
 {
 }
 
@@ -129,6 +137,8 @@ return_statement::return_statement(syntax_token* return_token): return_token(ret
     {
         output::error_mismatch(return_token->position);
     }
+    emit_init();
+    emit_code();
 }
 
 return_statement::return_statement(syntax_token* return_token, expression_syntax* value): return_token(return_token), value(value)
@@ -155,13 +165,15 @@ return_statement::~return_statement()
     delete return_token;
 }
 
-void return_statement::emit_node()
+void return_statement::emit_code()
 {
 }
 
 expression_statement::expression_statement(expression_syntax* expression): expression(expression)
 {
     push_back_child(expression);
+    emit_init();
+    emit_code();
 }
 
 expression_statement::~expression_statement()
@@ -172,7 +184,7 @@ expression_statement::~expression_statement()
     }
 }
 
-void expression_statement::emit_node()
+void expression_statement::emit_code()
 {
 }
 
@@ -197,6 +209,8 @@ assignment_statement::assignment_statement(syntax_token* identifier_token, synta
     }
 
     push_back_child(value);
+    emit_init();
+    emit_code();
 }
 
 assignment_statement::~assignment_statement()
@@ -210,7 +224,7 @@ assignment_statement::~assignment_statement()
     delete assign_token;
 }
 
-void assignment_statement::emit_node()
+void assignment_statement::emit_code()
 {
 }
 
@@ -230,6 +244,8 @@ declaration_statement::declaration_statement(type_syntax* type, syntax_token* id
     symtab.add_variable(identifier, type->kind);
 
     push_back_child(type);
+    emit_init();
+    emit_code();
 }
 
 declaration_statement::declaration_statement(type_syntax* type, syntax_token* identifier_token, syntax_token* assign_token, expression_syntax* value):
@@ -254,6 +270,8 @@ declaration_statement::declaration_statement(type_syntax* type, syntax_token* id
 
     push_back_child(type);
     push_back_child(value);
+    emit_init();
+    emit_code();
 }
 
 declaration_statement::~declaration_statement()
@@ -267,13 +285,15 @@ declaration_statement::~declaration_statement()
     delete assign_token;
 }
 
-void declaration_statement::emit_node()
+void declaration_statement::emit_code()
 {
 }
 
 block_statement::block_statement(list_syntax<statement_syntax>* statements): statements(statements)
 {
     push_back_child(statements);
+    emit_init();
+    emit_code();
 }
 
 block_statement::~block_statement()
@@ -284,6 +304,6 @@ block_statement::~block_statement()
     }
 }
 
-void block_statement::emit_node()
+void block_statement::emit_code()
 {
 }

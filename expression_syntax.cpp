@@ -25,6 +25,14 @@ cast_expression::cast_expression(type_syntax* destination_type, expression_synta
 
     push_back_child(destination_type);
     push_back_child(expression);
+
+    emit_init();
+    emit_code();
+
+    for (syntax_base* child : get_children())
+    {
+        child->emit_clean();
+    }
 }
 
 cast_expression::~cast_expression()
@@ -35,7 +43,7 @@ cast_expression::~cast_expression()
     }
 }
 
-void cast_expression::emit_node()
+void cast_expression::emit_code()
 {
     codebuf.backpatch(expression->jump_list, expression->label);
 
@@ -58,6 +66,14 @@ not_expression::not_expression(syntax_token* not_token, expression_syntax* expre
     }
 
     push_back_child(expression);
+
+    emit_init();
+    emit_code();
+
+    for (syntax_base* child : get_children())
+    {
+        child->emit_clean();
+    }
 }
 
 not_expression::~not_expression()
@@ -70,7 +86,7 @@ not_expression::~not_expression()
     delete not_token;
 }
 
-void not_expression::emit_node()
+void not_expression::emit_code()
 {
     codebuf.backpatch(expression->jump_list, expression->label);
 
@@ -88,6 +104,14 @@ logical_expression::logical_expression(expression_syntax* left, syntax_token* op
 
     push_back_child(left);
     push_back_child(right);
+
+    emit_init();
+    emit_code();
+
+    for (syntax_base* child : get_children())
+    {
+        child->emit_clean();
+    }
 }
 
 logical_expression::~logical_expression()
@@ -108,7 +132,7 @@ logical_expression::operator_kind logical_expression::parse_operator(string str)
     throw std::invalid_argument("unknown oper");
 }
 
-void logical_expression::emit_node()
+void logical_expression::emit_code()
 {
     codebuf.backpatch(left->jump_list, left->label);
     codebuf.backpatch(right->jump_list, right->label);
@@ -139,6 +163,14 @@ arithmetic_expression::arithmetic_expression(expression_syntax* left, syntax_tok
 
     push_back_child(left);
     push_back_child(right);
+
+    emit_init();
+    emit_code();
+
+    for (syntax_base* child : get_children())
+    {
+        child->emit_clean();
+    }
 }
 
 arithmetic_expression::~arithmetic_expression()
@@ -161,7 +193,7 @@ arithmetic_operator arithmetic_expression::parse_operator(string str)
     throw std::invalid_argument("unknown oper");
 }
 
-void arithmetic_expression::emit_node()
+void arithmetic_expression::emit_code()
 {
     codebuf.backpatch(left->jump_list, left->label);
     codebuf.backpatch(right->jump_list, right->label);
@@ -211,6 +243,14 @@ relational_expression::relational_expression(expression_syntax* left, syntax_tok
 
     push_back_child(left);
     push_back_child(right);
+
+    emit_init();
+    emit_code();
+
+    for (syntax_base* child : get_children())
+    {
+        child->emit_clean();
+    }
 }
 
 relational_expression::~relational_expression()
@@ -235,7 +275,7 @@ relational_operator relational_expression::parse_operator(string str)
     throw std::invalid_argument("unknown oper");
 }
 
-void relational_expression::emit_node()
+void relational_expression::emit_code()
 {
     codebuf.backpatch(left->jump_list, left->label);
     codebuf.backpatch(right->jump_list, right->label);
@@ -268,6 +308,14 @@ conditional_expression::conditional_expression(expression_syntax* true_value, sy
     push_back_child(true_value);
     push_back_child(condition);
     push_back_child(false_value);
+
+    emit_init();
+    emit_code();
+
+    for (syntax_base* child : get_children())
+    {
+        child->emit_clean();
+    }
 }
 
 conditional_expression::~conditional_expression()
@@ -281,7 +329,7 @@ conditional_expression::~conditional_expression()
     delete else_token;
 }
 
-void conditional_expression::emit_node()
+void conditional_expression::emit_code()
 {
     codebuf.backpatch(true_value->jump_list, condition->label);
     codebuf.backpatch(condition->jump_list, this->label);
@@ -316,6 +364,14 @@ identifier_expression::identifier_expression(syntax_token* identifier_token):
     {
         output::error_undef(identifier_token->position, identifier);
     }
+
+    emit_init();
+    emit_code();
+
+    for (syntax_base* child : get_children())
+    {
+        child->emit_clean();
+    }
 }
 
 type_kind identifier_expression::get_return_type(string identifier)
@@ -345,9 +401,14 @@ identifier_expression::~identifier_expression()
     delete identifier_token;
 }
 
-void identifier_expression::emit_node()
+void identifier_expression::emit_code()
 {
-    const symbol* symbol = symtab.get_symbol(identifier);
+    const symbol* symbol = symtab.get_symbol(identifier); 
+
+    if (symbol == nullptr)
+    {
+        throw std::logic_error("wtf");
+    }
 
     if (symbol->kind == symbol_kind::Parameter)
     {
@@ -396,6 +457,14 @@ invocation_expression::invocation_expression(syntax_token* identifier_token):
     {
         output::error_prototype_mismatch(identifier_token->position, identifier, params_str);
     }
+
+    emit_init();
+    emit_code();
+
+    for (syntax_base* child : get_children())
+    {
+        child->emit_clean();
+    }
 }
 
 invocation_expression::invocation_expression(syntax_token* identifier_token, list_syntax<expression_syntax>* arguments):
@@ -432,6 +501,14 @@ invocation_expression::invocation_expression(syntax_token* identifier_token, lis
     }
 
     push_back_child(arguments);
+
+    emit_init();
+    emit_code();
+
+    for (syntax_base* child : get_children())
+    {
+        child->emit_clean();
+    }
 }
 
 type_kind invocation_expression::get_return_type(string identifier)
@@ -456,7 +533,7 @@ invocation_expression::~invocation_expression()
     delete identifier_token;
 }
 
-void invocation_expression::emit_node()
+void invocation_expression::emit_code()
 {
     list<string> arg_regs;
 
@@ -498,7 +575,14 @@ void invocation_expression::emit_node()
 
     stringstream instr;
 
-    instr << ir_builder::format_string("%s = call %s @%s(", this->place, ret_type, identifier);
+    if (return_type == type_kind::Void)
+    {
+        instr << ir_builder::format_string("call %s @%s(", ret_type, identifier);
+    }
+    else
+    {
+        instr << ir_builder::format_string("%s = call %s @%s(", this->place, ret_type, identifier);
+    }
 
     auto arg_reg = arg_regs.begin();
     auto arg = arguments->begin();
