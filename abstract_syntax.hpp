@@ -26,8 +26,9 @@ class syntax_base
     const syntax_base* get_parent() const;
     const std::list<syntax_base*>& get_children() const;
 
+    void emit();
     virtual void emit_init();
-    virtual void emit_code() = 0;
+    virtual void emit_node() = 0;
     virtual void emit_clean();
 
     protected:

@@ -23,13 +23,7 @@ if_statement::if_statement(syntax_token* if_token, expression_syntax* condition,
     push_back_child(condition);
     push_back_child(body);
 
-    emit_init();
-    emit_code();
-
-    for (syntax_base* child : get_children())
-    {
-        child->emit_clean();
-    }
+    emit();
 }
 
 if_statement::if_statement(syntax_token* if_token, expression_syntax* condition, statement_syntax* body, syntax_token* else_token, statement_syntax* else_clause):
@@ -44,13 +38,7 @@ if_statement::if_statement(syntax_token* if_token, expression_syntax* condition,
     push_back_child(body);
     push_back_child(else_clause);
 
-    emit_init();
-    emit_code();
-
-    for (syntax_base* child : get_children())
-    {
-        child->emit_clean();
-    }
+    emit();
 }
 
 if_statement::~if_statement()
@@ -64,16 +52,15 @@ if_statement::~if_statement()
     delete else_token;
 }
 
-void if_statement::emit_code()
+void if_statement::emit_node()
 {
     codebuf.backpatch(condition->jump_list, condition->label);
 
-    if (else_token == nullptr)
+    if (else_clause == nullptr)
     {
         codebuf.backpatch(condition->true_list, body->label);
 
         next_list = codebuf.merge(condition->false_list, body->next_list);
-        
         break_list = body->break_list;
         continue_list = body->continue_list;
     }
@@ -81,9 +68,8 @@ void if_statement::emit_code()
     {
         codebuf.backpatch(condition->true_list, body->label);
         codebuf.backpatch(condition->false_list, else_clause->label);
-
+        
         next_list = codebuf.merge(body->next_list, else_clause->next_list);
-
         break_list = codebuf.merge(body->break_list, else_clause->continue_list);
         continue_list = codebuf.merge(body->continue_list, else_clause->continue_list);
     }
@@ -100,13 +86,7 @@ while_statement::while_statement(syntax_token* while_token, expression_syntax* c
     push_back_child(condition);
     push_back_child(body);
 
-    emit_init();
-    emit_code();
-
-    for (syntax_base* child : get_children())
-    {
-        child->emit_clean();
-    }
+    emit();
 }
 
 while_statement::~while_statement()
@@ -119,14 +99,14 @@ while_statement::~while_statement()
     delete while_token;
 }
 
-void while_statement::emit_code()
+void while_statement::emit_node()
 {
     codebuf.backpatch(condition->jump_list, condition->label);
     codebuf.backpatch(body->next_list, condition->label);
     codebuf.backpatch(condition->true_list, body->label);
     codebuf.backpatch(body->continue_list, condition->label);
     
-    this->next_list = codebuf.merge(condition->false_list, body->break_list);
+    next_list = codebuf.merge(condition->false_list, body->break_list);
 
     codebuf.emit("br label %%%s", condition->label);
 }
@@ -150,13 +130,7 @@ branch_statement::branch_statement(syntax_token* branch_token): branch_token(bra
         throw std::runtime_error("unknown branch_kind");
     }
 
-    emit_init();
-    emit_code();
-
-    for (syntax_base* child : get_children())
-    {
-        child->emit_clean();
-    }
+    emit();
 }
 
 branch_statement::~branch_statement()
@@ -177,7 +151,7 @@ branch_statement::branch_kind branch_statement::parse_kind(string str)
     throw std::invalid_argument("unknown type");
 }
 
-void branch_statement::emit_code()
+void branch_statement::emit_node()
 {
     size_t line = codebuf.emit("br label @");
 
@@ -202,13 +176,7 @@ return_statement::return_statement(syntax_token* return_token): return_token(ret
         output::error_mismatch(return_token->position);
     }
 
-    emit_init();
-    emit_code();
-
-    for (syntax_base* child : get_children())
-    {
-        child->emit_clean();
-    }
+    emit();
 }
 
 return_statement::return_statement(syntax_token* return_token, expression_syntax* value): return_token(return_token), value(value)
@@ -223,6 +191,8 @@ return_statement::return_statement(syntax_token* return_token, expression_syntax
     }
 
     push_back_child(value);
+
+    emit();
 }
 
 return_statement::~return_statement()
@@ -235,7 +205,7 @@ return_statement::~return_statement()
     delete return_token;
 }
 
-void return_statement::emit_code()
+void return_statement::emit_node()
 {
     if (value == nullptr)
     {
@@ -279,13 +249,7 @@ expression_statement::expression_statement(expression_syntax* expression): expre
 {
     push_back_child(expression);
 
-    emit_init();
-    emit_code();
-
-    for (syntax_base* child : get_children())
-    {
-        child->emit_clean();
-    }
+    emit();
 }
 
 expression_statement::~expression_statement()
@@ -296,7 +260,7 @@ expression_statement::~expression_statement()
     }
 }
 
-void expression_statement::emit_code()
+void expression_statement::emit_node()
 {
     codebuf.backpatch(expression->jump_list, expression->label);
 }
@@ -323,13 +287,7 @@ assignment_statement::assignment_statement(syntax_token* identifier_token, synta
 
     push_back_child(value);
 
-    emit_init();
-    emit_code();
-
-    for (syntax_base* child : get_children())
-    {
-        child->emit_clean();
-    }
+    emit();
 }
 
 assignment_statement::~assignment_statement()
@@ -343,7 +301,7 @@ assignment_statement::~assignment_statement()
     delete assign_token;
 }
 
-void assignment_statement::emit_code()
+void assignment_statement::emit_node()
 {
     codebuf.backpatch(value->jump_list, value->label);
 
@@ -400,13 +358,7 @@ declaration_statement::declaration_statement(type_syntax* type, syntax_token* id
 
     push_back_child(type);
 
-    emit_init();
-    emit_code();
-
-    for (syntax_base* child : get_children())
-    {
-        child->emit_clean();
-    }
+    emit();
 }
 
 declaration_statement::declaration_statement(type_syntax* type, syntax_token* identifier_token, syntax_token* assign_token, expression_syntax* value):
@@ -432,13 +384,7 @@ declaration_statement::declaration_statement(type_syntax* type, syntax_token* id
     push_back_child(type);
     push_back_child(value);
 
-    emit_init();
-    emit_code();
-
-    for (syntax_base* child : get_children())
-    {
-        child->emit_clean();
-    }
+    emit();
 }
 
 declaration_statement::~declaration_statement()
@@ -452,7 +398,7 @@ declaration_statement::~declaration_statement()
     delete assign_token;
 }
 
-void declaration_statement::emit_code()
+void declaration_statement::emit_node()
 {
     string ptr_reg = static_cast<const variable_symbol*>(symtab.get_symbol(identifier, symbol_kind::Variable))->ptr_reg;
 
@@ -499,13 +445,7 @@ block_statement::block_statement(list_syntax<statement_syntax>* statements): sta
 {
     push_back_child(statements);
     
-    emit_init();
-    emit_code();
-
-    for (syntax_base* child : get_children())
-    {
-        child->emit_clean();
-    }
+    emit();
 }
 
 block_statement::~block_statement()
@@ -516,7 +456,7 @@ block_statement::~block_statement()
     }
 }
 
-void block_statement::emit_code()
+void block_statement::emit_node()
 {
     next_list = statements->back()->next_list;
 

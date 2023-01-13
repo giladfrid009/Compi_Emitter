@@ -10,13 +10,7 @@ static code_buffer& codebuf = code_buffer::instance();
 
 type_syntax::type_syntax(syntax_token* type_token): type_token(type_token), kind(types::parse(type_token->text))
 {
-    emit_init();
-    emit_code();
-
-    for (syntax_base* child : get_children())
-    {
-        child->emit_clean();
-    }
+    emit();
 }
 
 bool type_syntax::is_numeric() const
@@ -29,7 +23,7 @@ bool type_syntax::is_special() const
     return types::is_special(kind);
 }
 
-void type_syntax::emit_code()
+void type_syntax::emit_node()
 {
 }
 
@@ -58,13 +52,7 @@ parameter_syntax::parameter_syntax(type_syntax* type, syntax_token* identifier_t
 
     push_back_child(type);
 
-    emit_init();
-    emit_code();
-
-    for (syntax_base* child : get_children())
-    {
-        child->emit_clean();
-    }
+    emit();
 }
 
 parameter_syntax::~parameter_syntax()
@@ -77,7 +65,7 @@ parameter_syntax::~parameter_syntax()
     delete identifier_token;
 }
 
-void parameter_syntax::emit_code()
+void parameter_syntax::emit_node()
 {
 }
 
@@ -109,13 +97,7 @@ function_declaration_syntax::function_declaration_syntax(type_syntax* return_typ
     push_back_child(parameters);
     push_back_child(body);
 
-    emit_init();
-    emit_code();
-
-    for (syntax_base* child : get_children())
-    {
-        child->emit_clean();
-    }
+    emit();
 }
 
 function_declaration_syntax::~function_declaration_syntax()
@@ -128,7 +110,7 @@ function_declaration_syntax::~function_declaration_syntax()
     delete identifier_token;
 }
 
-void function_declaration_syntax::emit_code()
+void function_declaration_syntax::emit_node()
 {
 }
 
@@ -148,13 +130,7 @@ root_syntax::root_syntax(list_syntax<function_declaration_syntax>* functions): f
 
     push_back_child(functions);
 
-    emit_init();
-    emit_code();
-
-    for (syntax_base* child : get_children())
-    {
-        child->emit_clean();
-    }
+    emit();
 }
 
 root_syntax::~root_syntax()
@@ -165,6 +141,6 @@ root_syntax::~root_syntax()
     }
 }
 
-void root_syntax::emit_code()
+void root_syntax::emit_node()
 {
 }

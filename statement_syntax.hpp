@@ -27,7 +27,7 @@ class if_statement final: public statement_syntax
 
     protected:
 
-    void emit_code() override;
+    void emit_node() override;
 };
 
 class while_statement final: public statement_syntax
@@ -46,7 +46,7 @@ class while_statement final: public statement_syntax
 
     protected:
 
-    void emit_code() override;
+    void emit_node() override;
 };
 
 class branch_statement final: public statement_syntax
@@ -68,7 +68,7 @@ class branch_statement final: public statement_syntax
 
     static branch_kind parse_kind(std::string str);
 
-    void emit_code() override;
+    void emit_node() override;
 };
 
 class return_statement final: public statement_syntax
@@ -87,7 +87,7 @@ class return_statement final: public statement_syntax
 
     protected:
 
-    void emit_code() override;
+    void emit_node() override;
 };
 
 class expression_statement final: public statement_syntax
@@ -104,7 +104,7 @@ class expression_statement final: public statement_syntax
 
     protected:
 
-    void emit_code() override;
+    void emit_node() override;
 };
 
 class assignment_statement final: public statement_syntax
@@ -124,7 +124,7 @@ class assignment_statement final: public statement_syntax
 
     protected:
 
-    void emit_code() override;
+    void emit_node() override;
 };
 
 class declaration_statement final: public statement_syntax
@@ -146,7 +146,7 @@ class declaration_statement final: public statement_syntax
 
     protected:
 
-    void emit_code() override;
+    void emit_node() override;
 };
 
 class block_statement final: public statement_syntax
@@ -163,7 +163,7 @@ class block_statement final: public statement_syntax
 
     protected:
 
-    void emit_code() override;
+    void emit_node() override;
 };
 
 #endif

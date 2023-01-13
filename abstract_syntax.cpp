@@ -48,6 +48,17 @@ void syntax_base::emit_clean()
 {
 }
 
+void syntax_base::emit()
+{
+    emit_init();
+    emit_node();
+
+    for (auto child : children)
+    {
+        child->emit_clean();
+    }
+}
+
 void syntax_base::emit_init()
 {
 }

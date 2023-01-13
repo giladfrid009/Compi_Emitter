@@ -26,13 +26,7 @@ cast_expression::cast_expression(type_syntax* destination_type, expression_synta
     push_back_child(destination_type);
     push_back_child(value);
 
-    emit_init();
-    emit_code();
-
-    for (syntax_base* child : get_children())
-    {
-        child->emit_clean();
-    }
+    emit();
 }
 
 cast_expression::~cast_expression()
@@ -43,7 +37,7 @@ cast_expression::~cast_expression()
     }
 }
 
-void cast_expression::emit_code()
+void cast_expression::emit_node()
 {
     codebuf.backpatch(value->jump_list, value->label);
 
@@ -67,13 +61,7 @@ not_expression::not_expression(syntax_token* not_token, expression_syntax* expre
 
     push_back_child(expression);
 
-    emit_init();
-    emit_code();
-
-    for (syntax_base* child : get_children())
-    {
-        child->emit_clean();
-    }
+    emit();
 }
 
 not_expression::~not_expression()
@@ -86,7 +74,7 @@ not_expression::~not_expression()
     delete not_token;
 }
 
-void not_expression::emit_code()
+void not_expression::emit_node()
 {
     codebuf.backpatch(expression->jump_list, expression->label);
 
@@ -105,13 +93,7 @@ logical_expression::logical_expression(expression_syntax* left, syntax_token* op
     push_back_child(left);
     push_back_child(right);
 
-    emit_init();
-    emit_code();
-
-    for (syntax_base* child : get_children())
-    {
-        child->emit_clean();
-    }
+    emit();
 }
 
 logical_expression::~logical_expression()
@@ -132,7 +114,7 @@ logical_expression::operator_kind logical_expression::parse_operator(string str)
     throw std::invalid_argument("unknown oper");
 }
 
-void logical_expression::emit_code()
+void logical_expression::emit_node()
 {
     codebuf.backpatch(left->jump_list, left->label);
     codebuf.backpatch(right->jump_list, right->label);
@@ -164,13 +146,7 @@ arithmetic_expression::arithmetic_expression(expression_syntax* left, syntax_tok
     push_back_child(left);
     push_back_child(right);
 
-    emit_init();
-    emit_code();
-
-    for (syntax_base* child : get_children())
-    {
-        child->emit_clean();
-    }
+    emit();
 }
 
 arithmetic_expression::~arithmetic_expression()
@@ -193,7 +169,7 @@ arithmetic_operator arithmetic_expression::parse_operator(string str)
     throw std::invalid_argument("unknown oper");
 }
 
-void arithmetic_expression::emit_code()
+void arithmetic_expression::emit_node()
 {
     codebuf.backpatch(left->jump_list, left->label);
     codebuf.backpatch(right->jump_list, right->label);
@@ -244,13 +220,7 @@ relational_expression::relational_expression(expression_syntax* left, syntax_tok
     push_back_child(left);
     push_back_child(right);
 
-    emit_init();
-    emit_code();
-
-    for (syntax_base* child : get_children())
-    {
-        child->emit_clean();
-    }
+    emit();
 }
 
 relational_expression::~relational_expression()
@@ -275,7 +245,7 @@ relational_operator relational_expression::parse_operator(string str)
     throw std::invalid_argument("unknown oper");
 }
 
-void relational_expression::emit_code()
+void relational_expression::emit_node()
 {
     codebuf.backpatch(left->jump_list, left->label);
     codebuf.backpatch(right->jump_list, right->label);
@@ -309,13 +279,7 @@ conditional_expression::conditional_expression(expression_syntax* true_value, sy
     push_back_child(condition);
     push_back_child(false_value);
 
-    emit_init();
-    emit_code();
-
-    for (syntax_base* child : get_children())
-    {
-        child->emit_clean();
-    }
+    emit();
 }
 
 conditional_expression::~conditional_expression()
@@ -329,7 +293,7 @@ conditional_expression::~conditional_expression()
     delete else_token;
 }
 
-void conditional_expression::emit_code()
+void conditional_expression::emit_node()
 {
     codebuf.backpatch(true_value->jump_list, condition->label);
     codebuf.backpatch(condition->jump_list, this->label);
@@ -365,13 +329,7 @@ identifier_expression::identifier_expression(syntax_token* identifier_token):
         output::error_undef(identifier_token->position, identifier);
     }
 
-    emit_init();
-    emit_code();
-
-    for (syntax_base* child : get_children())
-    {
-        child->emit_clean();
-    }
+    emit();
 }
 
 type_kind identifier_expression::get_return_type(string identifier)
@@ -401,7 +359,7 @@ identifier_expression::~identifier_expression()
     delete identifier_token;
 }
 
-void identifier_expression::emit_code()
+void identifier_expression::emit_node()
 {
     const symbol* symbol = symtab.get_symbol(identifier);
 
@@ -453,13 +411,7 @@ invocation_expression::invocation_expression(syntax_token* identifier_token):
         output::error_prototype_mismatch(identifier_token->position, identifier, params_str);
     }
 
-    emit_init();
-    emit_code();
-
-    for (syntax_base* child : get_children())
-    {
-        child->emit_clean();
-    }
+    emit();
 }
 
 invocation_expression::invocation_expression(syntax_token* identifier_token, list_syntax<expression_syntax>* arguments):
@@ -497,13 +449,7 @@ invocation_expression::invocation_expression(syntax_token* identifier_token, lis
 
     push_back_child(arguments);
 
-    emit_init();
-    emit_code();
-
-    for (syntax_base* child : get_children())
-    {
-        child->emit_clean();
-    }
+    emit();
 }
 
 type_kind invocation_expression::get_return_type(string identifier)
@@ -528,7 +474,7 @@ invocation_expression::~invocation_expression()
     delete identifier_token;
 }
 
-void invocation_expression::emit_code()
+void invocation_expression::emit_node()
 {
     list<string> arg_regs;
 
