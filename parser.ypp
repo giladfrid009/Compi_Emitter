@@ -27,6 +27,8 @@ void add_builtin_functions();
 
 void add_function_symbol(type_syntax* return_type, syntax_token* indentifier_token, list_syntax<parameter_syntax>* parameters);
 
+void emit_function_end(function_declaration_syntax* function);
+
 expression_syntax* validate_bool_expression(expression_syntax* expression);
 
 void print_current_scope();
@@ -113,7 +115,7 @@ Funcs   	: %empty                                                { $$ = new list
       		| FuncDecl Funcs					                    { $$ = $2->push_front($1); }
 			;
 FuncDecl 	: RetType ID LPAREN Params RPAREN                       { add_function_symbol($1, $2, $4); } 
-              LBRACE Statements CS RBRACE                           { $$ = new function_declaration_syntax($1, $2, $4, $8); codebuf.decrease_indent(); codebuf.emit("}\n"); }
+              LBRACE Statements CS RBRACE                           { $$ = new function_declaration_syntax($1, $2, $4, $8); emit_function_end($$); }
 			;
 RetType 	: Type                                                  { $$ = $1; }
         	| VOID                                                  { $$ = new type_syntax($1); }
@@ -262,6 +264,22 @@ void add_function_symbol(type_syntax* return_type, syntax_token* indentifier_tok
     codebuf.emit(instr.str());
 
     codebuf.increase_indent();
+}
+
+void emit_function_end(function_declaration_syntax* function)
+{   
+    if (function->return_type->kind == type_kind::Void)
+    {
+        codebuf.emit("ret void");
+    }
+    else
+    {
+        codebuf.emit("ret i32 0");
+    }
+
+    codebuf.decrease_indent(); 
+
+    codebuf.emit("}\n");
 }
 
 expression_syntax* validate_bool_expression(expression_syntax* expression)
