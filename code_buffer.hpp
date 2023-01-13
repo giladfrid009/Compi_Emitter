@@ -23,6 +23,7 @@ class code_buffer
 {
     private:
 
+    int indent;
     std::vector<std::string> buffer;
     std::vector<std::string> global_defs;
 
@@ -36,6 +37,10 @@ class code_buffer
 
     static code_buffer& instance();
 
+    void increase_indent();
+
+    void decrease_indent();
+
     std::string emit_label();
 
     size_t emit(const std::string& line);
@@ -45,9 +50,7 @@ class code_buffer
     {
         std::string formatted = ir_builder::format_string(line, args ...);
 
-        buffer.push_back(formatted);
-
-        return buffer.size() - 1;
+        return emit(formatted);
     }
 
     size_t emit_from_file(std::string file_path);

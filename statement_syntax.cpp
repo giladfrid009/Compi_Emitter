@@ -452,12 +452,47 @@ declaration_statement::~declaration_statement()
     delete assign_token;
 }
 
-void declaration_statement::emit_code() //todo: implement
+void declaration_statement::emit_code()
 {
-    if(value != nullptr)
+    string ptr_reg = static_cast<const variable_symbol*>(symtab.get_symbol(identifier, symbol_kind::Variable))->ptr_reg;
+
+    codebuf.emit("%s = alloca i32", ptr_reg);
+
+    if (value == nullptr)
     {
-        codebuf.backpatch(value->jump_list, value->label);
+        codebuf.emit("store i32 0 , i32* %s", ptr_reg);
+        return;
     }
+
+    codebuf.backpatch(value->jump_list, value->label);
+
+    if (value->return_type != type_kind::Bool)
+    {
+        codebuf.emit("store i32 %s , i32* %s", value->place, ptr_reg);
+        return;
+    }
+    
+    string bool_reg = ir_builder::fresh_register();
+    string true_label = ir_builder::fresh_label();
+    string false_label = ir_builder::fresh_label();
+    string next_label = ir_builder::fresh_label();
+
+    codebuf.backpatch(value->true_list, true_label);
+    codebuf.backpatch(value->false_list, false_label);
+
+    codebuf.emit("%s:", true_label);
+
+    codebuf.emit("br label %%%s", next_label);
+
+    codebuf.emit("%s:", false_label);
+
+    codebuf.emit("br label %%%s", next_label);
+
+    codebuf.emit("%s:", false_label);
+
+    codebuf.emit("%s = phi i32 [ 1 , %s ] [ 0 , %s ]", bool_reg, true_label, false_label);
+
+    codebuf.emit("store i32 %s , i32* %s", bool_reg, ptr_reg);
 }
 
 block_statement::block_statement(list_syntax<statement_syntax>* statements): statements(statements)

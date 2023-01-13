@@ -22,3 +22,4 @@ define void @error_zero_div() {
     call void @exit(i32 0)
     ret void
 }
+

@@ -1,12 +1,14 @@
 #include "code_buffer.hpp"
 #include <list>
 #include <string>
+#include <sstream>
 #include <iostream>
 #include <stdexcept>
 
 using std::list;
 using std::string;
 using std::ifstream;
+using std::stringstream;
 
 bool replace(string& str, const string& from, const string& to, const label_index index);
 
@@ -15,7 +17,7 @@ patch_record::patch_record(size_t line, label_index index): line(line), index(in
 
 }
 
-code_buffer::code_buffer(): buffer(), global_defs()
+code_buffer::code_buffer(): indent(0), buffer(), global_defs()
 {
 
 }
@@ -24,6 +26,21 @@ code_buffer& code_buffer::instance()
 {
     static code_buffer instance;
     return instance;
+}
+
+void code_buffer::increase_indent()
+{
+    indent++;
+}
+
+void code_buffer::decrease_indent()
+{
+    if (indent <= 0)
+    {
+        return;
+    }
+
+    indent--;
 }
 
 string code_buffer::emit_label()
@@ -37,7 +54,17 @@ string code_buffer::emit_label()
 
 size_t code_buffer::emit(const string& line)
 {
-    buffer.push_back(line);
+    stringstream instr;
+
+    for (int i = 0; i < indent; i++)
+    {
+        instr << "    ";
+    }
+
+    instr << line;
+
+    buffer.push_back(instr.str());
+
     return buffer.size() - 1;
 }
 

@@ -8,9 +8,11 @@
 #include <list>
 #include <string>
 #include <iostream>
+#include <sstream>
 
 using std::vector;
 using std::string;
+using std::stringstream;
 
 extern int yylineno;
 
@@ -111,7 +113,7 @@ Funcs   	: %empty                                                { $$ = new list
       		| FuncDecl Funcs					                    { $$ = $2->push_front($1); }
 			;
 FuncDecl 	: RetType ID LPAREN Params RPAREN                       { add_function_symbol($1, $2, $4); } 
-              LBRACE Statements CS RBRACE                           { $$ = new function_declaration_syntax($1, $2, $4, $8); }
+              LBRACE Statements CS RBRACE                           { $$ = new function_declaration_syntax($1, $2, $4, $8); codebuf.decrease_indent(); codebuf.emit("}\n"); }
 			;
 RetType 	: Type                                                  { $$ = $1; }
         	| VOID                                                  { $$ = new type_syntax($1); }
@@ -238,6 +240,28 @@ void add_function_symbol(type_syntax* return_type, syntax_token* indentifier_tok
 
         symtab.add_parameter(param->identifier, param->type->kind);
     }
+
+    stringstream instr;
+
+    string ret_type = ir_builder::get_type(return_type->kind);
+
+    instr << ir_builder::format_string("define %s @%s (", ret_type, func_name);
+
+    for (auto param = parameters->begin(); param != parameters->end(); param++)
+    {
+        instr << ir_builder::get_type((*param)->type->kind);
+
+        if (std::distance(param, parameters->end()) > 1)
+        {
+            instr << " , ";
+        }
+    }
+
+    instr << ") {";
+
+    codebuf.emit(instr.str());
+
+    codebuf.increase_indent();
 }
 
 expression_syntax* validate_bool_expression(expression_syntax* expression)
