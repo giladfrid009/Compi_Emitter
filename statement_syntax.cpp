@@ -73,6 +73,9 @@ void if_statement::emit_code()
         codebuf.backpatch(condition->true_list, body->label);
 
         next_list = codebuf.merge(condition->false_list, body->next_list);
+        
+        break_list = body->break_list;
+        continue_list = body->continue_list;
     }
     else
     {
@@ -80,6 +83,9 @@ void if_statement::emit_code()
         codebuf.backpatch(condition->false_list, else_clause->label);
 
         next_list = codebuf.merge(body->next_list, else_clause->next_list);
+
+        break_list = codebuf.merge(body->break_list, else_clause->continue_list);
+        continue_list = codebuf.merge(body->continue_list, else_clause->continue_list);
     }
 }
 
@@ -118,8 +124,9 @@ void while_statement::emit_code()
     codebuf.backpatch(condition->jump_list, condition->label);
     codebuf.backpatch(body->next_list, condition->label);
     codebuf.backpatch(condition->true_list, body->label);
-
-    this->next_list = condition->false_list;
+    codebuf.backpatch(body->continue_list, condition->label);
+    
+    this->next_list = codebuf.merge(condition->false_list, body->break_list);
 
     codebuf.emit("br label %%%s", condition->label);
 }
@@ -170,15 +177,17 @@ branch_statement::branch_kind branch_statement::parse_kind(string str)
     throw std::invalid_argument("unknown type");
 }
 
-void branch_statement::emit_code() //todo: implement
+void branch_statement::emit_code()
 {
-    if (kind == branch_kind::Break)
-    {
+    size_t line = codebuf.emit("br label @");
 
+    if (kind == branch_kind::Continue)
+    {        
+        continue_list.push_back(patch_record(line, label_index::First));
     }
     else
     {
-        
+        break_list.push_back(patch_record(line, label_index::First));
     }
 }
 
@@ -475,4 +484,10 @@ block_statement::~block_statement()
 void block_statement::emit_code()
 {
     next_list = statements->back()->next_list;
+
+    for (auto statement : *statements)
+    {
+        break_list = codebuf.merge(break_list, statement->break_list);
+        continue_list = codebuf.merge(continue_list, statement->continue_list);
+    }
 }
