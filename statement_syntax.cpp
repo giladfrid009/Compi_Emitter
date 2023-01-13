@@ -10,6 +10,7 @@ using std::string;
 using std::list;
 
 static symbol_table& symtab = symbol_table::instance();
+static code_buffer& codebuf = code_buffer::instance();
 
 if_statement::if_statement(syntax_token* if_token, expression_syntax* condition, statement_syntax* body):
     if_token(if_token), condition(condition), body(body), else_token(nullptr), else_clause(nullptr)
@@ -21,8 +22,14 @@ if_statement::if_statement(syntax_token* if_token, expression_syntax* condition,
 
     push_back_child(condition);
     push_back_child(body);
+
     emit_init();
     emit_code();
+
+    for (syntax_base* child : get_children())
+    {
+        child->emit_clean();
+    }
 }
 
 if_statement::if_statement(syntax_token* if_token, expression_syntax* condition, statement_syntax* body, syntax_token* else_token, statement_syntax* else_clause):
@@ -36,8 +43,14 @@ if_statement::if_statement(syntax_token* if_token, expression_syntax* condition,
     push_back_child(condition);
     push_back_child(body);
     push_back_child(else_clause);
+
     emit_init();
     emit_code();
+
+    for (syntax_base* child : get_children())
+    {
+        child->emit_clean();
+    }
 }
 
 if_statement::~if_statement()
@@ -53,6 +66,19 @@ if_statement::~if_statement()
 
 void if_statement::emit_code()
 {
+    if (else_token == nullptr)
+    {
+        codebuf.backpatch(condition->true_list, body->label);
+
+        next_list = codebuf.merge(condition->false_list, body->next_list);
+    }
+    else
+    {
+        codebuf.backpatch(condition->true_list, body->label);
+        codebuf.backpatch(condition->false_list, else_clause->label);
+
+        next_list = codebuf.merge(body->next_list, else_clause->next_list);
+    }
 }
 
 while_statement::while_statement(syntax_token* while_token, expression_syntax* condition, statement_syntax* body):
@@ -65,8 +91,14 @@ while_statement::while_statement(syntax_token* while_token, expression_syntax* c
 
     push_back_child(condition);
     push_back_child(body);
+
     emit_init();
     emit_code();
+
+    for (syntax_base* child : get_children())
+    {
+        child->emit_clean();
+    }
 }
 
 while_statement::~while_statement()
@@ -81,6 +113,7 @@ while_statement::~while_statement()
 
 void while_statement::emit_code()
 {
+
 }
 
 branch_statement::branch_statement(syntax_token* branch_token): branch_token(branch_token), kind(parse_kind(branch_token->text))
@@ -101,8 +134,14 @@ branch_statement::branch_statement(syntax_token* branch_token): branch_token(bra
 
         throw std::runtime_error("unknown branch_kind");
     }
+
     emit_init();
     emit_code();
+
+    for (syntax_base* child : get_children())
+    {
+        child->emit_clean();
+    }
 }
 
 branch_statement::~branch_statement()
@@ -137,8 +176,14 @@ return_statement::return_statement(syntax_token* return_token): return_token(ret
     {
         output::error_mismatch(return_token->position);
     }
+
     emit_init();
     emit_code();
+
+    for (syntax_base* child : get_children())
+    {
+        child->emit_clean();
+    }
 }
 
 return_statement::return_statement(syntax_token* return_token, expression_syntax* value): return_token(return_token), value(value)
@@ -172,8 +217,14 @@ void return_statement::emit_code()
 expression_statement::expression_statement(expression_syntax* expression): expression(expression)
 {
     push_back_child(expression);
+
     emit_init();
     emit_code();
+
+    for (syntax_base* child : get_children())
+    {
+        child->emit_clean();
+    }
 }
 
 expression_statement::~expression_statement()
@@ -209,8 +260,14 @@ assignment_statement::assignment_statement(syntax_token* identifier_token, synta
     }
 
     push_back_child(value);
+
     emit_init();
     emit_code();
+
+    for (syntax_base* child : get_children())
+    {
+        child->emit_clean();
+    }
 }
 
 assignment_statement::~assignment_statement()
@@ -244,8 +301,14 @@ declaration_statement::declaration_statement(type_syntax* type, syntax_token* id
     symtab.add_variable(identifier, type->kind);
 
     push_back_child(type);
+
     emit_init();
     emit_code();
+
+    for (syntax_base* child : get_children())
+    {
+        child->emit_clean();
+    }
 }
 
 declaration_statement::declaration_statement(type_syntax* type, syntax_token* identifier_token, syntax_token* assign_token, expression_syntax* value):
@@ -270,8 +333,14 @@ declaration_statement::declaration_statement(type_syntax* type, syntax_token* id
 
     push_back_child(type);
     push_back_child(value);
+
     emit_init();
     emit_code();
+
+    for (syntax_base* child : get_children())
+    {
+        child->emit_clean();
+    }
 }
 
 declaration_statement::~declaration_statement()
@@ -292,8 +361,14 @@ void declaration_statement::emit_code()
 block_statement::block_statement(list_syntax<statement_syntax>* statements): statements(statements)
 {
     push_back_child(statements);
+    
     emit_init();
     emit_code();
+
+    for (syntax_base* child : get_children())
+    {
+        child->emit_clean();
+    }
 }
 
 block_statement::~block_statement()
