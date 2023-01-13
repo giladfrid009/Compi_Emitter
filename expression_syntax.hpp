@@ -101,11 +101,13 @@ template<> inline void literal_expression<std::string>::emit_code()
 {
     code_buffer& codebuf = code_buffer::instance();
 
-    std::string str_literal = ir_builder::fresh_const();
+    std::string str_container = ir_builder::fresh_const();
 
-    codebuf.emit_global(ir_builder::format_string("%s = constant [%d x i8] c\"%s\\00\"", str_literal, value.length() + 1, value));
+    std::string str = value.substr(1, value.length() - 2);
 
-    codebuf.emit(ir_builder::format_string("%s = add i8* 0 , %s", this->place, str_literal));
+    codebuf.emit_global(ir_builder::format_string("%s = constant [%d x i8] c\"%s\\00\"", str_container, str.length() + 1, str));
+
+    codebuf.emit(ir_builder::format_string("%s = add i8* 0 , %s", this->place, str_container));
 }
 
 class cast_expression final: public expression_syntax
