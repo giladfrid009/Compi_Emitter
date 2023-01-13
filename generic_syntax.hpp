@@ -12,7 +12,7 @@ template<typename element_type> class list_syntax final: public syntax_base
 {
     private:
 
-    std::list<const element_type*> elements;
+    std::list<element_type*> elements;
 
     public:
 
@@ -36,27 +36,49 @@ template<typename element_type> class list_syntax final: public syntax_base
 
     list_syntax& operator=(const list_syntax& other) = delete;
 
-    const element_type* front()
+    element_type* front() const
     {
         return elements.front();
     }
 
-    const element_type* back()
+    element_type* back() const
     {
         return elements.back();
     }
 
     list_syntax<element_type>* push_back(element_type* element)
     {
+        if (size() == 0)
+        {
+            emit_element_back(nullptr, element);
+        }
+        else
+        {
+            emit_element_back(back(), element);
+        }
+
         elements.push_back(element);
+
         add_child(element);
+
         return this;
     }
 
     list_syntax<element_type>* push_front(element_type* element)
     {
+        if (size() == 0)
+        {
+            emit_element_front(nullptr, element);
+        }
+        else
+        {
+            emit_element_front(front(), element);
+        }
+
         elements.push_front(element);
+
         add_child_front(element);
+
         return this;
     }
 
@@ -65,12 +87,12 @@ template<typename element_type> class list_syntax final: public syntax_base
         return elements.size();
     }
 
-    typename std::list<const element_type*>::const_iterator begin() const
+    typename std::list<element_type*>::const_iterator begin() const
     {
         return elements.begin();
     }
 
-    typename std::list<const element_type*>::const_iterator end() const
+    typename std::list<element_type*>::const_iterator end() const
     {
         return elements.end();
     }
@@ -85,11 +107,45 @@ template<typename element_type> class list_syntax final: public syntax_base
 
     protected:
 
-    void emit_node() override
+    void emit_element_front(element_type* old_front, element_type* new_front)
     {
 
     }
+
+    void emit_element_back(element_type* old_back, element_type* new_back)
+    {
+    }
+
+    void emit_node() override
+    {
+    }
 };
+
+template<> inline void list_syntax<expression_syntax>::emit_element_front(expression_syntax* old_front, expression_syntax* new_front)
+{
+    code_buffer::instance().backpatch(new_front->jump_list, new_front->label);
+}
+
+template<> inline void list_syntax<expression_syntax>::emit_element_back(expression_syntax* old_back, expression_syntax* new_back)
+{
+    code_buffer::instance().backpatch(new_back->jump_list, new_back->label);
+}
+
+template<> inline void list_syntax<statement_syntax>::emit_element_front(statement_syntax* old_front, statement_syntax* new_front)
+{
+    if (old_front != nullptr)
+    {
+        code_buffer::instance().backpatch(old_front->next_list, new_front->label);
+    }
+}
+
+template<> inline void list_syntax<statement_syntax>::emit_element_back(statement_syntax* old_back, statement_syntax* new_back)
+{
+    if (old_back != nullptr)
+    {
+        code_buffer::instance().backpatch(new_back->next_list, old_back->label);
+    }
+}
 
 class type_syntax final: public syntax_base
 {

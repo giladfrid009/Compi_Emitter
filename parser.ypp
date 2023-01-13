@@ -129,7 +129,7 @@ ParamsList  : ParamDecl                                             { $$ = new l
 ParamDecl 	: Type ID                                               { $$ = new parameter_syntax($1, $2); }
 			;       
 Statements	: Statement	                                            { $$ = new list_syntax<statement_syntax>($1); }
- 			| Statements Statement                                  { codebuf.backpatch($1->back()->next_list, $2->label); $$ = $1->push_back($2); }
+ 			| Statements Statement                                  { $$ = $1->push_back($2); }
 			;
 Statement	: LBRACE OS Statements CS RBRACE                        { $$ = new block_statement($3); }
 			| Type ID SC                                            { $$ = new declaration_statement($1, $2); }
