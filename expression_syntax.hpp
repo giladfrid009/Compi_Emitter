@@ -99,6 +99,13 @@ template<> inline bool literal_expression<bool>::get_literal_value(syntax_token*
 
 template<> inline void literal_expression<std::string>::emit_code()
 {
+    code_buffer& codebuf = code_buffer::instance();
+
+    std::string str_literal = ir_builder::fresh_const();
+
+    codebuf.emit_global(ir_builder::format_string("%s = constant [%d x i8] c\"%s\\00\"", str_literal, value.length() + 1, value));
+
+    codebuf.emit(ir_builder::format_string("%s = add i8* 0 , %s", this->place, str_literal));
 }
 
 class cast_expression final: public expression_syntax

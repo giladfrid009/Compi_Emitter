@@ -26,6 +26,17 @@ string ir_builder::fresh_label()
     return label;
 }
 
+std::string ir_builder::fresh_const()
+{
+    static unsigned long long count = 0;
+
+    string label = ir_builder::format_string("@.const_var_%llu", count);
+
+    count++;
+
+    return label;
+}
+
 string ir_builder::get_register_type(type_kind data_type)
 {
     switch (data_type)
