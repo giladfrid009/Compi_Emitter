@@ -391,7 +391,11 @@ void identifier_expression::emit_node()
 
     if (return_type == type_kind::Bool)
     {
-        size_t line = codebuf.emit("br i1 %s , label @ , label @", this->place);
+        string bool_reg = ir_builder::fresh_register();
+
+        codebuf.emit("%s = trunc i32 %s to i1", bool_reg, this->place);
+        
+        size_t line = codebuf.emit("br i1 %s , label @ , label @", bool_reg);
 
         true_list.push_back(patch_record(line, label_index::First));
         false_list.push_back(patch_record(line, label_index::Second));
