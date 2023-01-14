@@ -91,6 +91,24 @@ template<> inline bool literal_expression<bool>::get_literal_value(syntax_token*
     throw std::runtime_error("invalid value_token text");
 }
 
+template<> inline void literal_expression<bool>::emit_node()
+{
+    code_buffer& codebuf = code_buffer::instance();
+    
+    if (value == true)
+    {
+        size_t line = codebuf.emit("br label @");
+
+        true_list.push_back(patch_record(line, label_index::First));
+    }
+    else
+    {
+        size_t line = codebuf.emit("br label @");
+
+        false_list.push_back(patch_record(line, label_index::First));
+    }
+}
+
 template<> inline void literal_expression<std::string>::emit_node()
 {
     code_buffer& codebuf = code_buffer::instance();
