@@ -45,19 +45,13 @@ const list<syntax_base*>& syntax_base::get_children() const
     return children;
 }
 
-void syntax_base::emit_finish()
-{
-}
-
 void syntax_base::emit_clean()
 {
 }
 
 void syntax_base::emit()
 {
-    emit_init();
     emit_node();
-    emit_finish();
 
     for (auto child : children)
     {
@@ -65,29 +59,25 @@ void syntax_base::emit()
     }
 }
 
-void syntax_base::emit_init()
-{
-}
-
 string syntax_base::emit_get_bool(const expression_syntax* bool_expression)
 {
     string bool_reg = ir_builder::fresh_register();
     string true_label = ir_builder::fresh_label();
     string false_label = ir_builder::fresh_label();
-    string next_label = ir_builder::fresh_label();
+    string end_label = ir_builder::fresh_label();
 
     codebuf.backpatch(bool_expression->true_list, true_label);
     codebuf.backpatch(bool_expression->false_list, false_label);
 
     codebuf.emit("%s:", true_label);
 
-    codebuf.emit("br label %%%s", next_label);
+    codebuf.emit("br label %%%s", end_label);
 
     codebuf.emit("%s:", false_label);
 
-    codebuf.emit("br label %%%s", next_label);
+    codebuf.emit("br label %%%s", end_label);
 
-    codebuf.emit("%s:", false_label);
+    codebuf.emit("%s:", end_label);
 
     codebuf.emit("%s = phi i32 [ 1 , %s ] , [ 0 , %s ]", bool_reg, true_label, false_label);
 
@@ -110,15 +100,6 @@ bool expression_syntax::is_special() const
     return types::is_special(return_type);
 }
 
-void expression_syntax::emit_init()
-{
-    size_t line = codebuf.emit("br label @");
-
-    codebuf.emit("%s:", this->label);
-
-    jump_list.push_back(patch_record(line, label_index::First));
-}
-
 void expression_syntax::emit_clean()
 {
     true_list.clear();
@@ -130,21 +111,9 @@ statement_syntax::statement_syntax(): next_list(), break_list(), continue_list()
 {
 }
 
-void statement_syntax::emit_init()
-{
-    codebuf.emit("%s:", this->label); // todo: generated too late, already after all the inner code has been generated.
-}
-
 void statement_syntax::emit_clean()
 {
     next_list.clear();
     break_list.clear();
     continue_list.clear();
-}
-
-void statement_syntax::emit_finish()
-{
-    size_t line = codebuf.emit("br label @"); //todo: all statements must backpatch it with next one to execute
-
-    next_list.push_back(patch_record(line, label_index::First));
 }

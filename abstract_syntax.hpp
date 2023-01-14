@@ -29,9 +29,7 @@ class syntax_base
     const std::list<syntax_base*>& get_children() const;
 
     void emit();
-    virtual void emit_init();
     virtual void emit_node() = 0;
-    virtual void emit_finish();
     virtual void emit_clean();
 
     std::string emit_get_bool(const expression_syntax* bool_expression);
@@ -65,7 +63,6 @@ class expression_syntax: public syntax_base
 
     protected:
 
-    void emit_init() override;
     void emit_clean() override;
 };
 
@@ -86,9 +83,7 @@ class statement_syntax: public syntax_base
 
     protected:
 
-    void emit_init() override;
     void emit_clean() override;
-    void emit_finish() override;
 };
 
 #endif
