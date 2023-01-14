@@ -403,7 +403,20 @@ block_statement::~block_statement()
 
 void block_statement::emit_node()
 {
-    next_list = statements->next_list;
-    break_list = statements->break_list;
-    continue_list = statements->continue_list;
+    statement_syntax* prev_statement = nullptr;
+
+    for (auto statement : *statements)
+    {
+        if (prev_statement != nullptr)
+        {
+            codebuf.backpatch(prev_statement->next_list, statement->label);
+        }
+
+        break_list = codebuf.merge(break_list, statement->break_list);
+        continue_list = codebuf.merge(continue_list, statement->continue_list);
+
+        prev_statement = statement;
+    }
+
+    next_list = statements->back()->next_list;
 }

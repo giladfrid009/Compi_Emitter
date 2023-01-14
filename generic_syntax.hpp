@@ -16,11 +16,7 @@ template<typename element_type> class list_syntax final: public syntax_base
 
     public:
 
-    std::list<patch_record> next_list;
-    std::list<patch_record> break_list;
-    std::list<patch_record> continue_list;
-
-    list_syntax(): elements(), next_list(), break_list(), continue_list()
+    list_syntax(): elements()
     {
         static_assert(std::is_base_of<syntax_base, element_type>::value, "must be of type syntax_base");
     }
@@ -50,8 +46,6 @@ template<typename element_type> class list_syntax final: public syntax_base
 
         add_child(element);
 
-        emit_element(element);
-
         return this;
     }
 
@@ -60,8 +54,6 @@ template<typename element_type> class list_syntax final: public syntax_base
         elements.push_front(element);
 
         add_child_front(element);
-
-        emit_element(element);
 
         return this;
     }
@@ -91,28 +83,10 @@ template<typename element_type> class list_syntax final: public syntax_base
 
     protected:
 
-    void emit_element(element_type* element)
-    {
-    }
-
     void emit_node() override
     {
     }
 };
-
-template<> inline void list_syntax<expression_syntax>::emit_element(expression_syntax* element)
-{
-    code_buffer::instance().backpatch(element->jump_list, element->label);
-}
-
-template<> inline void list_syntax<statement_syntax>::emit_element(statement_syntax* element)
-{
-    code_buffer& codebuf = code_buffer::instance();
-
-    next_list = codebuf.merge(next_list, element->next_list);
-    continue_list = codebuf.merge(continue_list, element->continue_list);
-    break_list = codebuf.merge(continue_list, element->break_list);
-}
 
 class type_syntax final: public syntax_base
 {
@@ -186,6 +160,40 @@ class root_syntax final: public syntax_base
 
     root_syntax(const root_syntax& other) = delete;
     root_syntax& operator=(const root_syntax& other) = delete;
+
+    protected:
+
+    void emit_node() override;
+};
+
+class jump_syntax final: public syntax_base
+{
+    public:
+
+    std::list<patch_record> jump_list;
+
+    jump_syntax();
+    ~jump_syntax();
+
+    jump_syntax(const jump_syntax& other) = delete;
+    jump_syntax& operator=(const jump_syntax& other) = delete;
+
+    protected:
+
+    void emit_node() override;
+};
+
+class label_syntax final: public syntax_base
+{
+    public:
+
+    const std::string label;
+
+    label_syntax();
+    ~label_syntax();
+
+    label_syntax(const label_syntax& other) = delete;
+    label_syntax& operator=(const label_syntax& other) = delete;
 
     protected:
 

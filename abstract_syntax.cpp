@@ -45,6 +45,10 @@ const list<syntax_base*>& syntax_base::get_children() const
     return children;
 }
 
+void syntax_base::emit_finish()
+{
+}
+
 void syntax_base::emit_clean()
 {
 }
@@ -53,6 +57,7 @@ void syntax_base::emit()
 {
     emit_init();
     emit_node();
+    emit_finish();
 
     for (auto child : children)
     {
@@ -127,7 +132,7 @@ statement_syntax::statement_syntax(): next_list(), break_list(), continue_list()
 
 void statement_syntax::emit_init()
 {
-    codebuf.emit("%s:", this->label);
+    codebuf.emit("%s:", this->label); // todo: generated too late, already after all the inner code has been generated.
 }
 
 void statement_syntax::emit_clean()
@@ -135,4 +140,11 @@ void statement_syntax::emit_clean()
     next_list.clear();
     break_list.clear();
     continue_list.clear();
+}
+
+void statement_syntax::emit_finish()
+{
+    size_t line = codebuf.emit("br label @"); //todo: all statements must backpatch it with next one to execute
+
+    next_list.push_back(patch_record(line, label_index::First));
 }

@@ -28,7 +28,7 @@ void add_builtin_functions();
 
 void add_function_symbol(type_syntax* return_type, syntax_token* indentifier_token, list_syntax<parameter_syntax>* parameters);
 
-void emit_function_end(function_declaration_syntax* function);
+void emit_function_finish(function_declaration_syntax* function);
 
 expression_syntax* validate_bool_expression(expression_syntax* expression);
 
@@ -50,6 +50,8 @@ void print_current_scope();
     syntax_token*                             token;
     root_syntax*                              root;
     type_syntax*                              type;  
+    jump_syntax*                              jump;
+    label_syntax*                             label;
     parameter_syntax*                         param;     
     function_declaration_syntax*              function;            
     statement_syntax*                         statement; 	
@@ -107,6 +109,8 @@ void print_current_scope();
 %type <type>			Type
 %type <expression>      Exp
 %type <expression>      BoolExp
+%type <jump>            J
+%type <label>           L
 
 %%
 
@@ -116,7 +120,7 @@ Funcs   	: %empty                                                { $$ = new list
       		| FuncDecl Funcs					                    { $$ = $2->push_front($1); }
 			;
 FuncDecl 	: RetType ID LPAREN Params RPAREN                       { add_function_symbol($1, $2, $4); } 
-              LBRACE Statements CS RBRACE                           { $$ = new function_declaration_syntax($1, $2, $4, $8); emit_function_end($$); }
+              LBRACE Statements CS RBRACE                           { $$ = new function_declaration_syntax($1, $2, $4, $8); emit_function_finish($$); }
 			;
 RetType 	: Type                                                  { $$ = $1; }
         	| VOID                                                  { $$ = new type_syntax($1); }
@@ -181,6 +185,10 @@ OS          : %empty                                                { symtab.ope
 OSL         : %empty                                                { symtab.open_scope(true); }
             ;
 CS          : %empty                                                { print_current_scope(); symtab.close_scope(); }
+            ;
+J           : %empty                                                { $$ = new jump_syntax(); }
+            ;
+L           : %empty                                                { $$ = new label_syntax(); }
             ;
 %%
 
@@ -267,14 +275,23 @@ void add_function_symbol(type_syntax* return_type, syntax_token* indentifier_tok
     codebuf.increase_indent();
 }
 
-void emit_function_end(function_declaration_syntax* function)
+void emit_function_finish(function_declaration_syntax* function)
 {
+    statement_syntax* prev_statement = nullptr;
+
+    for (auto statement : *function->body)
+    {
+        if (prev_statement != nullptr)
+        {
+            codebuf.backpatch(prev_statement->next_list, statement->label);
+        }
+
+        prev_statement = statement;
+    }
+    
     string label = codebuf.emit_label();
 
-    codebuf.backpatch(function->body->next_list, label);
-
-    assert(function->body->break_list.size() == 0);
-    assert(function->body->continue_list.size() == 0);
+    codebuf.backpatch(function->body->back()->next_list, label);
 
     if (function->return_type->kind == type_kind::Void)
     {

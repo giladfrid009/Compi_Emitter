@@ -144,3 +144,41 @@ root_syntax::~root_syntax()
 void root_syntax::emit_node()
 {
 }
+
+jump_syntax::jump_syntax() : jump_list()
+{
+    emit();
+}
+
+jump_syntax::~jump_syntax()
+{
+    for (syntax_base* child : get_children())
+    {
+        delete child;
+    }
+}
+
+void jump_syntax::emit_node()
+{
+    size_t line = codebuf.emit("br label @");
+
+    jump_list.push_back(patch_record(line, label_index::First));
+}
+
+label_syntax::label_syntax() : label(ir_builder::fresh_label())
+{
+    emit();
+}
+
+label_syntax::~label_syntax()
+{
+    for (syntax_base* child : get_children())
+    {
+        delete child;
+    }
+}
+
+void label_syntax::emit_node()
+{
+    codebuf.emit("%s:", label);
+}
