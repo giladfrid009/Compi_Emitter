@@ -167,16 +167,17 @@ Statement	: LBRACE OS Statements CS RBRACE                        { $$ = new blo
 
                                                                         delete $6; delete $9; delete $11; delete $13; delete $16;
                                                                     }
-			| WHILE LPAREN BoolExp RPAREN OSL L Statement CS L      { 
+			| WHILE LPAREN BoolExp RPAREN OSL L Statement J CS L    { 
                                                                         $$ = new while_statement($1, $3, $7); 
 
                                                                         codebuf.backpatch($3->jump_list, $3->jump_label);
                                                                         codebuf.backpatch($3->true_list, $6->label); 
-                                                                        codebuf.backpatch($3->false_list, $9->label);
+                                                                        codebuf.backpatch($3->false_list, $10->label);
                                                                         codebuf.backpatch($7->continue_list, $3->jump_label);
-                                                                        codebuf.backpatch($7->break_list, $9->label);
+                                                                        codebuf.backpatch($7->break_list, $10->label);
+                                                                        codebuf.backpatch($8->jump_list, $3->jump_label);
 
-                                                                        delete $6; delete $9;
+                                                                        delete $6; delete $8; delete $10;
                                                                     }
 			| BREAK SC                                              { $$ = new branch_statement($1); }
 			| CONTINUE SC                                           { $$ = new branch_statement($1); }
@@ -215,7 +216,7 @@ OS          : %empty                                                { symtab.ope
             ;
 OSL         : %empty                                                { symtab.open_scope(true); codebuf.increase_indent(); }
             ;
-CS          : %empty                                                { print_current_scope(); symtab.close_scope(); codebuf.decrease_indent(); }
+CS          : %empty                                                { symtab.close_scope(); codebuf.decrease_indent(); }
             ;
 J           : %empty                                                { $$ = new jump_syntax(); }
             ;
@@ -230,9 +231,6 @@ int main()
     add_builtin_functions();
 
 	int res = yyparse();
-
-    print_current_scope();
-    symtab.close_scope();
 
     codebuf.print_globals();
     codebuf.print();
