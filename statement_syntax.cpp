@@ -54,25 +54,30 @@ if_statement::~if_statement()
 
 void if_statement::emit_node()
 {
-    codebuf.backpatch(condition->jump_list, condition->label);
+    string next_label = ir_builder::fresh_label();
+
+    //codebuf.backpatch(condition->jump_list, condition->label);
+
+    codebuf.backpatch(condition->true_list, body->label);
+
+    break_list = body->break_list;
+    continue_list = body->continue_list;
 
     if (else_clause == nullptr)
     {
-        codebuf.backpatch(condition->true_list, body->label);
-
-        next_list = codebuf.merge(condition->false_list, body->next_list);
-        break_list = body->break_list;
-        continue_list = body->continue_list;
+        codebuf.backpatch(condition->false_list, next_label);        
     }
     else
     {
         codebuf.backpatch(condition->true_list, body->label);
         codebuf.backpatch(condition->false_list, else_clause->label);
 
-        next_list = codebuf.merge(body->next_list, else_clause->next_list);
-        break_list = codebuf.merge(body->break_list, else_clause->continue_list);
-        continue_list = codebuf.merge(body->continue_list, else_clause->continue_list);
+        break_list = codebuf.merge(break_list, else_clause->continue_list);
+        continue_list = codebuf.merge(continue_list, else_clause->continue_list);
     }
+
+    codebuf.emit("br label %%%s", next_label);
+    codebuf.emit("%s:", next_label);
 }
 
 while_statement::while_statement(syntax_token* while_token, expression_syntax* condition, statement_syntax* body):
@@ -101,14 +106,18 @@ while_statement::~while_statement()
 
 void while_statement::emit_node()
 {
-    codebuf.backpatch(condition->jump_list, condition->label);
-    codebuf.backpatch(body->next_list, condition->label);
+    string next_label = ir_builder::fresh_label();
+
+    //codebuf.backpatch(condition->jump_list, condition->label);
+    //codebuf.backpatch(body->next_list, condition->label);
+
     codebuf.backpatch(condition->true_list, body->label);
     codebuf.backpatch(body->continue_list, condition->label);
 
-    next_list = codebuf.merge(condition->false_list, body->break_list);
+    //next_list = codebuf.merge(condition->false_list, body->break_list);
 
     codebuf.emit("br label %%%s", condition->label);
+    codebuf.emit("%s:", next_label);
 }
 
 branch_statement::branch_statement(syntax_token* branch_token): branch_token(branch_token), kind(parse_kind(branch_token->text))
@@ -409,7 +418,7 @@ void block_statement::emit_node()
     {
         if (prev_statement != nullptr)
         {
-            codebuf.backpatch(prev_statement->next_list, statement->label);
+            //codebuf.backpatch(prev_statement->next_list, statement->label);
         }
 
         break_list = codebuf.merge(break_list, statement->break_list);
@@ -418,5 +427,5 @@ void block_statement::emit_node()
         prev_statement = statement;
     }
 
-    next_list = statements->back()->next_list;
+    //next_list = statements->back()->next_list;
 }

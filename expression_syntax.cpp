@@ -40,7 +40,10 @@ cast_expression::~cast_expression()
 
 void cast_expression::emit_node()
 {
-    codebuf.backpatch(value->jump_list, value->label);
+    //codebuf.backpatch(value->jump_list, value->label);
+
+    codebuf.emit("br label @");
+    codebuf.emit("%s:", label);
 
     if (value->return_type == type_kind::Int && destination_type->kind == type_kind::Byte)
     {
@@ -426,7 +429,7 @@ invocation_expression::invocation_expression(syntax_token* identifier_token):
         output::error_prototype_mismatch(identifier_token->position, identifier, params_str);
     }
 
-    emit();
+    //emit();
 }
 
 invocation_expression::invocation_expression(syntax_token* identifier_token, list_syntax<expression_syntax>* arguments):

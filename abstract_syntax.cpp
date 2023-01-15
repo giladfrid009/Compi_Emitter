@@ -107,13 +107,13 @@ void expression_syntax::emit_clean()
     jump_list.clear();
 }
 
-statement_syntax::statement_syntax(): next_list(), break_list(), continue_list(), label(ir_builder::fresh_label())
+statement_syntax::statement_syntax(): break_list(), continue_list(), label(ir_builder::fresh_label())
 {
 }
 
 void statement_syntax::emit_clean()
 {
-    next_list.clear();
+    //next_list.clear();
     break_list.clear();
     continue_list.clear();
 }

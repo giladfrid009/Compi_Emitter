@@ -283,7 +283,7 @@ void emit_function_finish(function_declaration_syntax* function)
     {
         if (prev_statement != nullptr)
         {
-            codebuf.backpatch(prev_statement->next_list, statement->label);
+            //codebuf.backpatch(prev_statement->next_list, statement->label);
         }
 
         prev_statement = statement;
@@ -291,7 +291,7 @@ void emit_function_finish(function_declaration_syntax* function)
     
     string label = codebuf.emit_label();
 
-    codebuf.backpatch(function->body->back()->next_list, label);
+    //codebuf.backpatch(function->body->back()->next_list, label);
 
     if (function->return_type->kind == type_kind::Void)
     {
