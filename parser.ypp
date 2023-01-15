@@ -186,9 +186,9 @@ OSL         : %empty                                                { symtab.ope
             ;
 CS          : %empty                                                { print_current_scope(); symtab.close_scope(); }
             ;
-II          : %empty                                                { codebuf.increase_indent(); printf("INC\n"); }
+II          : %empty                                                { codebuf.increase_indent(); }
             ;
-DI          : %empty                                                { codebuf.decrease_indent(); printf("DEC\n");}
+DI          : %empty                                                { codebuf.decrease_indent(); }
             ;
 J           : %empty                                                { $$ = new jump_syntax(); } //todo: maybe remove
             ;

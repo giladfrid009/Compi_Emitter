@@ -57,7 +57,13 @@ template<typename literal_type> class literal_expression final: public expressio
 
     void emit_node() override
     {
-        code_buffer::instance().emit("%s = add i32 0 , %d", this->place, value);
+        code_buffer& codebuf = code_buffer::instance();
+
+        size_t line = codebuf.emit("br label @");
+        jump_label = codebuf.emit_label();
+        codebuf.emit("%s = add i32 0 , %d", this->place, value);
+
+        jump_list.push_back(patch_record(line, label_index::First));
     }
 };
 
@@ -95,6 +101,11 @@ template<> inline void literal_expression<bool>::emit_node()
 {
     code_buffer& codebuf = code_buffer::instance();
     
+    size_t line = codebuf.emit("br label @");
+    jump_label = codebuf.emit_label();
+
+    jump_list.push_back(patch_record(line, label_index::First));
+
     if (value == true)
     {
         size_t line = codebuf.emit("br label @");
@@ -114,14 +125,16 @@ template<> inline void literal_expression<std::string>::emit_node()
     code_buffer& codebuf = code_buffer::instance();
 
     std::string arr_name = ir_builder::fresh_global();
-
     std::string arr_content = value.substr(1, value.length() - 2);
-
     std::string arr_type = ir_builder::format_string("[%d x i8]", arr_content.length() + 1);
 
     codebuf.emit_global(ir_builder::format_string("%s = constant %s c\"%s\\00\"", arr_name, arr_type, arr_content));
 
-    codebuf.emit(ir_builder::format_string("%s = getelementptr %s , %s* %s , i32 0 , i32 0", this->place, arr_type, arr_type, arr_name));
+    size_t line = codebuf.emit("br label @");
+    jump_label = codebuf.emit_label();
+    codebuf.emit(ir_builder::format_string("%s = getelementptr %s , %s* %s , i32 0 , i32 0", place, arr_type, arr_type, arr_name));
+
+    jump_list.push_back(patch_record(line, label_index::First));
 }
 
 class cast_expression final: public expression_syntax

@@ -68,6 +68,11 @@ size_t code_buffer::emit(const string& line)
     return buffer.size() - 1;
 }
 
+void code_buffer::new_line()
+{
+    emit("");
+}
+
 size_t code_buffer::emit_from_file(std::string file_path)
 {
     ifstream file;

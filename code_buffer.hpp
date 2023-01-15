@@ -53,6 +53,8 @@ class code_buffer
         return emit(formatted);
     }
 
+    void new_line();
+
     size_t emit_from_file(std::string file_path);
 
     static std::list<patch_record> merge(const std::list<patch_record>& first, const std::list<patch_record>& second);

@@ -541,7 +541,7 @@ void invocation_expression::emit_node()
             if (arg == arguments->front())
             {
                 jump_list = arg->jump_list;
-                jump_label = arg->jump_label;
+                jump_label = arg->jump_label;  
             }
             else
             {
