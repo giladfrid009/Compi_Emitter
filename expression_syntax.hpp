@@ -61,7 +61,6 @@ template<typename literal_type> class literal_expression final: public expressio
 
         size_t line = codebuf.emit("br label @");
         jump_label = codebuf.emit_label();
-
         codebuf.emit("%s = add i32 0 , %d", place, value);
 
         jump_list.push_back(patch_record(line, label_index::First));
