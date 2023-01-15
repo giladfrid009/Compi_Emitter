@@ -22,8 +22,6 @@ if_statement::if_statement(syntax_token* if_token, expression_syntax* condition,
 
     add_child(condition);
     add_child(body);
-
-    emit();
 }
 
 if_statement::if_statement(syntax_token* if_token, expression_syntax* condition, statement_syntax* body, syntax_token* else_token, statement_syntax* else_clause):
@@ -37,8 +35,6 @@ if_statement::if_statement(syntax_token* if_token, expression_syntax* condition,
     add_child(condition);
     add_child(body);
     add_child(else_clause);
-
-    emit();
 }
 
 if_statement::~if_statement()
@@ -66,8 +62,6 @@ while_statement::while_statement(syntax_token* while_token, expression_syntax* c
 
     add_child(condition);
     add_child(body);
-
-    emit();
 }
 
 while_statement::~while_statement()
