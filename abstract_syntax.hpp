@@ -32,7 +32,7 @@ class syntax_base
     virtual void emit_node() = 0;
     virtual void emit_clean();
 
-    std::string emit_get_bool(const expression_syntax* bool_expression);
+    std::string get_bool_reg(const expression_syntax* bool_expression);
 
     protected:
 

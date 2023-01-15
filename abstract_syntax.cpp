@@ -59,8 +59,13 @@ void syntax_base::emit()
     }
 }
 
-string syntax_base::emit_get_bool(const expression_syntax* bool_expression)
+string syntax_base::get_bool_reg(const expression_syntax* bool_expression)
 {
+    if (bool_expression->return_type != type_kind::Bool)
+    {
+        throw std::logic_error("invalid bool_expression");
+    }
+    
     string bool_reg = ir_builder::fresh_register();
     string true_label = ir_builder::fresh_label();
     string false_label = ir_builder::fresh_label();

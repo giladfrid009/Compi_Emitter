@@ -56,24 +56,25 @@ void if_statement::emit_node()
 {
     string next_label = ir_builder::fresh_label();
 
-    //codebuf.backpatch(condition->jump_list, condition->label);
-
-    codebuf.backpatch(condition->true_list, body->label);
-
-    break_list = body->break_list;
-    continue_list = body->continue_list;
+    codebuf.backpatch(condition->jump_list, condition->jump_label);
 
     if (else_clause == nullptr)
     {
+        break_list = body->break_list;
+        continue_list = body->continue_list;
+
+        codebuf.backpatch(condition->true_list, body->label);
         codebuf.backpatch(condition->false_list, next_label);        
+
+        //todo: need to jump from true_value to next_label
     }
     else
     {
+        break_list = codebuf.merge(body->break_list, else_clause->continue_list);
+        continue_list = codebuf.merge(body->continue_list, else_clause->continue_list);
+
         codebuf.backpatch(condition->true_list, body->label);
         codebuf.backpatch(condition->false_list, else_clause->label);
-
-        break_list = codebuf.merge(break_list, else_clause->continue_list);
-        continue_list = codebuf.merge(continue_list, else_clause->continue_list);
     }
 
     codebuf.emit("br label %%%s", next_label);
@@ -108,9 +109,9 @@ void while_statement::emit_node()
 {
     string next_label = ir_builder::fresh_label();
 
-    //codebuf.backpatch(condition->jump_list, condition->label);
     //codebuf.backpatch(body->next_list, condition->label);
 
+    codebuf.backpatch(condition->jump_list, condition->jump_label);
     codebuf.backpatch(condition->true_list, body->label);
     codebuf.backpatch(body->continue_list, condition->jump_label);
 
@@ -227,12 +228,11 @@ void return_statement::emit_node()
     if (value->return_type != type_kind::Bool)
     {
         codebuf.emit("ret %s %s", ir_builder::get_type(value->return_type), value->place);
-        return;
     }
-
-    string bool_reg = emit_get_bool(value);
-
-    codebuf.emit("ret i32 %s", bool_reg);
+    else
+    {
+        codebuf.emit("ret i32 %s", get_bool_reg(value));
+    }
 }
 
 expression_statement::expression_statement(expression_syntax* expression): expression(expression)
@@ -308,9 +308,7 @@ void assignment_statement::emit_node()
         return;
     }
 
-    string bool_reg = emit_get_bool(value);
-
-    codebuf.emit("store i32 %s , i32* %s", bool_reg, ptr_reg);
+    codebuf.emit("store i32 %s , i32* %s", get_bool_reg(value), ptr_reg);
 }
 
 declaration_statement::declaration_statement(type_syntax* type, syntax_token* identifier_token):
@@ -390,9 +388,7 @@ void declaration_statement::emit_node()
         return;
     }
 
-    string bool_reg = emit_get_bool(value);
-
-    codebuf.emit("store i32 %s , i32* %s", bool_reg, ptr_reg);
+    codebuf.emit("store i32 %s , i32* %s", get_bool_reg(value), ptr_reg);
 }
 
 block_statement::block_statement(list_syntax<statement_syntax>* statements): statements(statements)

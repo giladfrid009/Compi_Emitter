@@ -512,7 +512,7 @@ string invocation_expression::get_arguments(const list_syntax<expression_syntax>
 
         string arg_type = ir_builder::get_type(arg->return_type);
 
-        string arg_reg = arg->return_type != type_kind::Bool ? arg->place : emit_get_bool(arg);
+        string arg_reg = arg->return_type != type_kind::Bool ? arg->place : get_bool_reg(arg);
 
         result << arg_type << " " << arg_reg;
 
