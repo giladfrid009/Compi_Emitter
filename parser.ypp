@@ -9,7 +9,6 @@
 #include <string>
 #include <iostream>
 #include <sstream>
-#include <cassert>
 
 using std::vector;
 using std::string;

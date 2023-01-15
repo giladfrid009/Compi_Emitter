@@ -6,7 +6,6 @@
 #include <stdexcept>
 #include <list>
 #include <sstream>
-#include <cassert>
 #include <iterator>
 
 using std::string;
