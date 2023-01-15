@@ -297,21 +297,28 @@ conditional_expression::~conditional_expression()
     delete else_token;
 }
 
-void conditional_expression::emit_node() //todo: make sure is correct
+void conditional_expression::emit_node()
 {
-    string start_label = ir_builder::fresh_label();
+    string control_label = ir_builder::fresh_label();
+    string true_label = ir_builder::fresh_label();
+    string false_label = ir_builder::fresh_label();
     string end_label = ir_builder::fresh_label();
 
-    codebuf.backpatch(true_value->jump_list, start_label);
-    codebuf.backpatch(condition->jump_list, end_label);
+    codebuf.backpatch(true_value->jump_list, control_label);
+    codebuf.backpatch(condition->jump_list, true_label);
     codebuf.backpatch(condition->true_list, true_value->jump_label);
     codebuf.backpatch(condition->false_list, false_value->jump_label);
-    codebuf.backpatch(false_value->jump_list, end_label);
+    codebuf.backpatch(false_value->jump_list, true_label);
 
-    codebuf.emit("br label %%%s", end_label);
-    codebuf.emit("%s:", start_label);
+    codebuf.emit("br label %%%s", false_label);
+    codebuf.emit("%s:", control_label);
     size_t line = codebuf.emit("br label @");
+    jump_label = codebuf.emit_label();
     codebuf.emit("br label %%%s", condition->jump_label);
+    codebuf.emit("%s:", true_label);
+    codebuf.emit("br label %%%s", end_label);
+    codebuf.emit("%s:", false_label);
+    codebuf.emit("br label %%%s", end_label);
     codebuf.emit("%s:", end_label);
 
     jump_list.push_back(patch_record(line, label_index::First));
@@ -325,7 +332,7 @@ void conditional_expression::emit_node() //todo: make sure is correct
     {
         string res_type = ir_builder::get_type(return_type);
 
-        codebuf.emit("%s = phi %s [ %s , %%%s ] , [ %s , %%%s ]", place, res_type, true_value->place, true_value->jump_label, false_value->place, false_value->jump_label);
+        codebuf.emit("%s = phi %s [ %s , %%%s ] , [ %s , %%%s ]", place, res_type, true_value->place, true_label, false_value->place, false_label);
     }
 }
 
@@ -552,11 +559,21 @@ void invocation_expression::emit_node()
     if (return_type == type_kind::Void)
     {
         codebuf.emit("call void @%s(%s)", identifier, get_arguments(arguments));
+        return;
     }
-    else
-    {
-        string ret_str = ir_builder::get_type(return_type);
+    
+    string ret_str = ir_builder::get_type(return_type);
 
-        codebuf.emit("%s = call %s @%s(%s)", this->place, ret_str, identifier, get_arguments(arguments));
+    codebuf.emit("%s = call %s @%s(%s)", this->place, ret_str, identifier, get_arguments(arguments));
+
+    if (return_type == type_kind::Bool)
+    {
+        string bool_reg = ir_builder::fresh_register();
+
+        codebuf.emit("%s = trunc i32 %s to i1", bool_reg, this->place);
+        size_t line = codebuf.emit("br i1 %s , label @ , label @", bool_reg);
+
+        true_list.push_back(patch_record(line, label_index::First));
+        false_list.push_back(patch_record(line, label_index::Second));
     }
 }
