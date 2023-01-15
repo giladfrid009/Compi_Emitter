@@ -308,13 +308,13 @@ void create_function_header(type_syntax* return_type, syntax_token* indentifier_
 
 void emit_function_finish(function_declaration_syntax* function)
 {
-    string end_label = ir_builder::fresh_label();
-
     codebuf.increase_indent();
-    
-    codebuf.emit("br label %%%s", end_label);
-    codebuf.emit("%s:", end_label);
 
+    if (function->identifier == "main")
+    {
+        codebuf.emit("call void @exit(i32 0)");
+    }
+    
     if (function->return_type->kind == type_kind::Void)
     {
         codebuf.emit("ret void");
