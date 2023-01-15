@@ -23,7 +23,7 @@ if_statement::if_statement(syntax_token* if_token, expression_syntax* condition,
     add_child(condition);
     add_child(body);
 
-    //emit();
+    emit();
 }
 
 if_statement::if_statement(syntax_token* if_token, expression_syntax* condition, statement_syntax* body, syntax_token* else_token, statement_syntax* else_clause):
@@ -38,7 +38,7 @@ if_statement::if_statement(syntax_token* if_token, expression_syntax* condition,
     add_child(body);
     add_child(else_clause);
 
-    //emit();
+    emit();
 }
 
 if_statement::~if_statement()
@@ -52,36 +52,8 @@ if_statement::~if_statement()
     delete else_token;
 }
 
-void if_statement::emit_node() //todo: fix
+void if_statement::emit_node()
 {
-    string next_label = ir_builder::fresh_label();
-
-    codebuf.backpatch(condition->jump_list, condition->jump_label);
-
-    if (else_clause == nullptr)
-    {
-        break_list = body->break_list;
-        continue_list = body->continue_list;
-
-        codebuf.backpatch(condition->false_list, next_label);   
-
-        //todo: where to redirect condition.true_list?
-        //codebuf.backpatch(condition->true_list, body->label);     
-    }
-    else
-    {
-        break_list = codebuf.merge(body->break_list, else_clause->continue_list);
-        continue_list = codebuf.merge(body->continue_list, else_clause->continue_list);
-
-        //todo: where to redirect condition.true_list?
-        //codebuf.backpatch(condition->true_list, body->label);
-
-        //todo: where to redirect condition.false_list?
-        //codebuf.backpatch(condition->false_list, else_clause->label);
-    }
-
-    codebuf.emit("br label %%%s", next_label);
-    codebuf.emit("%s:", next_label);
 }
 
 while_statement::while_statement(syntax_token* while_token, expression_syntax* condition, statement_syntax* body):
@@ -95,7 +67,7 @@ while_statement::while_statement(syntax_token* while_token, expression_syntax* c
     add_child(condition);
     add_child(body);
 
-    //emit();
+    emit();
 }
 
 while_statement::~while_statement()
@@ -108,20 +80,8 @@ while_statement::~while_statement()
     delete while_token;
 }
 
-void while_statement::emit_node() //todo: fix
+void while_statement::emit_node()
 {
-    string next_label = ir_builder::fresh_label();
-
-    codebuf.backpatch(condition->jump_list, condition->jump_label);
-    codebuf.backpatch(condition->false_list, next_label);
-    codebuf.backpatch(body->continue_list, condition->jump_label);
-    codebuf.backpatch(body->break_list, next_label);
-
-    //todo: where to redirect condition.true_list?
-    //codebuf.backpatch(condition->true_list, body->label);
-
-    codebuf.emit("br label %%%s", condition->jump_label);
-    codebuf.emit("%s:", next_label);
 }
 
 branch_statement::branch_statement(syntax_token* branch_token): branch_token(branch_token), kind(parse_kind(branch_token->text))

@@ -26,7 +26,7 @@ void yyerror(const char* message);
 
 void add_builtin_functions();
 
-void add_function_symbol(type_syntax* return_type, syntax_token* indentifier_token, list_syntax<parameter_syntax>* parameters);
+void create_function_header(type_syntax* return_type, syntax_token* indentifier_token, list_syntax<parameter_syntax>* parameters);
 
 void emit_function_finish(function_declaration_syntax* function);
 
@@ -119,8 +119,8 @@ Program 	: Funcs END										        { $$ = new root_syntax($1); delete $$; }
 Funcs   	: %empty                                                { $$ = new list_syntax<function_declaration_syntax>(); }
       		| FuncDecl Funcs					                    { $$ = $2->push_front($1); }
 			;
-FuncDecl 	: RetType ID LPAREN Params RPAREN                       { add_function_symbol($1, $2, $4); } 
-              LBRACE II Statements DI CS RBRACE                     { $$ = new function_declaration_syntax($1, $2, $4, $9); emit_function_finish($$); }
+FuncDecl 	: RetType ID LPAREN Params RPAREN                       { create_function_header($1, $2, $4); } 
+              LBRACE Statements CS RBRACE                           { $$ = new function_declaration_syntax($1, $2, $4, $8); emit_function_finish($$); }
 			;
 RetType 	: Type                                                  { $$ = $1; }
         	| VOID                                                  { $$ = new type_syntax($1); }
@@ -143,10 +143,41 @@ Statement	: LBRACE OS Statements CS RBRACE                        { $$ = new blo
 			| Call SC                                               { $$ = new expression_statement($1); }
 			| RETURN SC	                                            { $$ = new return_statement($1); }
 			| RETURN Exp SC                                         { $$ = new return_statement($1, $2); }
-			| IF LPAREN BoolExp RPAREN OS II Statement DI CS        { $$ = new if_statement($1, $3, $7); }
-			| IF LPAREN BoolExp RPAREN OS II Statement DI CS 
-              /*todo: add br*/ ELSE OS II Statement DI CS           { $$ = new if_statement($1, $3, $7, $10, $13); }
-			| WHILE LPAREN BoolExp RPAREN OSL II Statement DI CS    { $$ = new while_statement($1, $3, $7); }
+			| IF LPAREN BoolExp RPAREN OS L Statement CS L          { 
+                                                                        $$ = new if_statement($1, $3, $7); 
+
+                                                                        $$->break_list = $7->break_list;
+                                                                        $$->continue_list = $7->continue_list;
+                                                                        codebuf.backpatch($3->jump_list, $3->jump_label);
+                                                                        codebuf.backpatch($3->true_list, $6->label); 
+                                                                        codebuf.backpatch($3->false_list, $9->label);
+
+                                                                        delete $6; delete $9;
+                                                                    }
+			| IF LPAREN BoolExp RPAREN OS L Statement CS L
+              ELSE J OS L Statement CS L                             { 
+                                                                        $$ = new if_statement($1, $3, $7, $10, $14); 
+
+                                                                        $$->break_list = codebuf.merge($7->break_list, $14->break_list);
+                                                                        $$->continue_list = codebuf.merge($7->continue_list, $14->continue_list);
+                                                                        codebuf.backpatch($3->jump_list, $3->jump_label);
+                                                                        codebuf.backpatch($3->true_list, $6->label); 
+                                                                        codebuf.backpatch($3->false_list, $13->label);
+                                                                        codebuf.backpatch($11->jump_list, $16->label);
+
+                                                                        delete $6; delete $9; delete $11; delete $13; delete $16;
+                                                                    }
+			| WHILE LPAREN BoolExp RPAREN OSL L Statement CS L      { 
+                                                                        $$ = new while_statement($1, $3, $7); 
+
+                                                                        codebuf.backpatch($3->jump_list, $3->jump_label);
+                                                                        codebuf.backpatch($3->true_list, $6->label); 
+                                                                        codebuf.backpatch($3->false_list, $9->label);
+                                                                        codebuf.backpatch($7->continue_list, $3->jump_label);
+                                                                        codebuf.backpatch($7->break_list, $9->label);
+
+                                                                        delete $6; delete $9;
+                                                                    }
 			| BREAK SC                                              { $$ = new branch_statement($1); }
 			| CONTINUE SC                                           { $$ = new branch_statement($1); }
             ;       
@@ -180,21 +211,16 @@ Exp 		: LPAREN Exp RPAREN	                                    { $$ = $2; }
 			;
 BoolExp     : Exp                                                   { $$ = validate_bool_expression($1); }
             ;
-OS          : %empty                                                { symtab.open_scope(); } 
+OS          : %empty                                                { symtab.open_scope(); codebuf.increase_indent(); } 
             ;
-OSL         : %empty                                                { symtab.open_scope(true); }
+OSL         : %empty                                                { symtab.open_scope(true); codebuf.increase_indent(); }
             ;
-CS          : %empty                                                { print_current_scope(); symtab.close_scope(); }
+CS          : %empty                                                { print_current_scope(); symtab.close_scope(); codebuf.decrease_indent(); }
             ;
-II          : %empty                                                { codebuf.increase_indent(); }
+J           : %empty                                                { $$ = new jump_syntax(); }
             ;
-DI          : %empty                                                { codebuf.decrease_indent(); }
+L           : %empty                                                { $$ = new label_syntax(); }
             ;
-J           : %empty                                                { $$ = new jump_syntax(); } //todo: maybe remove
-            ;
-L           : %empty                                                { $$ = new label_syntax(); } //todo: maybe remove
-            ;
-
 %%
 
 int main()
@@ -227,7 +253,7 @@ void add_builtin_functions()
     codebuf.emit_from_file("builtin_functions.llvm");
 }
 
-void add_function_symbol(type_syntax* return_type, syntax_token* indentifier_token, list_syntax<parameter_syntax>* parameters)
+void create_function_header(type_syntax* return_type, syntax_token* indentifier_token, list_syntax<parameter_syntax>* parameters)
 {
     string func_name = indentifier_token->text;
 
@@ -276,30 +302,18 @@ void add_function_symbol(type_syntax* return_type, syntax_token* indentifier_tok
     instr << ") {";
 
     codebuf.emit(instr.str());
+
+    codebuf.increase_indent();
 }
 
 void emit_function_finish(function_declaration_syntax* function)
 {
-    statement_syntax* prev_statement = nullptr;
-
-    for (auto statement : *function->body)
-    {
-        if (prev_statement != nullptr)
-        {
-            //codebuf.backpatch(prev_statement->next_list, statement->label);
-        }
-
-        prev_statement = statement;
-    }
-    
     string end_label = ir_builder::fresh_label();
 
     codebuf.increase_indent();
     
     codebuf.emit("br label %%%s", end_label);
     codebuf.emit("%s:", end_label);
-
-    //codebuf.backpatch(function->body->back()->next_list, label);
 
     if (function->return_type->kind == type_kind::Void)
     {
