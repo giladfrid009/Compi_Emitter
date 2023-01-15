@@ -331,24 +331,27 @@ void declaration_statement::emit_node()
 {
     string ptr_reg = static_cast<const variable_symbol*>(symtab.get_symbol(identifier, symbol_kind::Variable))->ptr_reg;
 
-    codebuf.emit("%s = alloca i32", ptr_reg);
-
     if (value == nullptr)
     {
+        codebuf.emit("%s = alloca i32", ptr_reg);
         codebuf.emit("store i32 0 , i32* %s", ptr_reg);
         return;
     }
 
     codebuf.backpatch(value->jump_list, value->jump_label);
 
-    if (value->return_type != type_kind::Bool)
+    if (value->return_type == type_kind::Bool)
     {
-        codebuf.emit("store i32 %s , i32* %s", value->place, ptr_reg);
+        string bool_reg = get_bool_reg(value);
+        
+        codebuf.emit("%s = alloca i32", ptr_reg);
+        codebuf.emit("store i32 %s , i32* %s", bool_reg, ptr_reg);
     }
     else
     {
-        codebuf.emit("store i32 %s , i32* %s", get_bool_reg(value), ptr_reg);
-    }
+        codebuf.emit("%s = alloca i32", ptr_reg);
+        codebuf.emit("store i32 %s , i32* %s", value->place, ptr_reg);
+    }   
 }
 
 block_statement::block_statement(list_syntax<statement_syntax>* statements): statements(statements)
