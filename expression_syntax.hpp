@@ -289,6 +289,7 @@ class invocation_expression final: public expression_syntax
     protected:
 
     static type_kind get_return_type(std::string identifier);
+    std::string get_arguments(const list_syntax<expression_syntax>* arguments);
 
     void emit_node() override;
 };

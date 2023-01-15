@@ -45,11 +45,9 @@ class expression_syntax: public syntax_base
     public:
 
     const type_kind return_type;
-
     const std::string place;
     std::list<patch_record> true_list;
     std::list<patch_record> false_list;
-
     std::string jump_label;
     std::list<patch_record> jump_list;
 
@@ -73,7 +71,7 @@ class statement_syntax: public syntax_base
 
     std::list<patch_record> break_list;
     std::list<patch_record> continue_list;
-    const std::string label;
+    const std::string label; //todo: maybe remove
 
     statement_syntax();
     virtual ~statement_syntax() = default;

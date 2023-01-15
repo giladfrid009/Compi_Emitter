@@ -7,6 +7,7 @@
 #include <list>
 #include <sstream>
 #include <cassert>
+#include <iterator>
 
 using std::string;
 using std::vector;
@@ -179,10 +180,10 @@ arithmetic_operator arithmetic_expression::parse_operator(string str)
 
 void arithmetic_expression::emit_node()
 {
-    codebuf.backpatch(right->jump_list, right->jump_label);
-
     jump_list = left->jump_list;
     jump_label = left->jump_label;
+
+    codebuf.backpatch(right->jump_list, right->jump_label);
 
     if (oper == arithmetic_operator::Div)
     {
@@ -191,15 +192,10 @@ void arithmetic_expression::emit_node()
         string false_label = ir_builder::fresh_label();
 
         codebuf.emit("%s = icmp eq i32 0 , %s", cmp_res, right->place);
-
         codebuf.emit("br i1 %s , label %%%s , label %%%s", cmp_res, true_label, false_label);
-
         codebuf.emit("%s:", true_label);
-
         codebuf.emit("call void @error_zero_div()");
-
         codebuf.emit("br label %%%s", false_label);
-
         codebuf.emit("%s:", false_label);
     }
 
@@ -210,7 +206,6 @@ void arithmetic_expression::emit_node()
         string res_reg = ir_builder::fresh_register();
 
         codebuf.emit("%s = %s i32 %s , %s", res_reg, inst, left->place, right->place);
-
         codebuf.emit("%s = and i32 255 , %s", this->place, res_reg);
     }
     else if (return_type == type_kind::Int)
@@ -257,17 +252,15 @@ relational_operator relational_expression::parse_operator(string str)
 
 void relational_expression::emit_node()
 {
-    codebuf.backpatch(right->jump_list, right->jump_label);
-
     jump_list = left->jump_list;
     jump_label = left->jump_label;
 
-    string res_reg = ir_builder::fresh_register();
+    codebuf.backpatch(right->jump_list, right->jump_label);
 
+    string res_reg = ir_builder::fresh_register();
     string cmp_kind = ir_builder::get_comparison_kind(oper, return_type == type_kind::Int);
 
     codebuf.emit("%s = icmp %s i32 %s , %s", res_reg, cmp_kind, left->place, right->place);
-
     size_t line = codebuf.emit("br i1 %s , label @ , label @", res_reg);
 
     true_list.push_back(patch_record(line, label_index::First));
@@ -305,7 +298,7 @@ conditional_expression::~conditional_expression()
     delete else_token;
 }
 
-void conditional_expression::emit_node()
+void conditional_expression::emit_node() //todo: make sure is correct
 {
     string start_label = ir_builder::fresh_label();
     string end_label = ir_builder::fresh_label();
@@ -317,16 +310,12 @@ void conditional_expression::emit_node()
     codebuf.backpatch(false_value->jump_list, end_label);
 
     codebuf.emit("br label %%%s", end_label);
-
     codebuf.emit("%s:", start_label);
-
     size_t line = codebuf.emit("br label @");
+    codebuf.emit("br label %%%s", condition->jump_label);
+    codebuf.emit("%s:", end_label);
 
     jump_list.push_back(patch_record(line, label_index::First));
-
-    codebuf.emit("br label %%%s", condition->jump_label);
-
-    codebuf.emit("%s:", end_label);
 
     if (return_type == type_kind::Bool)
     {
@@ -389,10 +378,9 @@ identifier_expression::~identifier_expression()
 void identifier_expression::emit_node()
 {
     size_t line = codebuf.emit("br label @");
+    jump_label = codebuf.emit_label();
     
     jump_list.push_back(patch_record(line, label_index::First));
-
-    jump_label = codebuf.emit_label();
 
     const symbol* symbol = symtab.get_symbol(identifier);
 
@@ -405,7 +393,6 @@ void identifier_expression::emit_node()
     else if (symbol->kind == symbol_kind::Variable)
     {
         string ptr_reg = static_cast<const variable_symbol*>(symbol)->ptr_reg;
-
         string res_type = ir_builder::get_type(return_type);
 
         codebuf.emit("%s = load %s , %s* %s", this->place, res_type, res_type, ptr_reg);
@@ -416,7 +403,6 @@ void identifier_expression::emit_node()
         string bool_reg = ir_builder::fresh_register();
 
         codebuf.emit("%s = trunc i32 %s to i1", bool_reg, this->place);
-        
         size_t line = codebuf.emit("br i1 %s , label @ , label @", bool_reg);
 
         true_list.push_back(patch_record(line, label_index::First));
@@ -427,14 +413,14 @@ void identifier_expression::emit_node()
 invocation_expression::invocation_expression(syntax_token* identifier_token):
     expression_syntax(get_return_type(identifier_token->text)), identifier_token(identifier_token), identifier(identifier_token->text), arguments(nullptr)
 {
-    const function_symbol* function = static_cast<const function_symbol*>(symtab.get_symbol(identifier, symbol_kind::Function));
+    const function_symbol* symbol = static_cast<const function_symbol*>(symtab.get_symbol(identifier, symbol_kind::Function));
 
-    if (function == nullptr)
+    if (symbol == nullptr)
     {
         output::error_undef_func(identifier_token->position, identifier);
     }
 
-    vector<type_kind> parameter_types = function->parameter_types;
+    vector<type_kind> parameter_types = symbol->parameter_types;
 
     vector<string> params_str;
 
@@ -448,7 +434,7 @@ invocation_expression::invocation_expression(syntax_token* identifier_token):
         output::error_prototype_mismatch(identifier_token->position, identifier, params_str);
     }
 
-    //emit(); //todo: fix
+    emit();
 }
 
 invocation_expression::invocation_expression(syntax_token* identifier_token, list_syntax<expression_syntax>* arguments):
@@ -511,54 +497,67 @@ invocation_expression::~invocation_expression()
     delete identifier_token;
 }
 
-void invocation_expression::emit_node()
+string invocation_expression::get_arguments(const list_syntax<expression_syntax>* arguments)
 {
-    list<string> arg_regs;
-
-    for (auto arg : *arguments)
+    if (arguments == nullptr)
     {
-        codebuf.backpatch(arg->jump_list, arg->jump_label);
-
-        if (arg->return_type != type_kind::Bool)
-        {
-            arg_regs.push_back(arg->place);
-            continue;
-        }
-
-        string bool_reg = emit_get_bool(arg);
-
-        arg_regs.push_back(bool_reg);
+        return "";
     }
 
-    string ret_type = ir_builder::get_type(return_type);
+    stringstream result;
 
-    stringstream instr;
-
-    if (return_type == type_kind::Void)
+    for (auto iter = arguments->begin(); iter != arguments->end(); iter++)
     {
-        instr << ir_builder::format_string("call %s @%s(", ret_type, identifier);
+        expression_syntax* arg = *iter;
+
+        string arg_type = ir_builder::get_type(arg->return_type);
+
+        string arg_reg = arg->return_type != type_kind::Bool ? arg->place : emit_get_bool(arg);
+
+        result << arg_type << " " << arg_reg;
+
+        if (std::distance(iter, arguments->end()) > 1)
+        {
+            result << " , ";
+        }
+    }
+
+    return result.str();
+}
+
+void invocation_expression::emit_node()
+{
+    if (arguments == nullptr)
+    {
+        size_t line = codebuf.emit("br label @");
+        jump_label = codebuf.emit_label();
+
+        jump_list.push_back(patch_record(line, label_index::First));
     }
     else
     {
-        instr << ir_builder::format_string("%s = call %s @%s(", this->place, ret_type, identifier);
-    }
-
-    auto arg_reg = arg_regs.begin();
-    auto arg = arguments->begin();
-
-    for (; arg_reg != arg_regs.end() && arg != arguments->end(); arg_reg++, arg++)
-    {
-        string arg_type = ir_builder::get_type((*arg)->return_type);
-
-        instr << ir_builder::format_string("%s %s", arg_type, *arg_reg);
-
-        if (std::distance(arg_reg, arg_regs.end()) > 1)
+        for (auto arg : *arguments)
         {
-            instr << " , ";
+            if (arg == arguments->front())
+            {
+                jump_list = arg->jump_list;
+                jump_label = arg->jump_label;
+            }
+            else
+            {
+                codebuf.backpatch(arg->jump_list, arg->jump_label);
+            }
         }
     }
 
-    instr << ")";
+    if (return_type == type_kind::Void)
+    {
+        codebuf.emit("call void @%s(%s)", identifier, get_arguments(arguments));
+    }
+    else
+    {
+        string ret_str = ir_builder::get_type(return_type);
 
-    codebuf.emit(instr.str());
+        codebuf.emit("%s = call %s @%s(%s)", this->place, ret_str, identifier, get_arguments(arguments));
+    }
 }

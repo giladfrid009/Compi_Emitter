@@ -108,11 +108,6 @@ void code_buffer::print() const
     }
 }
 
-list<patch_record> code_buffer::make_list(patch_record item)
-{
-    return list<patch_record>({ item });
-}
-
 list<patch_record> code_buffer::merge(const list<patch_record>& first, const list<patch_record>& second)
 {
     list<patch_record> new_list(first.begin(), first.end());
