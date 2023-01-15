@@ -71,7 +71,6 @@ class statement_syntax: public syntax_base
 
     std::list<patch_record> break_list;
     std::list<patch_record> continue_list;
-    const std::string label; //todo: maybe remove
 
     statement_syntax();
     virtual ~statement_syntax() = default;

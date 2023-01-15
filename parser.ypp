@@ -208,8 +208,8 @@ int main()
     print_current_scope();
     symtab.close_scope();
 
-    code_buffer::instance().print_globals();
-    code_buffer::instance().print();
+    codebuf.print_globals();
+    codebuf.print();
 
     return res;
 }

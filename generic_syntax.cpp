@@ -10,7 +10,7 @@ static code_buffer& codebuf = code_buffer::instance();
 
 type_syntax::type_syntax(syntax_token* type_token): type_token(type_token), kind(types::parse(type_token->text))
 {
-    //emit();
+    emit();
 }
 
 bool type_syntax::is_numeric() const

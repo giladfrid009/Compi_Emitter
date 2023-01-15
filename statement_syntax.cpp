@@ -52,7 +52,7 @@ if_statement::~if_statement()
     delete else_token;
 }
 
-void if_statement::emit_node()
+void if_statement::emit_node() //todo: fix
 {
     string next_label = ir_builder::fresh_label();
 
@@ -63,18 +63,21 @@ void if_statement::emit_node()
         break_list = body->break_list;
         continue_list = body->continue_list;
 
-        codebuf.backpatch(condition->true_list, body->label);
-        codebuf.backpatch(condition->false_list, next_label);        
+        codebuf.backpatch(condition->false_list, next_label);   
 
-        //todo: need to jump from true_value to next_label
+        //todo: where to redirect condition.true_list?
+        //codebuf.backpatch(condition->true_list, body->label);     
     }
     else
     {
         break_list = codebuf.merge(body->break_list, else_clause->continue_list);
         continue_list = codebuf.merge(body->continue_list, else_clause->continue_list);
 
-        codebuf.backpatch(condition->true_list, body->label);
-        codebuf.backpatch(condition->false_list, else_clause->label);
+        //todo: where to redirect condition.true_list?
+        //codebuf.backpatch(condition->true_list, body->label);
+
+        //todo: where to redirect condition.false_list?
+        //codebuf.backpatch(condition->false_list, else_clause->label);
     }
 
     codebuf.emit("br label %%%s", next_label);
@@ -105,17 +108,17 @@ while_statement::~while_statement()
     delete while_token;
 }
 
-void while_statement::emit_node()
+void while_statement::emit_node() //todo: fix
 {
     string next_label = ir_builder::fresh_label();
 
-    //codebuf.backpatch(body->next_list, condition->label);
-
     codebuf.backpatch(condition->jump_list, condition->jump_label);
-    codebuf.backpatch(condition->true_list, body->label);
+    codebuf.backpatch(condition->false_list, next_label);
     codebuf.backpatch(body->continue_list, condition->jump_label);
+    codebuf.backpatch(body->break_list, next_label);
 
-    //next_list = codebuf.merge(condition->false_list, body->break_list);
+    //todo: where to redirect condition.true_list?
+    //codebuf.backpatch(condition->true_list, body->label);
 
     codebuf.emit("br label %%%s", condition->jump_label);
     codebuf.emit("%s:", next_label);
@@ -140,7 +143,7 @@ branch_statement::branch_statement(syntax_token* branch_token): branch_token(bra
         throw std::runtime_error("unknown branch_kind");
     }
 
-    //emit();
+    emit();
 }
 
 branch_statement::~branch_statement()
@@ -186,7 +189,7 @@ return_statement::return_statement(syntax_token* return_token): return_token(ret
         output::error_mismatch(return_token->position);
     }
 
-    //emit();
+    emit();
 }
 
 return_statement::return_statement(syntax_token* return_token, expression_syntax* value): return_token(return_token), value(value)
@@ -202,7 +205,7 @@ return_statement::return_statement(syntax_token* return_token, expression_syntax
 
     add_child(value);
 
-    //emit();
+    emit();
 }
 
 return_statement::~return_statement()
@@ -239,7 +242,7 @@ expression_statement::expression_statement(expression_syntax* expression): expre
 {
     add_child(expression);
 
-    //emit();
+    emit();
 }
 
 expression_statement::~expression_statement()
@@ -277,7 +280,7 @@ assignment_statement::assignment_statement(syntax_token* identifier_token, synta
 
     add_child(value);
 
-    //emit();
+    emit();
 }
 
 assignment_statement::~assignment_statement()
@@ -330,7 +333,7 @@ declaration_statement::declaration_statement(type_syntax* type, syntax_token* id
 
     add_child(type);
 
-    //emit();
+    emit();
 }
 
 declaration_statement::declaration_statement(type_syntax* type, syntax_token* identifier_token, syntax_token* assign_token, expression_syntax* value):
@@ -356,7 +359,7 @@ declaration_statement::declaration_statement(type_syntax* type, syntax_token* id
     add_child(type);
     add_child(value);
 
-    //emit();
+    emit();
 }
 
 declaration_statement::~declaration_statement()
@@ -398,7 +401,7 @@ block_statement::block_statement(list_syntax<statement_syntax>* statements): sta
 {
     add_child(statements);
 
-    //emit();
+    emit();
 }
 
 block_statement::~block_statement()
@@ -415,16 +418,7 @@ void block_statement::emit_node()
 
     for (auto statement : *statements)
     {
-        if (prev_statement != nullptr)
-        {
-            //codebuf.backpatch(prev_statement->next_list, statement->label);
-        }
-
         break_list = codebuf.merge(break_list, statement->break_list);
         continue_list = codebuf.merge(continue_list, statement->continue_list);
-
-        prev_statement = statement;
     }
-
-    //next_list = statements->back()->next_list;
 }
