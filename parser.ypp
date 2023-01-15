@@ -292,7 +292,12 @@ void emit_function_finish(function_declaration_syntax* function)
         prev_statement = statement;
     }
     
-    string label = codebuf.emit_label();
+    string end_label = ir_builder::fresh_label();
+
+    codebuf.increase_indent();
+    
+    codebuf.emit("br label %%%s", end_label);
+    codebuf.emit("%s:", end_label);
 
     //codebuf.backpatch(function->body->back()->next_list, label);
 
@@ -304,6 +309,8 @@ void emit_function_finish(function_declaration_syntax* function)
     {
         codebuf.emit("ret i32 0");
     }
+
+    codebuf.decrease_indent();
 
     codebuf.emit("}\n");
 }
