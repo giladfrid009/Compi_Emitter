@@ -30,7 +30,7 @@ template<typename literal_type> class literal_expression final: public expressio
 
     type_kind get_return_type() const
     {
-        if (std::is_same<literal_type, char>::value) return type_kind::Byte;
+        if (std::is_same<literal_type, unsigned char>::value) return type_kind::Byte;
         if (std::is_same<literal_type, int>::value) return type_kind::Int;
         if (std::is_same<literal_type, bool>::value) return type_kind::Bool;
         if (std::is_same<literal_type, std::string>::value) return type_kind::String;
@@ -61,7 +61,8 @@ template<typename literal_type> class literal_expression final: public expressio
 
         size_t line = codebuf.emit("br label @");
         jump_label = codebuf.emit_label();
-        codebuf.emit("%s = add i32 0 , %d", this->place, value);
+
+        codebuf.emit("%s = add i32 0 , %d", place, value);
 
         jump_list.push_back(patch_record(line, label_index::First));
     }
@@ -72,7 +73,7 @@ template<> inline int literal_expression<int>::get_literal_value(syntax_token* v
     return std::stoi(value_token->text);
 }
 
-template<> inline char literal_expression<char>::get_literal_value(syntax_token* value_token) const
+template<> inline unsigned char literal_expression<unsigned char>::get_literal_value(syntax_token* value_token) const
 {
     int value = std::stoi(value_token->text);
 
@@ -81,7 +82,7 @@ template<> inline char literal_expression<char>::get_literal_value(syntax_token*
         output::error_byte_too_large(value_token->position, value_token->text);
     }
 
-    return static_cast<char>(value);
+    return static_cast<unsigned char>(value);
 }
 
 template<> inline std::string literal_expression<std::string>::get_literal_value(syntax_token* value_token) const
