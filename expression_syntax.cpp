@@ -40,10 +40,10 @@ cast_expression::~cast_expression()
 
 void cast_expression::emit_node()
 {
-    //codebuf.backpatch(value->jump_list, value->label);
-
-    codebuf.emit("br label @");
-    codebuf.emit("%s:", label);
+    true_list = value->true_list;
+    false_list = value->false_list;
+    jump_list = value->jump_list;
+    jump_label = value->jump_label;
 
     if (value->return_type == type_kind::Int && destination_type->kind == type_kind::Byte)
     {
@@ -80,8 +80,8 @@ not_expression::~not_expression()
 
 void not_expression::emit_node()
 {
-    codebuf.backpatch(expression->jump_list, expression->label);
-
+    jump_list = expression->jump_list;
+    jump_label = expression->jump_label;
     false_list = expression->true_list;
     true_list = expression->false_list;
 }
@@ -120,21 +120,25 @@ logical_expression::operator_kind logical_expression::parse_operator(string str)
 
 void logical_expression::emit_node()
 {
-    codebuf.backpatch(left->jump_list, left->label);
-    codebuf.backpatch(right->jump_list, right->label);
+    codebuf.backpatch(right->jump_list, right->jump_label);
+
+    jump_list = left->jump_list;
+    jump_label = left->jump_label;
 
     if (oper == operator_kind::Or)
     {
-        codebuf.backpatch(left->false_list, right->label);
+        codebuf.backpatch(left->false_list, right->jump_label);
 
         true_list = codebuf.merge(left->true_list, right->true_list);
+
         false_list = right->false_list;
     }
     else
     {
-        codebuf.backpatch(left->true_list, right->label);
+        codebuf.backpatch(left->true_list, right->jump_label);
 
         true_list = right->true_list;
+
         false_list = codebuf.merge(left->false_list, right->false_list);
     }
 }
@@ -175,13 +179,10 @@ arithmetic_operator arithmetic_expression::parse_operator(string str)
 
 void arithmetic_expression::emit_node()
 {
-    codebuf.backpatch(left->jump_list, left->label);
-    codebuf.backpatch(right->jump_list, right->label);
+    codebuf.backpatch(right->jump_list, right->jump_label);
 
-    assert(left->true_list.size() == 0);
-    assert(left->false_list.size() == 0);
-    assert(right->true_list.size() == 0);
-    assert(right->false_list.size() == 0);
+    jump_list = left->jump_list;
+    jump_label = left->jump_label;
 
     if (oper == arithmetic_operator::Div)
     {
@@ -256,13 +257,10 @@ relational_operator relational_expression::parse_operator(string str)
 
 void relational_expression::emit_node()
 {
-    codebuf.backpatch(left->jump_list, left->label);
-    codebuf.backpatch(right->jump_list, right->label);
+    codebuf.backpatch(right->jump_list, right->jump_label);
 
-    assert(left->true_list.size() == 0);
-    assert(left->false_list.size() == 0);
-    assert(right->true_list.size() == 0);
-    assert(right->false_list.size() == 0);
+    jump_list = left->jump_list;
+    jump_label = left->jump_label;
 
     string res_reg = ir_builder::fresh_register();
 
@@ -309,11 +307,26 @@ conditional_expression::~conditional_expression()
 
 void conditional_expression::emit_node()
 {
-    codebuf.backpatch(true_value->jump_list, condition->label);
-    codebuf.backpatch(condition->jump_list, this->label);
-    codebuf.backpatch(false_value->jump_list, this->label);
-    codebuf.backpatch(condition->true_list, true_value->label);
-    codebuf.backpatch(condition->false_list, false_value->label);
+    string start_label = ir_builder::fresh_label();
+    string end_label = ir_builder::fresh_label();
+
+    codebuf.backpatch(true_value->jump_list, start_label);
+    codebuf.backpatch(condition->jump_list, end_label);
+    codebuf.backpatch(condition->true_list, true_value->jump_label);
+    codebuf.backpatch(condition->false_list, false_value->jump_label);
+    codebuf.backpatch(false_value->jump_list, end_label);
+
+    codebuf.emit("br label %%%s", end_label);
+
+    codebuf.emit("%s:", start_label);
+
+    size_t line = codebuf.emit("br label @");
+
+    jump_list.push_back(patch_record(line, label_index::First));
+
+    codebuf.emit("br label %%%s", condition->jump_label);
+
+    codebuf.emit("%s:", end_label);
 
     if (return_type == type_kind::Bool)
     {
@@ -324,7 +337,7 @@ void conditional_expression::emit_node()
     {
         string res_type = ir_builder::get_type(return_type);
 
-        codebuf.emit("%s = phi %s [ %s , %s ] , [ %s , %s ]", this->place, res_type, true_value->place, true_value->label, false_value->place, false_value->label);
+        codebuf.emit("%s = phi %s [ %s , %s ] , [ %s , %s ]", place, res_type, true_value->place, true_value->jump_label, false_value->place, false_value->jump_label);
     }
 }
 
@@ -375,6 +388,12 @@ identifier_expression::~identifier_expression()
 
 void identifier_expression::emit_node()
 {
+    size_t line = codebuf.emit("br label @");
+    
+    jump_list.push_back(patch_record(line, label_index::First));
+
+    jump_label = codebuf.emit_label();
+
     const symbol* symbol = symtab.get_symbol(identifier);
 
     if (symbol->kind == symbol_kind::Parameter)
@@ -429,7 +448,7 @@ invocation_expression::invocation_expression(syntax_token* identifier_token):
         output::error_prototype_mismatch(identifier_token->position, identifier, params_str);
     }
 
-    //emit();
+    //emit(); //todo: fix
 }
 
 invocation_expression::invocation_expression(syntax_token* identifier_token, list_syntax<expression_syntax>* arguments):
@@ -498,7 +517,7 @@ void invocation_expression::emit_node()
 
     for (auto arg : *arguments)
     {
-        codebuf.backpatch(arg->jump_list, arg->label);
+        codebuf.backpatch(arg->jump_list, arg->jump_label);
 
         if (arg->return_type != type_kind::Bool)
         {

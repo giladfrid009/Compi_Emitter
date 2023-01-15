@@ -47,9 +47,10 @@ class expression_syntax: public syntax_base
     const type_kind return_type;
 
     const std::string place;
-    const std::string label;
     std::list<patch_record> true_list;
     std::list<patch_record> false_list;
+
+    std::string jump_label;
     std::list<patch_record> jump_list;
 
     expression_syntax(type_kind return_type);

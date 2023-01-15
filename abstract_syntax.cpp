@@ -85,7 +85,7 @@ string syntax_base::emit_get_bool(const expression_syntax* bool_expression)
 }
 
 expression_syntax::expression_syntax(type_kind return_type):
-    return_type(return_type), place(ir_builder::fresh_register()), label(ir_builder::fresh_label()), true_list(), false_list(), jump_list()
+    return_type(return_type), place(ir_builder::fresh_register()), true_list(), false_list(), jump_label(), jump_list()
 {
 
 }

@@ -112,11 +112,11 @@ void while_statement::emit_node()
     //codebuf.backpatch(body->next_list, condition->label);
 
     codebuf.backpatch(condition->true_list, body->label);
-    codebuf.backpatch(body->continue_list, condition->label);
+    codebuf.backpatch(body->continue_list, condition->jump_label);
 
     //next_list = codebuf.merge(condition->false_list, body->break_list);
 
-    codebuf.emit("br label %%%s", condition->label);
+    codebuf.emit("br label %%%s", condition->jump_label);
     codebuf.emit("%s:", next_label);
 }
 
@@ -222,7 +222,7 @@ void return_statement::emit_node()
         return;
     }
 
-    codebuf.backpatch(value->jump_list, value->label);
+    codebuf.backpatch(value->jump_list, value->jump_label);
 
     if (value->return_type != type_kind::Bool)
     {
@@ -252,7 +252,7 @@ expression_statement::~expression_statement()
 
 void expression_statement::emit_node()
 {
-    codebuf.backpatch(expression->jump_list, expression->label);
+    codebuf.backpatch(expression->jump_list, expression->jump_label);
 }
 
 assignment_statement::assignment_statement(syntax_token* identifier_token, syntax_token* assign_token, expression_syntax* value):
@@ -293,7 +293,7 @@ assignment_statement::~assignment_statement()
 
 void assignment_statement::emit_node()
 {
-    codebuf.backpatch(value->jump_list, value->label);
+    codebuf.backpatch(value->jump_list, value->jump_label);
 
     const symbol* symbol = symtab.get_symbol(identifier);
 
@@ -382,7 +382,7 @@ void declaration_statement::emit_node()
         return;
     }
 
-    codebuf.backpatch(value->jump_list, value->label);
+    codebuf.backpatch(value->jump_list, value->jump_label);
 
     if (value->return_type != type_kind::Bool)
     {
