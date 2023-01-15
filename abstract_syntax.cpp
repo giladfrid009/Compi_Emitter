@@ -74,16 +74,12 @@ string syntax_base::get_bool_reg(const expression_syntax* bool_expression)
     codebuf.backpatch(bool_expression->true_list, true_label);
     codebuf.backpatch(bool_expression->false_list, false_label);
 
+    codebuf.emit("br label %%%s", true_label);
     codebuf.emit("%s:", true_label);
-
     codebuf.emit("br label %%%s", end_label);
-
     codebuf.emit("%s:", false_label);
-
     codebuf.emit("br label %%%s", end_label);
-
     codebuf.emit("%s:", end_label);
-
     codebuf.emit("%s = phi i32 [ 1 , %%%s ] , [ 0 , %%%s ]", bool_reg, true_label, false_label);
 
     return bool_reg;
