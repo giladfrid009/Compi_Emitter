@@ -10,7 +10,7 @@ static code_buffer& codebuf = code_buffer::instance();
 
 type_syntax::type_syntax(syntax_token* type_token): type_token(type_token), kind(types::parse(type_token->text))
 {
-    emit();
+    //emit();
 }
 
 bool type_syntax::is_numeric() const
@@ -52,7 +52,7 @@ parameter_syntax::parameter_syntax(type_syntax* type, syntax_token* identifier_t
 
     add_child(type);
 
-    emit();
+    //emit();
 }
 
 parameter_syntax::~parameter_syntax()
@@ -97,7 +97,7 @@ function_declaration_syntax::function_declaration_syntax(type_syntax* return_typ
     add_child(parameters);
     add_child(body);
 
-    emit();
+    //emit();
 }
 
 function_declaration_syntax::~function_declaration_syntax()
@@ -130,7 +130,7 @@ root_syntax::root_syntax(list_syntax<function_declaration_syntax>* functions): f
 
     add_child(functions);
 
-    emit();
+    //emit();
 }
 
 root_syntax::~root_syntax()
@@ -147,7 +147,7 @@ void root_syntax::emit_node()
 
 jump_syntax::jump_syntax() : jump_list()
 {
-    emit();
+    //emit();
 }
 
 jump_syntax::~jump_syntax()
@@ -167,7 +167,7 @@ void jump_syntax::emit_node()
 
 label_syntax::label_syntax() : label(ir_builder::fresh_label())
 {
-    emit();
+    //emit();
 }
 
 label_syntax::~label_syntax()

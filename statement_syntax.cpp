@@ -23,7 +23,7 @@ if_statement::if_statement(syntax_token* if_token, expression_syntax* condition,
     add_child(condition);
     add_child(body);
 
-    emit();
+    //emit();
 }
 
 if_statement::if_statement(syntax_token* if_token, expression_syntax* condition, statement_syntax* body, syntax_token* else_token, statement_syntax* else_clause):
@@ -38,7 +38,7 @@ if_statement::if_statement(syntax_token* if_token, expression_syntax* condition,
     add_child(body);
     add_child(else_clause);
 
-    emit();
+    //emit();
 }
 
 if_statement::~if_statement()
@@ -91,7 +91,7 @@ while_statement::while_statement(syntax_token* while_token, expression_syntax* c
     add_child(condition);
     add_child(body);
 
-    emit();
+    //emit();
 }
 
 while_statement::~while_statement()
@@ -139,7 +139,7 @@ branch_statement::branch_statement(syntax_token* branch_token): branch_token(bra
         throw std::runtime_error("unknown branch_kind");
     }
 
-    emit();
+    //emit();
 }
 
 branch_statement::~branch_statement()
@@ -185,7 +185,7 @@ return_statement::return_statement(syntax_token* return_token): return_token(ret
         output::error_mismatch(return_token->position);
     }
 
-    emit();
+    //emit();
 }
 
 return_statement::return_statement(syntax_token* return_token, expression_syntax* value): return_token(return_token), value(value)
@@ -201,7 +201,7 @@ return_statement::return_statement(syntax_token* return_token, expression_syntax
 
     add_child(value);
 
-    emit();
+    //emit();
 }
 
 return_statement::~return_statement()
@@ -239,7 +239,7 @@ expression_statement::expression_statement(expression_syntax* expression): expre
 {
     add_child(expression);
 
-    emit();
+    //emit();
 }
 
 expression_statement::~expression_statement()
@@ -277,7 +277,7 @@ assignment_statement::assignment_statement(syntax_token* identifier_token, synta
 
     add_child(value);
 
-    emit();
+    //emit();
 }
 
 assignment_statement::~assignment_statement()
@@ -330,7 +330,7 @@ declaration_statement::declaration_statement(type_syntax* type, syntax_token* id
 
     add_child(type);
 
-    emit();
+    //emit();
 }
 
 declaration_statement::declaration_statement(type_syntax* type, syntax_token* identifier_token, syntax_token* assign_token, expression_syntax* value):
@@ -356,7 +356,7 @@ declaration_statement::declaration_statement(type_syntax* type, syntax_token* id
     add_child(type);
     add_child(value);
 
-    emit();
+    //emit();
 }
 
 declaration_statement::~declaration_statement()
@@ -399,7 +399,7 @@ block_statement::block_statement(list_syntax<statement_syntax>* statements): sta
 {
     add_child(statements);
 
-    emit();
+    //emit();
 }
 
 block_statement::~block_statement()

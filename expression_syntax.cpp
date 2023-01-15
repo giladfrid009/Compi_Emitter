@@ -120,10 +120,10 @@ logical_expression::operator_kind logical_expression::parse_operator(string str)
 
 void logical_expression::emit_node()
 {
-    codebuf.backpatch(right->jump_list, right->jump_label);
-
     jump_list = left->jump_list;
     jump_label = left->jump_label;
+
+    codebuf.backpatch(right->jump_list, right->jump_label);
 
     if (oper == operator_kind::Or)
     {
