@@ -307,8 +307,10 @@ void assignment_statement::emit_node()
 
         return;
     }
-
-    codebuf.emit("store i32 %s , i32* %s", get_bool_reg(value), ptr_reg);
+    else
+    {
+        codebuf.emit("store i32 %s , i32* %s", get_bool_reg(value), ptr_reg);
+    }
 }
 
 declaration_statement::declaration_statement(type_syntax* type, syntax_token* identifier_token):
@@ -385,10 +387,11 @@ void declaration_statement::emit_node()
     if (value->return_type != type_kind::Bool)
     {
         codebuf.emit("store i32 %s , i32* %s", value->place, ptr_reg);
-        return;
     }
-
-    codebuf.emit("store i32 %s , i32* %s", get_bool_reg(value), ptr_reg);
+    else
+    {
+        codebuf.emit("store i32 %s , i32* %s", get_bool_reg(value), ptr_reg);
+    }
 }
 
 block_statement::block_statement(list_syntax<statement_syntax>* statements): statements(statements)
