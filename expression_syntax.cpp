@@ -257,8 +257,11 @@ void relational_expression::emit_code()
     codebuf.backpatch(right->jump_list, right->jump_label);
 
     string res_reg = ir_builder::fresh_register();
-    string cmp_kind = ir_builder::get_comparison_kind(oper, return_type == type_kind::Int);
 
+    type_kind operands_type = types::cast_up(left->return_type, right->return_type);
+
+    string cmp_kind = ir_builder::get_comparison_kind(oper, operands_type == type_kind::Int);
+    
     codebuf.emit("%s = icmp %s i32 %s , %s", res_reg, cmp_kind, left->place, right->place);
     size_t line = codebuf.emit("br i1 %s , label @ , label @", res_reg);
 
