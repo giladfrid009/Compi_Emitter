@@ -23,7 +23,7 @@ bool type_syntax::is_special() const
     return types::is_special(kind);
 }
 
-void type_syntax::emit_node()
+void type_syntax::emit_code()
 {
 }
 
@@ -65,7 +65,7 @@ parameter_syntax::~parameter_syntax()
     delete identifier_token;
 }
 
-void parameter_syntax::emit_node()
+void parameter_syntax::emit_code()
 {
 }
 
@@ -110,7 +110,7 @@ function_declaration_syntax::~function_declaration_syntax()
     delete identifier_token;
 }
 
-void function_declaration_syntax::emit_node()
+void function_declaration_syntax::emit_code()
 {
 }
 
@@ -141,7 +141,7 @@ root_syntax::~root_syntax()
     }
 }
 
-void root_syntax::emit_node()
+void root_syntax::emit_code()
 {
 }
 
@@ -158,7 +158,7 @@ jump_syntax::~jump_syntax()
     }
 }
 
-void jump_syntax::emit_node()
+void jump_syntax::emit_code()
 {
     size_t line = codebuf.emit("br label @");
 
@@ -178,7 +178,7 @@ label_syntax::~label_syntax()
     }
 }
 
-void label_syntax::emit_node()
+void label_syntax::emit_code()
 {
     codebuf.emit("br label %%%s", label);
     codebuf.emit("%s:", label);

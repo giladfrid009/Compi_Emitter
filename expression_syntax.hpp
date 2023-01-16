@@ -55,7 +55,7 @@ template<typename literal_type> class literal_expression final: public expressio
 
     protected:
 
-    void emit_node() override
+    void emit_code() override
     {
         code_buffer& codebuf = code_buffer::instance();
 
@@ -97,7 +97,7 @@ template<> inline bool literal_expression<bool>::get_literal_value(syntax_token*
     throw std::runtime_error("invalid value_token text");
 }
 
-template<> inline void literal_expression<bool>::emit_node()
+template<> inline void literal_expression<bool>::emit_code()
 {
     code_buffer& codebuf = code_buffer::instance();
     
@@ -120,7 +120,7 @@ template<> inline void literal_expression<bool>::emit_node()
     }
 }
 
-template<> inline void literal_expression<std::string>::emit_node()
+template<> inline void literal_expression<std::string>::emit_code()
 {
     code_buffer& codebuf = code_buffer::instance();
 
@@ -152,7 +152,7 @@ class cast_expression final: public expression_syntax
 
     protected:
 
-    void emit_node() override;
+    void emit_code() override;
 };
 
 class not_expression final: public expression_syntax
@@ -170,7 +170,7 @@ class not_expression final: public expression_syntax
 
     protected:
 
-    void emit_node() override;
+    void emit_code() override;
 };
 
 class logical_expression final: public expression_syntax
@@ -194,7 +194,7 @@ class logical_expression final: public expression_syntax
 
     protected:
 
-    void emit_node() override;
+    void emit_code() override;
 };
 
 class arithmetic_expression final: public expression_syntax
@@ -216,7 +216,7 @@ class arithmetic_expression final: public expression_syntax
 
     static arithmetic_operator parse_operator(std::string str);
 
-    void emit_node() override;
+    void emit_code() override;
 };
 
 class relational_expression final: public expression_syntax
@@ -238,7 +238,7 @@ class relational_expression final: public expression_syntax
 
     static relational_operator parse_operator(std::string str);
 
-    void emit_node() override;
+    void emit_code() override;
 };
 
 class conditional_expression final: public expression_syntax
@@ -261,7 +261,7 @@ class conditional_expression final: public expression_syntax
 
     static type_kind get_return_type(expression_syntax* left, expression_syntax* right);
 
-    void emit_node() override;
+    void emit_code() override;
 };
 
 class identifier_expression final: public expression_syntax
@@ -281,7 +281,7 @@ class identifier_expression final: public expression_syntax
 
     static type_kind get_return_type(std::string identifier);
 
-    void emit_node() override;
+    void emit_code() override;
 };
 
 class invocation_expression final: public expression_syntax
@@ -304,7 +304,7 @@ class invocation_expression final: public expression_syntax
     static type_kind get_return_type(std::string identifier);
     std::string get_arguments(const list_syntax<expression_syntax>* arguments);
 
-    void emit_node() override;
+    void emit_code() override;
 };
 
 #endif

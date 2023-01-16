@@ -29,7 +29,7 @@ class syntax_base
     const std::list<syntax_base*>& get_children() const;
 
     void emit();
-    virtual void emit_node() = 0;
+    virtual void emit_code() = 0;
     virtual void emit_clean();
 
     std::string get_bool_reg(const expression_syntax* bool_expression);

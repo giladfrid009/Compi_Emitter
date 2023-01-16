@@ -38,7 +38,7 @@ cast_expression::~cast_expression()
     }
 }
 
-void cast_expression::emit_node()
+void cast_expression::emit_code()
 {
     true_list = value->true_list;
     false_list = value->false_list;
@@ -78,7 +78,7 @@ not_expression::~not_expression()
     delete not_token;
 }
 
-void not_expression::emit_node()
+void not_expression::emit_code()
 {
     jump_list = expression->jump_list;
     jump_label = expression->jump_label;
@@ -118,7 +118,7 @@ logical_expression::operator_kind logical_expression::parse_operator(string str)
     throw std::invalid_argument("unknown oper");
 }
 
-void logical_expression::emit_node()
+void logical_expression::emit_code()
 {
     jump_list = left->jump_list;
     jump_label = left->jump_label;
@@ -177,7 +177,7 @@ arithmetic_operator arithmetic_expression::parse_operator(string str)
     throw std::invalid_argument("unknown oper");
 }
 
-void arithmetic_expression::emit_node()
+void arithmetic_expression::emit_code()
 {
     jump_list = left->jump_list;
     jump_label = left->jump_label;
@@ -249,7 +249,7 @@ relational_operator relational_expression::parse_operator(string str)
     throw std::invalid_argument("unknown oper");
 }
 
-void relational_expression::emit_node()
+void relational_expression::emit_code()
 {
     jump_list = left->jump_list;
     jump_label = left->jump_label;
@@ -297,7 +297,7 @@ conditional_expression::~conditional_expression()
     delete else_token;
 }
 
-void conditional_expression::emit_node()
+void conditional_expression::emit_code()
 {
     string control_label = ir_builder::fresh_label();
     string true_label = ir_builder::fresh_label();
@@ -381,7 +381,7 @@ identifier_expression::~identifier_expression()
     delete identifier_token;
 }
 
-void identifier_expression::emit_node()
+void identifier_expression::emit_code()
 {
     size_t line = codebuf.emit("br label @");
     jump_label = codebuf.emit_label();
@@ -531,7 +531,7 @@ string invocation_expression::get_arguments(const list_syntax<expression_syntax>
     return result.str();
 }
 
-void invocation_expression::emit_node()
+void invocation_expression::emit_code()
 {
     if (arguments == nullptr)
     {

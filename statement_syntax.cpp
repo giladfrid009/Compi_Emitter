@@ -48,7 +48,7 @@ if_statement::~if_statement()
     delete else_token;
 }
 
-void if_statement::emit_node()
+void if_statement::emit_code()
 {
 }
 
@@ -74,7 +74,7 @@ while_statement::~while_statement()
     delete while_token;
 }
 
-void while_statement::emit_node()
+void while_statement::emit_code()
 {
 }
 
@@ -118,7 +118,7 @@ branch_statement::branch_kind branch_statement::parse_kind(string str)
     throw std::invalid_argument("unknown type");
 }
 
-void branch_statement::emit_node()
+void branch_statement::emit_code()
 {
     size_t line = codebuf.emit("br label @");
 
@@ -174,7 +174,7 @@ return_statement::~return_statement()
     delete return_token;
 }
 
-void return_statement::emit_node()
+void return_statement::emit_code()
 {
     if (value == nullptr)
     {
@@ -212,7 +212,7 @@ expression_statement::~expression_statement()
     }
 }
 
-void expression_statement::emit_node()
+void expression_statement::emit_code()
 {
     codebuf.backpatch(expression->jump_list, expression->jump_label);
 
@@ -255,7 +255,7 @@ assignment_statement::~assignment_statement()
     delete assign_token;
 }
 
-void assignment_statement::emit_node()
+void assignment_statement::emit_code()
 {
     codebuf.backpatch(value->jump_list, value->jump_label);
 
@@ -334,7 +334,7 @@ declaration_statement::~declaration_statement()
     delete assign_token;
 }
 
-void declaration_statement::emit_node()
+void declaration_statement::emit_code()
 {
     string ptr_reg = static_cast<const variable_symbol*>(symtab.get_symbol(identifier, symbol_kind::Variable))->ptr_reg;
 
@@ -379,7 +379,7 @@ block_statement::~block_statement()
     }
 }
 
-void block_statement::emit_node()
+void block_statement::emit_code()
 {
     statement_syntax* prev_statement = nullptr;
 

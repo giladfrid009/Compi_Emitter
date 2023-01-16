@@ -51,7 +51,7 @@ void syntax_base::emit_clean()
 
 void syntax_base::emit()
 {
-    emit_node();
+    emit_code();
 
     for (auto child : children)
     {

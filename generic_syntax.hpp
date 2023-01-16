@@ -83,7 +83,7 @@ template<typename element_type> class list_syntax final: public syntax_base
 
     protected:
 
-    void emit_node() override
+    void emit_code() override
     {
     }
 };
@@ -106,7 +106,7 @@ class type_syntax final: public syntax_base
 
     protected:
 
-    void emit_node() override;
+    void emit_code() override;
 };
 
 class parameter_syntax final: public syntax_base
@@ -125,7 +125,7 @@ class parameter_syntax final: public syntax_base
 
     protected:
 
-    void emit_node() override;
+    void emit_code() override;
 };
 
 class function_declaration_syntax final: public syntax_base
@@ -146,7 +146,7 @@ class function_declaration_syntax final: public syntax_base
 
     protected:
 
-    void emit_node() override;
+    void emit_code() override;
 };
 
 class root_syntax final: public syntax_base
@@ -163,7 +163,7 @@ class root_syntax final: public syntax_base
 
     protected:
 
-    void emit_node() override;
+    void emit_code() override;
 };
 
 class jump_syntax final: public syntax_base
@@ -180,7 +180,7 @@ class jump_syntax final: public syntax_base
 
     protected:
 
-    void emit_node() override;
+    void emit_code() override;
 };
 
 class label_syntax final: public syntax_base
@@ -197,7 +197,7 @@ class label_syntax final: public syntax_base
 
     protected:
 
-    void emit_node() override;
+    void emit_code() override;
 };
 
 #endif
