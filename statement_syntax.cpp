@@ -381,8 +381,6 @@ block_statement::~block_statement()
 
 void block_statement::emit_code()
 {
-    statement_syntax* prev_statement = nullptr;
-
     for (auto statement : *statements)
     {
         break_list = codebuf.merge(break_list, statement->break_list);
