@@ -55,8 +55,6 @@ class code_buffer
 
     void new_line();
 
-    void emit_metadata(std::string line);
-
     size_t emit_from_file(std::string file_path);
 
     static std::list<patch_record> merge(const std::list<patch_record>& first, const std::list<patch_record>& second);
