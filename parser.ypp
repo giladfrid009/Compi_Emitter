@@ -151,6 +151,8 @@ Statement	: LBRACE OS Statements CS RBRACE                        { $$ = new blo
                                                                         codebuf.backpatch($3->true_list, $6->label); 
                                                                         codebuf.backpatch($3->false_list, $9->label);
 
+                                                                        codebuf.new_line();
+
                                                                         delete $6; delete $9;
                                                                     }
 			| IF LPAREN BoolExp RPAREN OS L Statement CS L
@@ -164,6 +166,8 @@ Statement	: LBRACE OS Statements CS RBRACE                        { $$ = new blo
                                                                         codebuf.backpatch($3->false_list, $13->label);
                                                                         codebuf.backpatch($11->jump_list, $16->label);
 
+                                                                        codebuf.new_line();
+
                                                                         delete $6; delete $9; delete $11; delete $13; delete $16;
                                                                     }
 			| WHILE LPAREN BoolExp RPAREN OSL L Statement J CS L    { 
@@ -175,6 +179,8 @@ Statement	: LBRACE OS Statements CS RBRACE                        { $$ = new blo
                                                                         codebuf.backpatch($7->continue_list, $3->jump_label);
                                                                         codebuf.backpatch($7->break_list, $10->label);
                                                                         codebuf.backpatch($8->jump_list, $3->jump_label);
+
+                                                                        codebuf.new_line();
 
                                                                         delete $6; delete $8; delete $10;
                                                                     }

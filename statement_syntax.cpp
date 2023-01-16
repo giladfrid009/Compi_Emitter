@@ -130,6 +130,8 @@ void branch_statement::emit_node()
     {
         break_list.push_back(patch_record(line, label_index::First));
     }
+
+    codebuf.new_line();
 }
 
 return_statement::return_statement(syntax_token* return_token): return_token(return_token), value(nullptr)
@@ -177,6 +179,7 @@ void return_statement::emit_node()
     if (value == nullptr)
     {
         codebuf.emit("ret void");
+        codebuf.new_line();
         return;
     }
 
@@ -190,6 +193,8 @@ void return_statement::emit_node()
     {
         codebuf.emit("ret i32 %s", get_bool_reg(value));
     }
+
+    codebuf.new_line();
 }
 
 expression_statement::expression_statement(expression_syntax* expression): expression(expression)
@@ -210,6 +215,8 @@ expression_statement::~expression_statement()
 void expression_statement::emit_node()
 {
     codebuf.backpatch(expression->jump_list, expression->jump_label);
+
+    codebuf.new_line();
 }
 
 assignment_statement::assignment_statement(syntax_token* identifier_token, syntax_token* assign_token, expression_syntax* value):
@@ -261,13 +268,13 @@ void assignment_statement::emit_node()
         string type = ir_builder::get_type(value->return_type);
 
         codebuf.emit("store %s %s , %s* %s", type, value->place, type, ptr_reg);
-
-        return;
     }
     else
     {
         codebuf.emit("store i32 %s , i32* %s", get_bool_reg(value), ptr_reg);
     }
+
+    codebuf.new_line();
 }
 
 declaration_statement::declaration_statement(type_syntax* type, syntax_token* identifier_token):
@@ -335,6 +342,7 @@ void declaration_statement::emit_node()
     {
         codebuf.emit("%s = alloca i32", ptr_reg);
         codebuf.emit("store i32 0 , i32* %s", ptr_reg);
+        codebuf.new_line();
         return;
     }
 
@@ -352,6 +360,8 @@ void declaration_statement::emit_node()
         codebuf.emit("%s = alloca i32", ptr_reg);
         codebuf.emit("store i32 %s , i32* %s", value->place, ptr_reg);
     }   
+
+    codebuf.new_line();
 }
 
 block_statement::block_statement(list_syntax<statement_syntax>* statements): statements(statements)
