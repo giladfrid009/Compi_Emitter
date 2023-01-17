@@ -2,7 +2,7 @@ declare i32 @printf(i8*, ...)
 declare void @exit(i32)
 @.int_specifier = constant [4 x i8] c"%d\0A\00"
 @.str_specifier = constant [4 x i8] c"%s\0A\00"
-@.str_zero_div = constant [23 x i8] c"Error division by zero\00"
+@.str_zero_div = constant [24 x i8] c"Error division by zero\0A\00"
 
 define void @printi(i32) {
     %spec_ptr = getelementptr [4 x i8], [4 x i8]* @.int_specifier, i32 0, i32 0
@@ -17,7 +17,7 @@ define void @print(i8*) {
 }
 
 define void @error_zero_div() {
-    %spec_ptr = getelementptr [23 x i8], [23 x i8]* @.str_zero_div, i32 0, i32 0
+    %spec_ptr = getelementptr [24 x i8], [24 x i8]* @.str_zero_div, i32 0, i32 0
     call i32 (i8*, ...) @printf(i8* %spec_ptr)
     call void @exit(i32 -1)
     ret void
