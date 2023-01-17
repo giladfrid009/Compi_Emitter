@@ -10,7 +10,9 @@ num_of_tests=0
 
 if [ $# -eq 1 ] && [ "$1" = "-d" ]
     then     
-        print_diff=1       
+        print_diff=1 
+        echo -e "< present in res missing in out"
+        echo -e "> present in out missing in res"      
 fi
 
 echo "Running dos2unix ..."
@@ -48,7 +50,7 @@ do
 
     if [ $print_diff -eq 1 ]
         then
-            diff ${inFile%.in}.exp ${inFile%.in}.out
+            diff ${inFile%.in}.res ${inFile%.in}.out
     fi
 
     num_of_tests=$[$num_of_tests+1]
