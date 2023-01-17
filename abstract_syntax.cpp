@@ -86,7 +86,7 @@ string syntax_base::get_bool_reg(const expression_syntax* bool_expression)
 }
 
 expression_syntax::expression_syntax(type_kind return_type):
-    return_type(return_type), place(ir_builder::fresh_register()), true_list(), false_list(), jump_label(), jump_list()
+    return_type(return_type), place(ir_builder::fresh_register()), true_list(), false_list(), start_label(), start_list()
 {
 
 }
@@ -105,7 +105,7 @@ void expression_syntax::emit_clean()
 {
     true_list.clear();
     false_list.clear();
-    jump_list.clear();
+    start_list.clear();
 }
 
 statement_syntax::statement_syntax(): break_list(), continue_list()

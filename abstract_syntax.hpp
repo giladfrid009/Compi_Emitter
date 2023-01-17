@@ -48,8 +48,8 @@ class expression_syntax: public syntax_base
     const std::string place;
     std::list<patch_record> true_list;
     std::list<patch_record> false_list;
-    std::string jump_label;
-    std::list<patch_record> jump_list;
+    std::string start_label;
+    std::list<patch_record> start_list;
 
     expression_syntax(type_kind return_type);
     virtual ~expression_syntax() = default;

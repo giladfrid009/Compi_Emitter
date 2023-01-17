@@ -60,10 +60,10 @@ template<typename literal_type> class literal_expression final: public expressio
         code_buffer& codebuf = code_buffer::instance();
 
         size_t line = codebuf.emit("br label @");
-        jump_label = codebuf.emit_label();
+        start_label = codebuf.emit_label();
         codebuf.emit("%s = add i32 0 , %d", place, value);
 
-        jump_list.push_back(patch_record(line, label_index::First));
+        start_list.push_back(patch_record(line, label_index::First));
     }
 };
 
@@ -102,9 +102,9 @@ template<> inline void literal_expression<bool>::emit_code()
     code_buffer& codebuf = code_buffer::instance();
     
     size_t line = codebuf.emit("br label @");
-    jump_label = codebuf.emit_label();
+    start_label = codebuf.emit_label();
 
-    jump_list.push_back(patch_record(line, label_index::First));
+    start_list.push_back(patch_record(line, label_index::First));
 
     if (value == true)
     {
@@ -131,10 +131,10 @@ template<> inline void literal_expression<std::string>::emit_code()
     codebuf.emit_global(ir_builder::format_string("%s = constant %s c\"%s\\00\"", arr_name, arr_type, arr_content));
 
     size_t line = codebuf.emit("br label @");
-    jump_label = codebuf.emit_label();
+    start_label = codebuf.emit_label();
     codebuf.emit(ir_builder::format_string("%s = getelementptr %s , %s* %s , i32 0 , i32 0", place, arr_type, arr_type, arr_name));
 
-    jump_list.push_back(patch_record(line, label_index::First));
+    start_list.push_back(patch_record(line, label_index::First));
 }
 
 class cast_expression final: public expression_syntax

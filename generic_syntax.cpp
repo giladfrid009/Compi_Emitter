@@ -145,7 +145,7 @@ void root_syntax::emit_code()
 {
 }
 
-jump_syntax::jump_syntax() : jump_list()
+jump_syntax::jump_syntax() : start_list()
 {
     emit();
 }
@@ -162,7 +162,7 @@ void jump_syntax::emit_code()
 {
     size_t line = codebuf.emit("br label @");
 
-    jump_list.push_back(patch_record(line, label_index::First));
+    start_list.push_back(patch_record(line, label_index::First));
 }
 
 label_syntax::label_syntax() : label(ir_builder::fresh_label())

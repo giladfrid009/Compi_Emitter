@@ -183,7 +183,7 @@ void return_statement::emit_code()
         return;
     }
 
-    codebuf.backpatch(value->jump_list, value->jump_label);
+    codebuf.backpatch(value->start_list, value->start_label);
 
     if (value->return_type != type_kind::Bool)
     {
@@ -214,7 +214,7 @@ expression_statement::~expression_statement()
 
 void expression_statement::emit_code()
 {
-    codebuf.backpatch(expression->jump_list, expression->jump_label);
+    codebuf.backpatch(expression->start_list, expression->start_label);
 
     codebuf.new_line();
 }
@@ -257,7 +257,7 @@ assignment_statement::~assignment_statement()
 
 void assignment_statement::emit_code()
 {
-    codebuf.backpatch(value->jump_list, value->jump_label);
+    codebuf.backpatch(value->start_list, value->start_label);
 
     const symbol* symbol = symtab.get_symbol(identifier);
 
@@ -346,7 +346,7 @@ void declaration_statement::emit_code()
         return;
     }
 
-    codebuf.backpatch(value->jump_list, value->jump_label);
+    codebuf.backpatch(value->start_list, value->start_label);
 
     if (value->return_type == type_kind::Bool)
     {

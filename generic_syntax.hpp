@@ -170,7 +170,7 @@ class jump_syntax final: public syntax_base
 {
     public:
 
-    std::list<patch_record> jump_list;
+    std::list<patch_record> start_list;
 
     jump_syntax();
     ~jump_syntax();

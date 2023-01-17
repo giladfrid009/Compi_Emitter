@@ -147,7 +147,7 @@ Statement	: LBRACE OS Statements CS RBRACE                        { $$ = new blo
 
                                                                         $$->break_list = $7->break_list;
                                                                         $$->continue_list = $7->continue_list;
-                                                                        codebuf.backpatch($3->jump_list, $3->jump_label);
+                                                                        codebuf.backpatch($3->start_list, $3->start_label);
                                                                         codebuf.backpatch($3->true_list, $6->label); 
                                                                         codebuf.backpatch($3->false_list, $9->label);
 
@@ -161,10 +161,10 @@ Statement	: LBRACE OS Statements CS RBRACE                        { $$ = new blo
 
                                                                         $$->break_list = codebuf.merge($7->break_list, $14->break_list);
                                                                         $$->continue_list = codebuf.merge($7->continue_list, $14->continue_list);
-                                                                        codebuf.backpatch($3->jump_list, $3->jump_label);
+                                                                        codebuf.backpatch($3->start_list, $3->start_label);
                                                                         codebuf.backpatch($3->true_list, $6->label); 
                                                                         codebuf.backpatch($3->false_list, $13->label);
-                                                                        codebuf.backpatch($11->jump_list, $16->label);
+                                                                        codebuf.backpatch($11->start_list, $16->label);
 
                                                                         codebuf.new_line();
 
@@ -173,12 +173,12 @@ Statement	: LBRACE OS Statements CS RBRACE                        { $$ = new blo
 			| WHILE LPAREN BoolExp RPAREN OSL L Statement J CS L    { 
                                                                         $$ = new while_statement($1, $3, $7); 
 
-                                                                        codebuf.backpatch($3->jump_list, $3->jump_label);
+                                                                        codebuf.backpatch($3->start_list, $3->start_label);
                                                                         codebuf.backpatch($3->true_list, $6->label); 
                                                                         codebuf.backpatch($3->false_list, $10->label);
-                                                                        codebuf.backpatch($7->continue_list, $3->jump_label);
+                                                                        codebuf.backpatch($7->continue_list, $3->start_label);
                                                                         codebuf.backpatch($7->break_list, $10->label);
-                                                                        codebuf.backpatch($8->jump_list, $3->jump_label);
+                                                                        codebuf.backpatch($8->start_list, $3->start_label);
 
                                                                         codebuf.new_line();
 
