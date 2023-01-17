@@ -1,5 +1,5 @@
 void bar(){
-	const bool ba = false;
+	bool ba = false;
 	int x = 55;
 	if(ba){
 		printi(2*x);

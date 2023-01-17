@@ -3,6 +3,6 @@ void foo(byte x){
 }
 void main(){
 	int z = 9;
-	const int i = z;
+	int i = z;
 	foo((byte) i);
 }
