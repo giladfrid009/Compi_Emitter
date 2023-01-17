@@ -1,0 +1,39 @@
+bool isDivisible(byte num, byte divisor) {
+    return ((num / divisor)*divisor) == num;
+}
+
+bool isPrime(byte num) {
+    if(num < 2) return false;
+    int i = 2;
+    while (i <= num / 2) {
+        if (isDivisible(num, (byte)i)) {
+            return false;
+        }
+        i = i + 1;
+    }
+    return true;
+}
+
+void main() {
+    byte inputByte = 255b;
+    byte resultByte = 0b;
+
+    int i = 2;
+    while (i < inputByte)
+    {
+        if (isDivisible(inputByte, (byte)i)) {
+            if (isPrime((byte)i)) {
+                printi(i);
+                resultByte = (byte)i;
+                i = i + 1;
+                continue;
+            }
+            inputByte = (byte)(inputByte / i);
+        }
+        i = i + 1;
+    }
+    resultByte = inputByte if (resultByte == 0b) else 5b;
+    printi(resultByte);
+    return;
+}
+

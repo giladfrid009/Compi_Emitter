@@ -1,0 +1,10 @@
+//type sign check
+
+void main() {
+    int i = 1;
+    printi(i - 3);
+
+    if (8b == 8) {
+        print("ok");
+    }
+}

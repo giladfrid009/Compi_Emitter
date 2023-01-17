@@ -1,0 +1,41 @@
+//simple bool testing
+
+void printBool(bool i) {
+    if (i) print("true");
+    else print("false");
+}
+
+void main() {
+    print("BOOL TEST");
+    bool i = true;
+    bool j = false;
+
+    bool res = i or j;
+
+    printBool(res); //-> true
+    
+    res = true or j;
+    printBool(res); //-> true
+    
+    res = true or false;
+    printBool(res); //-> true
+    
+    res = true and false;
+    printBool(res); //-> false
+
+    res = false and false;
+    printBool(res); //-> false
+    
+    res = true or true;
+    printBool(res); //-> true
+
+    res = (5 - 6) < (6 - 1);
+    printBool(res); //-> true
+
+    res = ((5 - 6) > (6 - 1)) and (true);
+    printBool(res); //-> false
+    
+    res = not false;
+    printBool(res); //-> true
+    return;
+}

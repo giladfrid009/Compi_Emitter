@@ -1,0 +1,24 @@
+int foo(){
+	int x;
+	return x;
+}
+
+byte bar(){
+	byte x;
+	return x;
+}
+
+bool zoo(){
+	bool x;
+	return x;
+}
+
+void main(){
+	printi(foo());
+	printi(bar());
+	if(zoo()){
+		printi(1);
+	} else {
+		printi(0);
+	}
+}

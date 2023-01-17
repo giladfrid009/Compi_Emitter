@@ -1,0 +1,25 @@
+//return test
+
+bool test() {
+    return true;
+}
+
+bool test2() {
+    return 1 > 0;
+}
+
+void main() {
+    if (test()) {
+        print("ok");
+    }
+    else {
+        print("not ok");
+    }
+
+    if (test2()) {
+        print("ok2");
+    }
+    else {
+        print("not ok2");
+    }
+}

@@ -1,0 +1,46 @@
+void hello(int x, int y){
+	return;
+}
+
+bool OR(bool a, bool bee){
+	if(a){
+		return true;
+	}
+	return bee;
+}
+
+bool NOT(bool a){
+	if(a){
+		return false;
+	} else{
+		return true;
+	}
+}
+
+bool FALSE(){
+	byte x = 1b;
+}
+
+bool TRUE(){
+	return NOT(FALSE());
+}
+
+int foo(){
+	if(OR(TRUE(), FALSE()) and true){
+		printi(800);
+		return 800;
+	} else {
+		return 900;
+	}
+}
+
+void main(){
+	printi(878*10+7);
+	printi(foo());
+	if(false and TRUE()){
+		int x = 1;
+	}
+	if(true or TRUE()){
+		int x = 1;
+	}
+}

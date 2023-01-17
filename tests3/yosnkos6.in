@@ -1,0 +1,17 @@
+void main(){
+	bool bebe = true;
+	bool bobo = ((true and false) or true and false);
+	if(bobo and bebe){
+		printi(8080);
+		if(not not bebe){
+			printi(999);
+		}
+	} else {
+		while(bobo){
+			bobo = false;
+			printi(11111);
+		}
+		printi(0 + 0 * 0 / 1);
+	}
+	return;
+}

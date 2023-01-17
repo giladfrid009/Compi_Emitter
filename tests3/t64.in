@@ -1,0 +1,15 @@
+//ensure var init to zero
+
+void main() {
+    int i;
+    int j;
+    byte k;
+    bool l;
+
+    printi(i);
+    printi(k);
+    printi(j);
+    if (not l) {
+        print("ok");
+    }
+}

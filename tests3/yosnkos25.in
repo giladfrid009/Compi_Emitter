@@ -1,0 +1,15 @@
+byte foo(int xparam, byte y){
+	int x = xparam;
+	while(x > 0){
+		if(2*y == x){
+			break;
+		}
+		x = x-1;
+	}
+	return (byte)x;
+}
+
+void main(){
+	printi(foo(10, (byte)3));
+	printi(foo(10, (byte)20));
+}

@@ -1,0 +1,8 @@
+void foo(int x, int y){
+	printi(x);
+	printi(y);
+}
+
+void main(){
+	foo(9 , 11);
+}

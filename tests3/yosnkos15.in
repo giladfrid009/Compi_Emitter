@@ -1,0 +1,12 @@
+void main(){
+	byte b0b0900142 = (  byte) 5;
+	if(b0b0900142 + 3 b == 8){
+		printi(420);
+	} else {
+		printi(4201);
+	}
+	int haah = (int)b0b0900142+2;
+	printi(haah);
+	byte ga = ((byte)haah + 3b)*10b;
+	printi(ga);
+}

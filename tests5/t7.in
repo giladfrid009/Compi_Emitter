@@ -1,0 +1,76 @@
+bool isvalidinput(int num) {
+    return (num > 0) and (num < 100);
+}
+
+bool ismultipleof3(int num1) {
+    int count = 0;
+    int num = num1;
+    while(num > 0) {
+        num = num - 3;
+        count = count + 1;
+    }
+    return (num == 0);
+}
+
+bool ismultipleof5(int num1) {
+    int count = 0;
+    int num = num1;
+    while(num > 0) {
+        num = num - 5;
+        count = count + 1;
+    }
+    return (num == 0);
+}
+
+int getnextmultipleof3(int num1) {
+    int num = num1;
+    while(not ismultipleof3(num)) {
+        num = num + 1;
+    }
+    return num;
+}
+
+int getnextmultipleof5(int num1) {
+    int num = num1;
+    while(not ismultipleof5(num)) {
+        num = num + 1;
+    }
+    return num;
+}
+
+void main() {
+    int num = 50;
+    bool isvalid = isvalidinput(num);
+    bool ismultipleof3bool = ismultipleof3(num);
+    bool ismultipleof5bool = ismultipleof5(num);
+    int result = 0;
+    if (isvalid) {
+        print("valid");
+        if (ismultipleof3bool and ismultipleof5bool) {
+            print("a");
+            result = num * 2;
+        } else if (ismultipleof3bool) {
+            print("b");
+            int nextmultipleof5 = getnextmultipleof5(num);
+            result = nextmultipleof5 - num;
+        } else if (ismultipleof5bool) {
+            print("c");
+            int nextmultipleof3 = getnextmultipleof3(num);
+            result = nextmultipleof3 - num;
+        } else {
+            print("d");
+            int nextmultipleof3 = getnextmultipleof3(num);
+            int nextmultipleof5 = getnextmultipleof5(num);
+            if (nextmultipleof3 < nextmultipleof5) {
+                result = nextmultipleof3 - num;
+            } else {
+                result = nextmultipleof5 - num;
+            }
+        }
+    } 
+    else {
+        result = 0;
+    }
+    printi(result);
+    return;
+}

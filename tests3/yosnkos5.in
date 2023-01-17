@@ -1,0 +1,9 @@
+
+
+void		 main ()
+
+{
+	byte BAITTTT = 8   b;
+	printi(BAITTTT);
+	return;
+}

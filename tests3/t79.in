@@ -1,0 +1,10 @@
+//Cast test(should cut the number)
+
+void main() {
+    int i = 2045;
+    printi(i);
+    printi((byte)i);
+
+
+    return;
+}

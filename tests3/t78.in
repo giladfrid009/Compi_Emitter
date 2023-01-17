@@ -1,0 +1,41 @@
+//functions test
+
+int test1() {
+    return 22;
+}
+
+int test2(int i) {
+    return 22 + i;
+}
+
+void test3(int i) {
+    printi(i);
+    return;
+}
+
+void test4() {
+    print("I'm func 4");
+    return;
+}
+
+void main() {
+    print("calling test1");
+    int res = test1();
+    printi(res);
+    
+    print("calling inline test1");
+    printi(test1());
+
+    print("calling test2 with 1");
+    res = test2(1);
+    printi(res);
+    
+    print("calling test3 with var 2");
+    int i = 2;
+    test3(i);
+    
+    print("calling test4");
+    test4();
+
+    return;
+}

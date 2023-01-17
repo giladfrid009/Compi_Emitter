@@ -1,0 +1,10 @@
+int foo(){
+	printi(3);
+	return 1;
+}
+
+void main(){
+	foo();
+	printi(99);
+	return;
+}

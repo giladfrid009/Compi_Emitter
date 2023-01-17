@@ -1,0 +1,31 @@
+int Int(){print("set!");return 500;}
+void WasHere(){print("was here");}
+void main(){
+int target = 0;
+if(true) int t6;
+if(true) int t6 = Int();
+if(true) target = Int();
+printi(target);
+target = 0;
+if(true)WasHere();if(true){
+int t6 = Int();
+printi(t6);
+}
+if(true){
+int t6;
+t6 = Int();
+printi(t6);
+}
+if(true) {target = Int();}
+printi(target);
+
+target = 0;
+if(true) {WasHere();}
+if(true) if (true) WasHere();
+if(true) if (true) WasHere(); 
+	else int x;
+if(true) if (false) int x; 
+	else WasHere();
+if(true)while (true) {WasHere();break;}
+if(true)while (target == 0) target = Int();
+}

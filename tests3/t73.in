@@ -1,0 +1,142 @@
+//check sum,sub,div,mult
+
+
+void main() {
+    print("BASIC TEST");
+    print("ADD");
+    int i = 0;
+    i = i + 1;
+    printi(i); //-> 1
+    i = 1 + i;
+    printi(i); //-> 2
+    i = 1 + 2;
+    printi(i); //-> 3
+    int j = 1;
+    i = i + j;
+    printi(i); //-> 4
+    printi(j); //-> 1
+
+    print("SUB");
+    i = 10;
+    i = i - 1;
+    printi(i); //-> 9
+    i = 1 - i;
+    printi(i); //-> -8
+    i = 1 - 2;
+    printi(i); //-> -1
+    j = 1;
+    i = i - j;
+    printi(i); //-> -2
+    printi(j); //-> 1
+
+    print("MULT");
+    int ii = 1;
+    ii = ii * 2;
+    printi(ii); //-> 2
+    ii = 2 * ii;
+    printi(ii); //-> 4
+    ii = 2 * 3;
+    printi(ii); //-> 6
+    int jj = 3;
+    jj = jj * ii;
+    printi(jj); //-> 18
+
+    print("DIV");
+    ii = 10;
+    ii = ii / 2;
+    printi(ii); //-> 5
+    ii = 20 / ii;
+    printi(ii); //-> 4
+    ii = 30 / 5;
+    printi(ii); //-> 6
+    jj = 3;
+    jj = ii / jj;
+    printi(jj); //-> 2
+
+    print("COMPOSITE");
+    int i1 = 1;
+    int j1 = 2;
+    int k1 = 3;
+
+    int res = i1 + j1 - k1;
+    printi(res); // -> 0
+
+    res = i1 - j1 + k1;
+    printi(res); // -> 2
+
+    res = i1 + j1 + k1;
+    printi(res); // -> 6
+
+    res = i1 - j1 - k1;
+    printi(res); // -> -4
+
+    res = i1 + j1 * k1;
+    printi(res); // -> 7
+
+    res = i1 * j1 + k1;
+    printi(res); // -> 5
+
+    res = i1 * j1 * k1;
+    printi(res); // -> 6
+
+    res = i1 + j1 / k1;
+    printi(res); // -> 1
+
+    res = i1 / j1 / k1;
+    printi(res); // -> 0
+
+    res = i1 / j1 + k1;
+    printi(res); // -> 3
+
+    res = i1 / j1 * k1;
+    printi(res); // -> 0
+
+    res = i1 * j1 / k1;
+    printi(res);
+
+    res = i1 + 50 - k1;
+    printi(res); // -> 0
+
+    res = 49 - j1 + k1;
+    printi(res); // -> 2
+
+    res = i1 + j1 + 11;
+    printi(res); // -> 6
+
+    res = 50 - j1 - k1;
+    printi(res); // -> -4
+
+    res = 14 + j1 * 12;
+    printi(res); // -> 7
+
+    res = i1 * 5 + k1;
+    printi(res); // -> 5
+
+    res = i1 * 5 * k1;
+    printi(res); // -> 6
+
+    res = i1 + j1 / 2;
+    printi(res); // -> 1
+
+    res = 20 / 5 / 2;
+    printi(res); // -> 0
+
+    res = 20 / j1 + 1;
+    printi(res); // -> 3
+
+    res = i1 / 1 * k1;
+    printi(res); // -> 0
+
+    res = i1 * 10 / k1;
+    printi(res);
+
+
+    res = i1 + (10 * k1);
+    printi(res);
+
+    res = (i1 + 10) * k1;
+    printi(res);
+
+
+    return;
+}

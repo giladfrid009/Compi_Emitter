@@ -1,0 +1,24 @@
+void f(int c)
+{
+    int a = c;
+    int k = 5;
+    while(k !=0)
+    {
+        a=a+2;
+        if(a>12)
+        {
+            a=a+5;
+            break;
+        }
+        k=k-1;
+    }
+    print("a=");
+    printi(a);
+    
+}
+void main()
+{
+    f(0);
+    f(6);
+
+}

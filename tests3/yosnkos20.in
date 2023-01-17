@@ -1,0 +1,17 @@
+bool nall(){
+	bool o = false;
+	bool t7 = o and o and o and true;
+	return t7;
+}
+
+bool bar(){
+	printi(777);
+}
+
+int foo(){
+	if(not nall() or bar()) return 88;
+}
+
+void main(){
+	printi(foo() + 2);
+}

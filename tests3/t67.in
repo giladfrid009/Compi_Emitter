@@ -1,0 +1,12 @@
+//short circuit eval test
+
+bool printFoo() {
+    print("foo");
+    return true;
+}
+
+void main() {
+    bool j = true or printFoo();
+
+    return;
+}

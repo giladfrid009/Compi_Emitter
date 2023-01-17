@@ -1,0 +1,18 @@
+void main(){
+	int x = 7+3;
+	if(true or false){
+		while(x != 13 and true){
+			printi(x);
+			x = x+1;
+		}
+	} else {
+		printi(9000 + 10);
+	}
+	x = 101;
+	if(false){
+		x = 17;
+	} else {
+		printi(x);
+	}
+	return;
+}

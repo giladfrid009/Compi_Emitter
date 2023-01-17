@@ -1,0 +1,40 @@
+bool isDivisible(int num1, int divisor) {
+    int num = num1;
+    int count = 0;
+    while (num >= divisor) {
+        num = num - divisor;
+        count = count + 1;
+    }
+    return num == 0;
+}
+
+bool isPrime(int num) {
+    bool prime = true;
+    int i = 2;
+    while (i < num) {
+        if (isDivisible(num, i)) {
+            prime = false;
+            break;
+        }
+        i = i + 1;
+    }
+    return prime;
+}
+
+void main() {
+    int num = 200;
+    byte numByte = (byte) num;
+    byte resultByte = (byte)0;
+    int i = 2;
+    while (i < num) {
+        if (isDivisible(num, i)) {
+            if (isPrime(i)) {
+                resultByte = (byte) i;
+                printi(i);
+            }
+        }
+        i = i + 1;
+    }
+    return;
+}
+

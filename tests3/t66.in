@@ -1,0 +1,9 @@
+//numeric overflow test
+
+void main() {
+    int i = 2147483647;
+    printi(i + 2);
+
+    byte j = 255b;
+    printi(j + 2);
+}

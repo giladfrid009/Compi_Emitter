@@ -1,0 +1,43 @@
+//if test
+
+void test(int i) {
+    if (i == 0) print("ok11");
+} 
+
+void main() {
+    test(0);
+
+    if (1 == 1) {
+        if (1 == 1) print("ok1");
+    }
+
+    if (1 == 1) {
+        int k = 0;
+        if (1 == 1) print("ok2");
+        int j = 0;
+    }
+
+    bool k = true;
+    if (k) {
+        print("ok3");
+    }
+    
+    if (true) {
+        print("ok4");
+    }
+    if (true) {
+        if (true) print("ok5");
+        else print("ok6");
+    }
+    else {
+        if (true) print("not ok7");
+        else print("not ok8");
+    }
+
+    if (true)
+        if (false) print("ok9");
+    else
+        print("k10");
+
+    return;
+}

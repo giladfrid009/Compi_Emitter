@@ -1,0 +1,21 @@
+//exp passed to function
+
+void printBool(bool i) {
+    if (i) print("true");
+    else print("false");
+}
+
+void printFoo(bool i, int j, bool k, int jj) {
+    if(i) print("bool is true");
+    printi(j);
+    printBool(k);
+    printi(jj);
+}
+
+int inc(int i) {
+    return i + 1;
+}
+
+void main() {
+    printFoo(5 < 6, 2 + 4, true, inc(2));
+}

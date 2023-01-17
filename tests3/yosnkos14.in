@@ -1,0 +1,25 @@
+int foo(){
+	int x = 3;
+}
+
+bool bar(){
+	int x = 9001;
+}
+
+byte zoo(){
+	int x = 42;
+}
+
+void main(){
+	printi(foo());
+	if(bar()){
+		printi(1);
+	} else{
+		printi(0);
+	}
+	if(zoo() == 0){
+		printi(7070);
+	} else{
+		printi(60818);
+	}
+}

@@ -1,0 +1,30 @@
+//this test is to check the functionality of break as statement in switch
+
+void printNum(int num)
+{
+	printi(num);
+	
+}
+
+void main ()
+{
+	print("test int:");
+	int x = 5;
+	while(true){
+		
+		if (x == 1) {printNum(1); x = x-1;break;}
+		if (x == 2) {printNum(2); x = x-1;}
+		if (x == 3) {printNum(3); x = x-1;}
+		if (x == 4) {printNum(4); x = x-1;}
+		if (x == 5) {printNum(5); x = x-1;}
+	}
+	print("test byte:");
+	byte y = 5b;
+	while(true){
+		if (y == 1b) {printNum(1); y = y - 1b;break;}
+		if (y == 2b) {printNum(2); y = y - 1b;}
+		if (y == 3b) {printNum(3); y = y - 1b;}
+		if (y == 4b) {printNum(4); y = y - 1b;}
+		if (y == 5b) {printNum(5); y = y - 1b;}
+	}
+}

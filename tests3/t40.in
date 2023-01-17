@@ -1,0 +1,107 @@
+void printBool(bool c){ if(c) print("true"); else print("false");}
+bool True(){return true;}
+bool False(){return false;}
+void main(){
+bool t = true;
+bool f = false;
+//simple not true
+bool b2 = not (True());
+printBool(b2);
+bool b3 = not (true);
+printBool(b3);
+bool b4 = not (t);
+printBool(b4);
+bool b5 = not (4<5);
+printBool(b5);
+bool b6 = not (4==4);
+printBool(b6);
+//simple false
+bool b7 = not (False());
+printBool(b7);
+bool b8 = not (false);
+printBool(b8);
+bool b9 = not (f);
+printBool(b9);
+bool b10 = not (4>5);
+printBool(b10);
+bool b11 = not (4!=4);
+printBool(b11);
+//mix it up
+bool b12 = not (True() and False());
+printBool(b12);
+bool b13 = not (True() and false);
+printBool(b13);
+bool b14 = not (True() and f);
+printBool(b14);
+bool b15 = not (True() and 4>5);
+printBool(b15);
+bool b16 = not (True() and 4!=4);
+printBool(b16);
+bool b17 = not (true and False());
+printBool(b17);
+bool b18 = not (true and false);
+printBool(b18);
+bool b19 = not (true and f);
+printBool(b19);
+bool b20 = not (true and 4>5);
+printBool(b20);
+bool b21 = not (true and 4!=4);
+printBool(b21);
+bool b22 = not (t and False());
+printBool(b22);
+bool b23 = not (t and false);
+printBool(b23);
+bool b24 = not (t and f);
+printBool(b24);
+bool b25 = not (t and 4>5);
+printBool(b25);
+bool b26 = not (t and 4!=4);
+printBool(b26);
+bool b27 = not (4<5 and False());
+printBool(b27);
+bool b28 = not (4<5 and false);
+printBool(b28);
+bool b29 = not (4<5 and f);
+printBool(b29);
+bool b30 = not (4<5 and 4>5);
+printBool(b30);
+bool b31 = not (4<5 and 4!=4);
+printBool(b31);
+bool b32 = not (4==4 and False());
+printBool(b32);
+bool b33 = not (4==4 and false);
+printBool(b33);
+bool b34 = not (4==4 and f);
+printBool(b34);
+bool b35 = not (4==4 and 4>5);
+printBool(b35);
+bool b36 = not (4==4 and 4!=4);
+printBool(b36);
+bool b37 = not (True() and False());
+printBool(b37);
+bool b38 = not (True() and false);
+printBool(b38);
+bool b39 = not (True() and f);
+printBool(b39);
+bool b40 = not (True() and 4>5);
+printBool(b40);
+bool b41 = not (True() and 4!=4);
+printBool(b41);
+bool b42 = not (true and False());
+printBool(b42);
+bool b43 = not (true and false);
+printBool(b43);
+bool b44 = not (true and f);
+printBool(b44);
+bool b45 = not (true and 4>5);
+printBool(b45);
+bool b46 = not (true and 4!=4);
+printBool(b46);
+bool b47 = not (t and False());
+printBool(b47);
+bool b48 = not (t and false);
+printBool(b48);
+bool b49 = not (t and f);
+printBool(b49);
+
+}

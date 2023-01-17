@@ -1,0 +1,183 @@
+int add(int a, int c) {
+    return a + c;
+}
+
+int multiply(int a, int c) {
+    return a * c;
+}
+
+bool iseven(int x) {
+    return (x / 2) * 2 == x;
+}
+
+int getmax(int a, int b1, int c) {
+    int max = a;
+    max = b1 if (b1 > max) else max;
+    max = c if (c > max) else max;
+    return max;
+}
+
+int getmin(int a, int b1, int c) {
+    int min = a;
+    min = b1 if (b1 < min) else min;
+    min = c if (c < min) else min;
+    return min;
+}
+
+bool isprime(int x) {
+    if (x < 2) {
+        return false;
+    }
+    int i = 2;
+    while (i <= x/2) {
+        if ((x / i)*i == x) {
+            return false;
+        }
+        i = i + 1;
+    }
+    return true;
+}
+
+void main() {
+    int x = 7;
+    int y = 10;
+    int z = 15;
+    int result = x if (iseven(x)) else multiply(y, z);
+    printi(result);
+
+    int a = 20;
+    int b1 = 25;
+    int c = 30;
+    result = getmax(a, b1, c);
+    print("The largest number is: ");
+    printi(result);
+
+    int d = 40;
+    int e = 45;
+    int f = 50;
+    int min;
+    int max;
+    min = d;
+    max = d;
+    min = e if (e < min) else min;
+    max = e if (e > max) else max;
+    min = f if (f < min) else min;
+    max = f if (f > max) else max;
+    result = add(min, max);
+    print("The sum of min and max is: ");
+    printi(result);
+    
+    int prime = 0;
+    int i = 2;
+    while (i <= 100) {
+        if (isprime(i)) {
+            prime = i if (i > prime) else prime;
+        }
+        i = i + 1;
+    }
+    print("The largest prime number is: ");
+    printi(prime);
+    
+    int g = 10;
+    int h = 15;
+    int j = 20;
+    int k = 25;
+    int l = 30;
+    int m = 35;
+    int n = 40;
+    int o = 45;
+    int p = 50;
+    int q = 55;
+    int r = 60;
+    int s = 65;
+    int t = 70;
+    int u = 75;
+    int v = 80;
+    int w = 85;
+    int x1 = 90;
+    y = 95;
+    z = 100;
+    int sum = 0;
+    int count = 0;
+    if (iseven(g)) {
+        sum = add(sum, g);
+        count = count + 1;
+    }
+    if (iseven(h)) {
+        sum = add(sum, h);
+        count = count + 1;
+    }
+    if (iseven(j)) {
+        sum = add(sum, j);
+        count = count + 1;
+    }
+    if (iseven(k)) {
+        sum = add(sum, k);
+        count = count + 1;
+    }
+    if (iseven(l)) {
+        sum = add(sum, l);
+        count = count + 1;
+    }
+    if (iseven(m)) {
+        sum = add(sum, m);
+        count = count + 1;
+    }
+    if (iseven(n)) {
+        sum = add(sum, n);
+        count = count + 1;
+    }
+    if (iseven(o)) {
+        sum = add(sum, o);
+        count = count + 1;
+    }
+    if (iseven(p)) {
+        sum = add(sum, p);
+        count = count + 1;
+    }
+    if (iseven(q)) {
+        sum = add(sum, q);
+        count = count + 1;
+    }
+    if (iseven(r)) {
+        sum = add(sum, r);
+        count = count + 1;
+    }
+    if (iseven(s)) {
+        sum = add(sum, s);
+        count = count + 1;
+    }
+    if (iseven(t)) {
+        sum = add(sum, t);
+        count = count + 1;
+    }
+    if (iseven(u)) {
+        sum = add(sum, u);
+        count = count + 1;
+    }
+    if (iseven(v)) {
+        sum = add(sum, v);
+        count = count + 1;
+    }
+    if (iseven(w)) {
+        sum = add(sum, w);
+        count = count + 1;
+    }
+    if (iseven(x1)) {
+        sum = add(sum, x1);
+        count = count + 1;
+    }
+    if (iseven(y)) {
+        sum = add(sum, y);
+        count = count + 1;
+    }
+    if (iseven(z)) {
+        sum = add(sum, z);
+        count = count + 1;
+    }
+    print("The sum of even numbers is: ");
+    printi(sum);
+    print("The count of even numbers is: ");
+    printi(count);
+    return;
+}

@@ -1,0 +1,70 @@
+void main() {
+	//------
+	if (not true) {
+		print("aaa");
+	}
+	else 
+		print("bbb");
+	//------		
+	if (not false) { 
+		print("ccc");
+	}
+	else 
+		print("ddd");
+	//------	
+	if ((not true)) {
+		print("aaa");
+	}
+	else 
+		print("bbb");
+	//------		
+	if ((not false)) { 
+		print("ccc");
+	}
+	else 
+		print("ddd");
+	//------------------------------------	
+	if ((not (true))) {
+		print("aaa");
+	}
+	else 
+		print("bbb");
+	//------
+	if ((not (false))) { 
+		print("ccc");
+	}
+	else 
+		print("ddd");
+	//------
+	bool a = not true;
+	if (a) { 
+		print("ccc");
+	}
+	else 
+		print("ddd");
+	//------
+	bool c = not false;
+	if (c) { 
+		print("ccc");
+	}
+	else 
+		print("ddd");
+	//------
+	bool d;
+	d = not true;
+	if (d) { 
+		print("ccc");
+	}
+	else 
+		print("ddd");
+	//------
+	
+	bool e;
+	e = not false;
+	if (e) { 
+		print("ccc");
+	}
+	else 
+		print("ddd");
+	//------
+}

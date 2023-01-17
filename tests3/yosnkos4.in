@@ -1,0 +1,10 @@
+
+
+
+void   main (     ){ int 
+Hloaa = 99*10; int AloHHA = (Hloaa+1)*2;
+
+	  printi(AloHHA);
+
+return;
+}

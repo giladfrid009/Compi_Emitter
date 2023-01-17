@@ -1,0 +1,46 @@
+bool isvalidinput(int num) {
+    return (num > 0) and (num < 100);
+}
+
+bool ismultipleof3(int num) {
+    int count = 0;
+    int num2 = num;
+    while(num2 > 0) {
+        num2 = num2 - 3;
+        count = count + 1;
+    }
+    return (num2 == 0);
+}
+
+bool ismultipleof5(int num1) {
+    int count = 0;
+    int num = num1;
+    while(num > 0) {
+        num = num - 5;
+        count = count + 1;
+    }
+    return (num == 0);
+}
+
+void main() {
+    int num = 50;
+    bool isvalid = isvalidinput(num);
+    int result = 0;
+    bool multiple3 = ismultipleof3(num);
+    bool multiple5 = ismultipleof5(num);
+
+    if (multiple3)
+    {
+        printi(num);
+        print("mult of 3");
+    }
+    if (multiple5)
+    {
+        printi(num);
+        print("mult of 5");
+    }
+
+    result = num * 2 if (isvalid and ismultipleof3(num) and ismultipleof5(num)) else 0;
+    printi(result);
+    return;
+}

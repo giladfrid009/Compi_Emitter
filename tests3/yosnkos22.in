@@ -1,0 +1,14 @@
+void bar(){
+	const bool ba = false;
+	int x = 55;
+	if(ba){
+		printi(2*x);
+	}
+	if(not ba){
+		printi(x);
+	}
+}
+
+void main(){
+	bar();
+}

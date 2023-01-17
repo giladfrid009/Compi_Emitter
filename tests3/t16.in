@@ -1,0 +1,25 @@
+bool f()
+{
+	print("This shouldn't print");
+	return true;
+}
+bool g()
+{
+	print("This should print");
+	return true;
+}
+
+void main()
+{
+	bool k=5>4 and 3>2;
+	if((k and g()) or f())
+	{
+		print("Success");
+		return;
+	}else{
+		print("Failure 1");
+		
+	}
+	print("Failure 2");
+
+}

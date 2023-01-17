@@ -1,0 +1,46 @@
+bool iseven(int x) {
+    return (x / 2) * 2 == x;
+}
+
+int getmax(int a, int b1, int c) {
+    int max = a;
+    max = b1 if (b1 > max) else max;
+    max = c if (c > max) else max;
+    return max;
+}
+
+bool checkprime(int num) {
+    if (num < 2) {
+        return false;
+    }
+    int i = 2;
+    while (i <= num/2) {
+        if ((num / i) * i == num) {
+            return false;
+        }
+        i = i + 1;
+    }
+    return true;
+}
+
+void main() {
+    int x = 7;
+    int y = 10;
+    int z = 15;
+    int sum = x + y + z;
+    bool isPrime = checkprime(sum);
+    int result = sum if (iseven(sum) and isPrime) else (y * z);
+    printi(result);
+
+    int a = 20;
+    int b1 = 25;
+    int c = 30;
+    int d = 35;
+    int max1 = getmax(a, b1, c);
+    int max2 = getmax(max1, d, x);
+    bool ismaxeven = iseven(max2);
+    print("The largest number is even: ");
+    if (ismaxeven) print("true");
+    else print("false");
+    return;
+}

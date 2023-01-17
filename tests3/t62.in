@@ -1,0 +1,20 @@
+//const check -> this one you should look on llvm and ensure that value 22 used in all places of main function
+
+void test(const int i) {
+    int j = i;
+    printi(i);
+    printi(j);
+}
+
+void main() {
+    const int i = 22;
+    int j = i;
+    int jj = i + 2;
+
+    if (i == 33) {
+        printi(i);
+    }
+
+    const int k = 22 + 1;
+    printi(k);
+}

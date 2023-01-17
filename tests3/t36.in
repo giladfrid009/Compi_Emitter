@@ -1,0 +1,39 @@
+void printBool(bool c){ if(c) print("true"); else print("false");}
+bool True(){return true;}
+bool False(){return false;}
+void main(){
+bool t = true;
+bool f = false;
+bool b146 = false or 4!=4;
+printBool(b146);
+bool b147 = f or False();
+printBool(b147);
+bool b148 = f or false;
+printBool(b148);
+bool b149 = f or f;
+printBool(b149);
+bool b150 = f or 4>5;
+printBool(b150);
+bool b151 = f or 4!=4;
+printBool(b151);
+bool b152 = 4>5 or False();
+printBool(b152);
+bool b153 = 4>5 or false;
+printBool(b153);
+bool b154 = 4>5 or f;
+printBool(b154);
+bool b155 = 4>5 or 4>5;
+printBool(b155);
+bool b156 = 4>5 or 4!=4;
+printBool(b156);
+bool b157 = 4!=4 or False();
+printBool(b157);
+bool b158 = 4!=4 or false;
+printBool(b158);
+bool b159 = 4!=4 or f;
+printBool(b159);
+bool b160 = 4!=4 or 4>5;
+printBool(b160);
+bool b161 = 4!=4 or 4!=4;
+printBool(b161);
+}

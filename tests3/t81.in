@@ -1,0 +1,65 @@
+//while loop test
+
+void main() {
+    int i = 0;
+    while(i < 10) {
+        i = i + 1;
+        if (i / 2 == 2) continue;
+
+        printi(i);
+
+        if (i == 8) break;
+    }
+    print("finish1");
+    i = 2;
+    while(true) {
+        if (i == 1) {
+            print("first break");
+            break;
+        }
+        print("between 1 and 2");
+        if (i == 2) {
+            print("second break");
+            break;
+        }
+        print("between 2 and 3");
+        if (i == 3) {
+            print("third break");
+            break;
+        }
+        print("after 3");
+    }
+    print("finish2");
+
+    i = 0;
+    while (i < 3)
+    {
+        print("starting main loop");
+        int j = i;
+        while (j < 11) {
+            j = j + 1;
+            if (j == 2 or j == 4 or j == 6 or j == 8) continue;
+            printi(j);
+            if (j == 9) break;
+        }
+
+        if (i == 2) {
+            print("breaking main loop");
+            break;
+        }
+
+        print("starting second loop");
+        j = i;
+        while (j < 11) {
+            j = j + 1;
+            if (j == 1 or j == 3 or j == 5 or j == 7) continue;
+            printi(j);
+            if (j == 8) break;
+        }
+        i = i + 1;
+    }
+    print("finish3");
+
+
+    return;
+}

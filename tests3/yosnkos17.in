@@ -1,0 +1,9 @@
+void foo(byte c){
+	printi(c+33);
+}
+
+void main(){
+	const byte b9 = 99b;
+	const int x = b9 + 1;
+	foo((byte)x);
+}

@@ -1,0 +1,10 @@
+void foo(int x, int y, int z){
+	if(x == 3 and y == 2 and z == 1)
+		print("ola mi amigos!");
+	else
+		print("paap");
+}
+
+void main(){
+	foo(3, 2, 1);
+}

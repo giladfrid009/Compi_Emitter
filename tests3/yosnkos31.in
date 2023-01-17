@@ -1,0 +1,9 @@
+int foo(int x){
+	return 2/x;
+}
+
+void main(){
+	printi(foo(3));
+	printi(foo(2));
+	printi(foo(0));
+}

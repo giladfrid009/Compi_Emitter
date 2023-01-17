@@ -1,0 +1,10 @@
+bool trutru(){
+	printi(9001);
+	return true;
+}
+
+void main(){
+	if(true or trutru()){
+		printi(9002);
+	}
+}

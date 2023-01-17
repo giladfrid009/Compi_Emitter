@@ -1,0 +1,7 @@
+void main(){
+	const byte baa = 3b;
+	printi(baa + 5b);
+
+	const int x = 2;
+	printi((byte) x + baa);
+}

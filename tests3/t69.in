@@ -1,0 +1,45 @@
+//if else if else
+
+void main() {
+    int i = 0;
+
+    if (i == 0) {
+        print("in if");
+    }
+    else if (i == 1) {
+        print("in else if");
+    }
+    else {
+        print("in else");
+    }
+
+    i = 1;
+    if (i == 0) {
+        print("in if");
+    }
+    else if (i == 1) {
+        print("in else if");
+    }
+    else {
+        print("in else");
+    }
+
+    if (i == 0) {
+        print("in if");
+    }
+    else if (i == 1) {
+        print("in else if");
+    }
+
+
+    i = 2;
+    if (i == 0) {
+        print("in if");
+    }
+    else if (i == 1) {
+        print("in else if");
+    }
+    else {
+        print("in else");
+    }
+}

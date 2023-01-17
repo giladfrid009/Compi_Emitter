@@ -1,0 +1,8 @@
+void foo(byte x){
+	printi(x);
+}
+void main(){
+	int z = 9;
+	const int i = z;
+	foo((byte) i);
+}

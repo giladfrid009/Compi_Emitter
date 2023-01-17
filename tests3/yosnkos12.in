@@ -1,0 +1,24 @@
+
+bool foo(){
+	printi(100);
+	return true;
+}
+
+bool other(int x){
+	printi(0);
+	return x == 5;
+}
+
+void main(){
+	bool justin = false or foo();
+	bool bebe = justin or other(3);
+	if(justin){
+		printi(5);
+		justin = false;
+		if(not justin){
+			printi(7);
+		}
+	} else {
+		printi(6);
+	}
+}

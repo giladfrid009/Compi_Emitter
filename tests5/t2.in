@@ -1,0 +1,48 @@
+int add(int a, int c) {
+    return a + c;
+}
+
+int multiply(int a, int c) {
+    return a * c;
+}
+
+bool iseven(int x) {
+    return (x / 2) * 2 == x;
+}
+
+int getmax(int a, int b1, int c) {
+    int max = a;
+    max = b1 if (b1 > max) else max;
+    max = c if (c > max) else max;
+    return max;
+}
+
+int getmin(int a, int b1, int c) {
+    int min = a;
+    min = b1 if (b1 < min) else min;
+    min = c if (c < min) else min;
+    return min;
+}
+
+void main() {
+    int x = 5;
+    int y = 10;
+    int z = 15;
+    int result = x if (iseven(x)) else multiply(y, z);
+    printi(result);
+
+    int a = 20;
+    int b1 = 25;
+    int c = 30;
+    result = getmax(a, b1, c);
+    print("The largest number is: ");
+    printi(result);
+
+    int d = 40;
+    int e = 45;
+    int f = 50;
+    result = add(getmin(d, e, f), getmax(d, e, f));
+    print("The sum of min and max is: ");
+    printi(result);
+    return;
+}
