@@ -34,8 +34,8 @@ fi
 for inFile in ${FOLDER}/*.in
 do        
     echo -n "running test ${inFile%.in} ... "
-    ./hw5 < $inFile | lli > ${inFile%.in}.out 2> /dev/null 
-    diff ${inFile%.in}.exp ${inFile%.in}.out &> /dev/null
+    ./hw5 < $inFile | lli > ${inFile%.in}.res 2> /dev/null 
+    diff ${inFile%.in}.res ${inFile%.in}.out &> /dev/null
 
     retval=$?
     if [ $retval -ne 0 ];
