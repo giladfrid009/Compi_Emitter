@@ -120,6 +120,11 @@ list<patch_record> code_buffer::merge(const list<patch_record>& first, const lis
     return new_list;
 }
 
+void code_buffer::comment(std::string line)
+{
+    emit(";%s", line);
+}
+
 void code_buffer::emit_global(const std::string& line)
 {
     global_defs.push_back(line);
