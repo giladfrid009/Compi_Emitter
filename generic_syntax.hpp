@@ -6,7 +6,6 @@
 #include <list>
 #include <vector>
 #include <string>
-#include <type_traits>
 
 template<typename element_type> class list_syntax final: public syntax_base
 {
