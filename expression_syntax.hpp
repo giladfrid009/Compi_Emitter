@@ -106,16 +106,15 @@ template<> inline void literal_expression<bool>::emit_code()
 
     start_list.push_back(patch_record(line, label_index::First));
 
+    line = codebuf.emit("br label @");
+    end_label = codebuf.emit_label();
+
     if (value == true)
     {
-        size_t line = codebuf.emit("br label @");
-
         true_list.push_back(patch_record(line, label_index::First));
     }
     else
     {
-        size_t line = codebuf.emit("br label @");
-
         false_list.push_back(patch_record(line, label_index::First));
     }
 }

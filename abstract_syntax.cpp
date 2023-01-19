@@ -70,26 +70,26 @@ string syntax_base::get_bool_reg(const expression_syntax* bool_expression)
     string true_label = ir_builder::fresh_label();
     string false_label = ir_builder::fresh_label();
     string eval_label = ir_builder::fresh_label();
-    string end_label = ir_builder::fresh_label();
+    string skip_label = ir_builder::fresh_label();
 
     codebuf.backpatch(bool_expression->true_list, true_label);
     codebuf.backpatch(bool_expression->false_list, false_label);
 
-    codebuf.emit("br label %%%s", true_label); //todo: fix later to jump to end_label defined above.
+    codebuf.emit("br label %%%s", skip_label);
     codebuf.emit("%s:", true_label);
     codebuf.emit("br label %%%s", eval_label);
     codebuf.emit("%s:", false_label);
     codebuf.emit("br label %%%s", eval_label);
     codebuf.emit("%s:", eval_label);
     codebuf.emit("%s = phi i32 [ 1 , %%%s ] , [ 0 , %%%s ]", bool_reg, true_label, false_label);
-    codebuf.emit("br label %%%s", end_label); //todo: fix later to jump to bool_expression->end_label.
-    codebuf.emit("%s:", end_label);
+    codebuf.emit("br label %%%s", bool_expression->end_label);
+    codebuf.emit("%s:", skip_label);
 
     return bool_reg;
 }
 
 expression_syntax::expression_syntax(type_kind return_type):
-    return_type(return_type), place(ir_builder::fresh_register()), true_list(), false_list(), start_label(), start_list()
+    return_type(return_type), place(ir_builder::fresh_register()), true_list(), false_list(), start_label(), start_list(), end_label()
 {
 
 }

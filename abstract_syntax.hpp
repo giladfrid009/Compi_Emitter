@@ -50,6 +50,7 @@ class expression_syntax: public syntax_base
     std::list<patch_record> false_list;
     std::string start_label;
     std::list<patch_record> start_list;
+    std::string end_label;
 
     expression_syntax(type_kind return_type);
     virtual ~expression_syntax() = default;

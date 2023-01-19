@@ -84,6 +84,7 @@ void not_expression::emit_code()
     start_label = expression->start_label;
     false_list = expression->true_list;
     true_list = expression->false_list;
+    end_label = expression->end_label;
 }
 
 logical_expression::logical_expression(expression_syntax* left, syntax_token* oper_token, expression_syntax* right):
@@ -122,7 +123,8 @@ void logical_expression::emit_code()
 {
     start_list = left->start_list;
     start_label = left->start_label;
-
+    end_label = right->end_label;
+    
     codebuf.backpatch(right->start_list, right->start_label);
 
     if (oper == operator_kind::Or)
@@ -253,7 +255,7 @@ void relational_expression::emit_code()
 {
     start_list = left->start_list;
     start_label = left->start_label;
-
+    
     codebuf.backpatch(right->start_list, right->start_label);
 
     string res_reg = ir_builder::fresh_register();
@@ -264,6 +266,7 @@ void relational_expression::emit_code()
     
     codebuf.emit("%s = icmp %s i32 %s , %s", res_reg, cmp_kind, left->place, right->place);
     size_t line = codebuf.emit("br i1 %s , label @ , label @", res_reg);
+    end_label = codebuf.emit_label();
 
     true_list.push_back(patch_record(line, label_index::First));
     false_list.push_back(patch_record(line, label_index::Second));
@@ -305,7 +308,7 @@ void conditional_expression::emit_code()
     string control_label = ir_builder::fresh_label();
     string true_label = ir_builder::fresh_label();
     string false_label = ir_builder::fresh_label();
-    string end_label = ir_builder::fresh_label();
+    string eval_label = ir_builder::fresh_label();
 
     codebuf.backpatch(true_value->start_list, control_label);
     codebuf.backpatch(condition->start_list, true_label);
@@ -319,15 +322,19 @@ void conditional_expression::emit_code()
     start_label = codebuf.emit_label();
     codebuf.emit("br label %%%s", condition->start_label);
     codebuf.emit("%s:", true_label);
-    codebuf.emit("br label %%%s", end_label);
+    codebuf.emit("br label %%%s", eval_label);
     codebuf.emit("%s:", false_label);
-    codebuf.emit("br label %%%s", end_label);
-    codebuf.emit("%s:", end_label);
+    codebuf.emit("br label %%%s", eval_label);
+    codebuf.emit("%s:", eval_label);
 
     start_list.push_back(patch_record(line, label_index::First));
 
     if (return_type == type_kind::Bool)
     {
+        end_label = ir_builder::fresh_label();
+        codebuf.emit("br label %%%s", end_label);
+        codebuf.emit("%s:", end_label);
+
         true_list = codebuf.merge(true_value->true_list, false_value->true_list);
         false_list = codebuf.merge(true_value->false_list, false_value->false_list);
     }
@@ -413,6 +420,7 @@ void identifier_expression::emit_code()
 
         codebuf.emit("%s = trunc i32 %s to i1", bool_reg, this->place);
         size_t line = codebuf.emit("br i1 %s , label @ , label @", bool_reg);
+        end_label = codebuf.emit_label();
 
         true_list.push_back(patch_record(line, label_index::First));
         false_list.push_back(patch_record(line, label_index::Second));
@@ -575,6 +583,7 @@ void invocation_expression::emit_code()
 
         codebuf.emit("%s = trunc i32 %s to i1", bool_reg, this->place);
         size_t line = codebuf.emit("br i1 %s , label @ , label @", bool_reg);
+        end_label = codebuf.emit_label();
 
         true_list.push_back(patch_record(line, label_index::First));
         false_list.push_back(patch_record(line, label_index::Second));

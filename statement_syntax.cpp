@@ -215,6 +215,8 @@ expression_statement::~expression_statement()
 void expression_statement::emit_code()
 {
     codebuf.backpatch(expression->start_list, expression->start_label);
+    codebuf.backpatch(expression->true_list, expression->end_label);
+    codebuf.backpatch(expression->false_list, expression->end_label);
 
     codebuf.new_line();
 }
