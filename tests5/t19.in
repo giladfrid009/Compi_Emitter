@@ -1,0 +1,11 @@
+int factorial(int n) {
+    return (1 if (n == 1) else n * factorial(n - 1));
+}
+
+void main() {
+    int num;
+    print("Calculating factorial of 7:");
+    num = 7;
+    int result = factorial(num);
+    printi(result);
+}

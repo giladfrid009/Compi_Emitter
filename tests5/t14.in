@@ -1,0 +1,26 @@
+void main() {
+    int i = 1;
+    int j = 1;
+    int k = 1;
+    int l = 1;
+    byte x = 10b;
+    bool flag = true;
+    while (flag) {
+        i = i + 1;
+        j = j + 2;
+        k = k + 3;
+        l = l + 4;
+        printi(i);
+        printi(j);
+        printi(k);
+        printi(l);
+        print(" ");
+        x = (byte) (x + 1);
+        if (x > 15b) {
+            flag = not flag;
+        }
+    }
+    print("Loop ended");
+    print("i, j, k, l values are correct" if ( i == 7 and j == 13 and k == 19 and l == 25) else "i, j, k, l values are incorrect");
+    print("x value is correct" if (x == 16b) else "x value is incorrect");
+}

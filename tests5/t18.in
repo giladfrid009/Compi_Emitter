@@ -1,0 +1,22 @@
+void main() {
+    int size = 10b;
+    int currentRow = 1b;
+    int currentCol = 1b;
+    int direction = 1b;
+    int counter = 1b;
+    while (counter <= size * size) {
+        printi(counter);
+        print(" ");
+        if (currentCol == size) {
+            print("newline");
+        }
+        currentCol = currentCol + direction;
+        if (currentCol == size + 1 or currentCol == 0) {
+            direction = 0 - direction;
+            currentRow = currentRow + 1;
+        }
+        counter = (byte) (counter + 1);
+    }
+    print("newline");
+    print("Spiral print completed");
+}
