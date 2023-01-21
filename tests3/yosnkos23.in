@@ -1,7 +1,0 @@
-void main(){
-	byte baa = 3b;
-	printi(baa + 5b);
-
-	int x = 2;
-	printi((byte) x + baa);
-}

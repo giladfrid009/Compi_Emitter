@@ -1,7 +1,0 @@
-bool foo(){
-	int x;
-}
-void main(){
-	foo();
-	print("alive");
-}

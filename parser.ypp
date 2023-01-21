@@ -84,8 +84,8 @@ void print_current_scope();
 %right LPAREN
 %left RPAREN
 %right <token> ASSIGN
-%nonassoc <token> IF
 %nonassoc <token> ELSE
+%nonassoc <token> IF
 %left <token> OR
 %left <token> AND
 %left <token> EQOP
@@ -236,6 +236,8 @@ int main()
     add_builtin_functions();
 
 	int res = yyparse();
+
+    symtab.close_scope();
 
     codebuf.print_globals();
     codebuf.print();

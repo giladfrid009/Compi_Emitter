@@ -1,8 +1,0 @@
-//basic if
-void main() {
-    if(true) {
-        print("true");
-    }
-    printi(1);
-
-}

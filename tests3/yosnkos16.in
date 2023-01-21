@@ -1,5 +1,0 @@
-void main(){
-	int x = 3;
-	int y = x;
-	printi(y);
-}

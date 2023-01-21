@@ -1,8 +1,0 @@
-void foo(byte x){
-	printi(x);
-}
-void main(){
-	int z = 9;
-	int i = z;
-	foo((byte) i);
-}
