@@ -7,11 +7,11 @@ string types::to_string(type_kind type)
 {
     switch (type)
     {
-        case (type_kind::Bool): return "BOOL";
-        case (type_kind::Int): return "INT";
-        case (type_kind::Byte): return "BYTE";
-        case (type_kind::String): return "STRING";
-        case (type_kind::Void): return "VOID";
+        case (type_kind::Bool): return "bool";
+        case (type_kind::Int): return "int";
+        case (type_kind::Byte): return "byte";
+        case (type_kind::String): return "string";
+        case (type_kind::Void): return "void";
 
         default: throw std::invalid_argument("unknown type");
     }
