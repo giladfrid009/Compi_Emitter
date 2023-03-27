@@ -48,11 +48,11 @@ void cast_expression::emit_code()
 
     if (value->return_type == type_kind::Int && destination_type->kind == type_kind::Byte)
     {
-        codebuf.emit("%s = and i32 255 , %s", this->reg, value->reg);
+        codebuf.emit("%s = and i32 255, %s", this->reg, value->reg);
     }
     else
     {
-        codebuf.emit("%s = add i32 0 , %s", this->reg, value->reg);
+        codebuf.emit("%s = add i32 0, %s", this->reg, value->reg);
     }
 }
 
@@ -86,7 +86,7 @@ void not_expression::emit_code()
 {
     expression->emit_code();
 
-    codebuf.emit("%s = select i1 %s , i1 0 , i1 1", this->reg, expression->reg);
+    codebuf.emit("%s = select i1 %s, i1 0, i1 1", this->reg, expression->reg);
 }
 
 logical_expression::logical_expression(expression_syntax* left, syntax_token* oper_token, expression_syntax* right):
@@ -134,21 +134,21 @@ void logical_expression::emit_code()
     
     if (oper == operator_kind::Or)
     {
-        codebuf.emit("br i1 %s , label %%%s , label %%%s", left->reg, assign_label, false_label);
+        codebuf.emit("br i1 %s, label %%%s, label %%%s", left->reg, assign_label, false_label);
         codebuf.emit("%s:", false_label);
         right->emit_code();
         codebuf.emit("br label %%%s", assign_label);
         codebuf.emit("%s:", assign_label);
-        codebuf.emit("%s = select i1 %s , i1 1 , i1 %s", this->reg, left->reg, right->reg);
+        codebuf.emit("%s = select i1 %s, i1 1, i1 %s", this->reg, left->reg, right->reg);
     }
     else if (oper == operator_kind::And)
     {
-        codebuf.emit("br i1 %s , label %%%s , label %%%s", left->reg, true_label, assign_label);
+        codebuf.emit("br i1 %s, label %%%s, label %%%s", left->reg, true_label, assign_label);
         codebuf.emit("%s:", true_label);
         right->emit_code();
         codebuf.emit("br label %%%s", assign_label);
         codebuf.emit("%s:", assign_label);
-        codebuf.emit("%s = select i1 %s , i1 %s , i1 0", this->reg, left->reg, right->reg);
+        codebuf.emit("%s = select i1 %s, i1 %s, i1 0", this->reg, left->reg, right->reg);
     }
 }
 
@@ -200,8 +200,8 @@ void arithmetic_expression::emit_code()
         string true_label = ir_builder::fresh_label();
         string false_label = ir_builder::fresh_label();
 
-        codebuf.emit("%s = icmp eq i32 0 , %s", cmp_res, right->reg);
-        codebuf.emit("br i1 %s , label %%%s , label %%%s", cmp_res, true_label, false_label);
+        codebuf.emit("%s = icmp eq i32 0, %s", cmp_res, right->reg);
+        codebuf.emit("br i1 %s, label %%%s, label %%%s", cmp_res, true_label, false_label);
         codebuf.emit("%s:", true_label);
         codebuf.emit("call void @error_zero_div()");
         codebuf.emit("br label %%%s", false_label);
@@ -214,12 +214,12 @@ void arithmetic_expression::emit_code()
     {
         string res_reg = ir_builder::fresh_register();
 
-        codebuf.emit("%s = %s i32 %s , %s", res_reg, inst, left->reg, right->reg);
-        codebuf.emit("%s = and i32 255 , %s", this->reg, res_reg);
+        codebuf.emit("%s = %s i32 %s, %s", res_reg, inst, left->reg, right->reg);
+        codebuf.emit("%s = and i32 255, %s", this->reg, res_reg);
     }
     else if (return_type == type_kind::Int)
     {
-        codebuf.emit("%s = %s i32 %s , %s", this->reg, inst, left->reg, right->reg);
+        codebuf.emit("%s = %s i32 %s, %s", this->reg, inst, left->reg, right->reg);
     }
 }
 
@@ -271,7 +271,7 @@ void relational_expression::emit_code()
 
     string cmp_kind = ir_builder::get_comparison_kind(oper, operands_type == type_kind::Int);
     
-    codebuf.emit("%s = icmp %s i32 %s , %s", this->reg, cmp_kind, left->reg, right->reg);
+    codebuf.emit("%s = icmp %s i32 %s, %s", this->reg, cmp_kind, left->reg, right->reg);
 }
 
 conditional_expression::conditional_expression(expression_syntax* true_value, syntax_token* if_token, expression_syntax* condition, syntax_token* else_token, expression_syntax* false_value):
@@ -318,7 +318,7 @@ void conditional_expression::emit_code()
 
     condition->emit_code();
 
-    codebuf.emit("br i1 %s , label %%%s, label %%%s", condition->reg, true_label, false_label);
+    codebuf.emit("br i1 %s, label %%%s, label %%%s", condition->reg, true_label, false_label);
 
     codebuf.emit("%s:", true_label);
 
@@ -334,7 +334,7 @@ void conditional_expression::emit_code()
 
     codebuf.emit("%s:", assign_label);
 
-    codebuf.emit("%s = select i1 %s , %s %s , %s %s", this->reg, condition->reg, ret_type, true_value->reg, ret_type, false_value->reg);
+    codebuf.emit("%s = select i1 %s, %s %s, %s %s", this->reg, condition->reg, ret_type, true_value->reg, ret_type, false_value->reg);
 }
 
 identifier_expression::identifier_expression(syntax_token* identifier_token):
@@ -404,11 +404,11 @@ void identifier_expression::emit_code()
 
     if (kind == symbol_kind::Parameter)
     {
-        codebuf.emit("%s = add %s 0 , %s", this->reg, res_type, ptr_reg);
+        codebuf.emit("%s = add %s 0, %s", this->reg, res_type, ptr_reg);
     }
     else if (kind == symbol_kind::Variable)
     {   
-        codebuf.emit("%s = load %s , %s* %s", this->reg, res_type, res_type, ptr_reg);
+        codebuf.emit("%s = load %s, %s* %s", this->reg, res_type, res_type, ptr_reg);
     }
 }
 

@@ -60,7 +60,7 @@ void if_statement::emit_code()
 
     if (else_clause == nullptr)
     {
-        codebuf.emit("br i1 %s , label %%%s, label %%%s", condition->reg, true_label, end_label);
+        codebuf.emit("br i1 %s, label %%%s, label %%%s", condition->reg, true_label, end_label);
 
         codebuf.increase_indent();
         codebuf.emit("%s:", true_label);
@@ -75,7 +75,7 @@ void if_statement::emit_code()
     }
     else
     {
-        codebuf.emit("br i1 %s , label %%%s, label %%%s", condition->reg, true_label, false_label);
+        codebuf.emit("br i1 %s, label %%%s, label %%%s", condition->reg, true_label, false_label);
         
         codebuf.increase_indent();
         codebuf.emit("%s:", true_label);
@@ -95,8 +95,6 @@ void if_statement::emit_code()
         break_list =  codebuf.merge(body->break_list, else_clause->break_list);
         continue_list = codebuf.merge(body->continue_list, else_clause->continue_list);
     }
-
-    codebuf.new_line();
 }
 
 while_statement::while_statement(syntax_token* while_token, expression_syntax* condition, statement_syntax* body):
@@ -135,7 +133,7 @@ void while_statement::emit_code()
     codebuf.emit("br label %%%s", cond_label);
     codebuf.emit("%s:", cond_label);
     condition->emit_code();
-    codebuf.emit("br i1 %s , label %%%s, label %%%s", condition->reg, body_label, end_label);
+    codebuf.emit("br i1 %s, label %%%s, label %%%s", condition->reg, body_label, end_label);
 
     codebuf.increase_indent();
     codebuf.emit("%s:", body_label);
@@ -144,7 +142,6 @@ void while_statement::emit_code()
     codebuf.decrease_indent();
 
     codebuf.emit("%s:", end_label);
-    codebuf.new_line();
 
     codebuf.backpatch(body->break_list, end_label);
     codebuf.backpatch(body->continue_list, cond_label);
@@ -208,8 +205,6 @@ void branch_statement::emit_code()
     {
         break_list.push_back(patch_record(line, label_index::First));
     }
-
-    codebuf.new_line();
 }
 
 return_statement::return_statement(syntax_token* return_token): return_token(return_token), value(nullptr)
@@ -268,8 +263,6 @@ void return_statement::emit_code()
 
         codebuf.emit("ret %s %s", ir_builder::get_type(value->return_type), value->reg);
     }
-
-    codebuf.new_line();
 }
 
 expression_statement::expression_statement(expression_syntax* expression): expression(expression)
@@ -292,8 +285,6 @@ void expression_statement::semantic_analysis() const
 void expression_statement::emit_code()
 {
     expression->emit_code();
-
-    codebuf.new_line();
 }
 
 assignment_statement::assignment_statement(syntax_token* identifier_token, syntax_token* assign_token, expression_syntax* value):
@@ -345,9 +336,7 @@ void assignment_statement::emit_code()
 
     value->emit_code();
 
-    codebuf.emit("store %s %s , %s* %s", res_type, value->reg, res_type, ptr_reg);
-
-    codebuf.new_line();
+    codebuf.emit("store %s %s, %s* %s", res_type, value->reg, res_type, ptr_reg);
 }
 
 declaration_statement::declaration_statement(type_syntax* type, syntax_token* identifier_token):
@@ -424,14 +413,12 @@ void declaration_statement::emit_code()
 
     if (value != nullptr)
     {
-        codebuf.emit("store %s %s , %s* %s", res_type, value->reg, res_type, ptr_reg);
+        codebuf.emit("store %s %s, %s* %s", res_type, value->reg, res_type, ptr_reg);
     }
     else
     {
-        codebuf.emit("store %s 0 , %s* %s", res_type, res_type, ptr_reg);
+        codebuf.emit("store %s 0, %s* %s", res_type, res_type, ptr_reg);
     }
-
-    codebuf.new_line();
 }
 
 block_statement::block_statement(list_syntax<statement_syntax>* statements): statements(statements)
@@ -453,9 +440,7 @@ void block_statement::semantic_analysis() const
 
 void block_statement::emit_code()
 {
-    codebuf.increase_indent();
     statements->emit_code();
-    codebuf.decrease_indent();
 
     for (auto statement : *statements)
     {

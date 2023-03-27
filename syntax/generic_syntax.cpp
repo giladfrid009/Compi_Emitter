@@ -141,7 +141,7 @@ void function_declaration_syntax::emit_code()
         }
     }
 
-    instr << ") {";
+    instr << ")\n{";
 
     codebuf.emit(instr.str());
 

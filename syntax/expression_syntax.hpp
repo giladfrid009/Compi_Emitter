@@ -67,7 +67,7 @@ template<typename literal_type> class literal_expression final: public expressio
 
         std::string ret_type = ir_builder::get_type(return_type);
 
-        codebuf.emit("%s = add %s 0 , %d", this->reg, ret_type, value);
+        codebuf.emit("%s = add %s 0, %d", this->reg, ret_type, value);
     }
 };
 
@@ -107,11 +107,11 @@ template<> inline void literal_expression<std::string>::emit_code()
 
     std::string arr_name = ir_builder::fresh_global();
     std::string arr_content = value.substr(1, value.length() - 2);
-    std::string arr_type = ir_builder::format_string("[%d x i8]", arr_content.length() + 1);
+    std::string arr_type = ir_builder::format_string("[%dxi8]", arr_content.length() + 1);
 
     codebuf.emit_global(ir_builder::format_string("%s = constant %s c\"%s\\00\"", arr_name, arr_type, arr_content));
 
-    codebuf.emit("%s = getelementptr %s , %s* %s , i32 0 , i32 0", reg, arr_type, arr_type, arr_name);
+    codebuf.emit("%s = getelementptr %s, %s* %s, i32 0, i32 0", reg, arr_type, arr_type, arr_name);
 }
 
 class cast_expression final: public expression_syntax
