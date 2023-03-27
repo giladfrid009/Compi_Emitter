@@ -22,6 +22,7 @@ template<typename literal_type> class literal_expression final: public expressio
     literal_expression(syntax_token* value_token):
         expression_syntax(get_return_type()), value_token(value_token), value(get_literal_value(value_token))
     {
+        semantic_analysis();
     }
 
     literal_expression(const literal_expression& other) = delete;
@@ -34,8 +35,7 @@ template<typename literal_type> class literal_expression final: public expressio
         if (std::is_same<literal_type, int>::value) return type_kind::Int;
         if (std::is_same<literal_type, bool>::value) return type_kind::Bool;
         if (std::is_same<literal_type, std::string>::value) return type_kind::String;
-
-        throw std::runtime_error("invalid literal_type");
+        return type_kind::Invalid;
     }
 
     inline literal_type get_literal_value(syntax_token* value_token) const
@@ -51,6 +51,14 @@ template<typename literal_type> class literal_expression final: public expressio
         }
 
         delete value_token;
+    }
+
+    void semantic_analysis() const override
+    {
+        if (types::is_special(return_type) && return_type != type_kind::String)
+        {
+            throw std::runtime_error("invalid literal_type");
+        }
     }
 
     void emit_code() override
@@ -119,6 +127,7 @@ class cast_expression final: public expression_syntax
     cast_expression(const cast_expression& other) = delete;
     cast_expression& operator=(const cast_expression& other) = delete;
 
+    void semantic_analysis() const override;
     void emit_code() override;
 };
 
@@ -135,6 +144,7 @@ class not_expression final: public expression_syntax
     not_expression(const not_expression& other) = delete;
     not_expression& operator=(const not_expression& other) = delete;
 
+    void semantic_analysis() const override;
     void emit_code() override;
 };
 
@@ -157,6 +167,7 @@ class logical_expression final: public expression_syntax
 
     static operator_kind parse_operator(std::string str);
 
+    void semantic_analysis() const override;
     void emit_code() override;
 };
 
@@ -177,6 +188,7 @@ class arithmetic_expression final: public expression_syntax
 
     static arithmetic_operator parse_operator(std::string str);
 
+    void semantic_analysis() const override;
     void emit_code() override;
 };
 
@@ -195,6 +207,7 @@ class relational_expression final: public expression_syntax
     relational_expression(const relational_expression& other) = delete;
     relational_expression& operator=(const relational_expression& other) = delete;
 
+    void semantic_analysis() const override;
     void emit_code() override;
 
     protected:
@@ -218,6 +231,7 @@ class conditional_expression final: public expression_syntax
     conditional_expression(const conditional_expression& other) = delete;
     conditional_expression& operator=(const conditional_expression& other) = delete;
 
+    void semantic_analysis() const override;
     void emit_code() override;
 
     protected:
@@ -246,6 +260,7 @@ class identifier_expression final: public expression_syntax
     identifier_expression(const identifier_expression& other) = delete;
     identifier_expression& operator=(const identifier_expression& other) = delete;
 
+    void semantic_analysis() const override;
     void emit_code() override;
 
     protected:
@@ -269,6 +284,7 @@ class invocation_expression final: public expression_syntax
     invocation_expression(const invocation_expression& other) = delete;
     invocation_expression& operator=(const invocation_expression& other) = delete;
 
+    void semantic_analysis() const override;
     void emit_code() override;
 
     protected:

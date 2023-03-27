@@ -80,6 +80,10 @@ template<typename element_type> class list_syntax final: public syntax_base
         }
     }
 
+    void semantic_analysis() const override
+    {
+    }
+
     void emit_code() override
     {
         for (element_type* element : elements)
@@ -105,6 +109,7 @@ class type_syntax final: public syntax_base
     bool is_numeric() const;
     bool is_special() const;
 
+    void semantic_analysis() const override;
     void emit_code() override;
 };
 
@@ -122,6 +127,7 @@ class parameter_syntax final: public syntax_base
     parameter_syntax(const parameter_syntax& other) = delete;
     parameter_syntax& operator=(const parameter_syntax& other) = delete;
 
+    void semantic_analysis() const override;
     void emit_code() override;
 };
 
@@ -141,6 +147,7 @@ class function_declaration_syntax final: public syntax_base
     function_declaration_syntax(const function_declaration_syntax& other) = delete;
     function_declaration_syntax& operator=(const function_declaration_syntax& other) = delete;
 
+    void semantic_analysis() const override;
     void emit_code() override;
 };
 
@@ -156,6 +163,7 @@ class root_syntax final: public syntax_base
     root_syntax(const root_syntax& other) = delete;
     root_syntax& operator=(const root_syntax& other) = delete;
 
+    void semantic_analysis() const override;
     void emit_code() override;
 };
 

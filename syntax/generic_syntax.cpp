@@ -24,6 +24,10 @@ bool type_syntax::is_special() const
     return types::is_special(kind);
 }
 
+void type_syntax::semantic_analysis() const
+{
+}
+
 void type_syntax::emit_code()
 {
 }
@@ -64,6 +68,10 @@ parameter_syntax::~parameter_syntax()
     delete identifier_token;
 }
 
+void parameter_syntax::semantic_analysis() const
+{
+}
+
 void parameter_syntax::emit_code()
 {
     
@@ -71,6 +79,25 @@ void parameter_syntax::emit_code()
 
 function_declaration_syntax::function_declaration_syntax(type_syntax* return_type, syntax_token* identifier_token, list_syntax<parameter_syntax>* parameters, list_syntax<statement_syntax>* body):
     return_type(return_type), identifier_token(identifier_token), identifier(identifier_token->text), parameters(parameters), body(body)
+{
+    semantic_analysis();
+
+    add_child(return_type);
+    add_child(parameters);
+    add_child(body);
+}
+
+function_declaration_syntax::~function_declaration_syntax()
+{
+    for (syntax_base* child : get_children())
+    {
+        delete child;
+    }
+
+    delete identifier_token;
+}
+
+void function_declaration_syntax::semantic_analysis() const
 {
     const function_symbol* function = static_cast<const function_symbol*>(symtab.get_symbol(identifier, symbol_kind::Function));
 
@@ -92,20 +119,6 @@ function_declaration_syntax::function_declaration_syntax(type_syntax* return_typ
             throw std::logic_error("function parameter type mismatch.");
         }
     }
-
-    add_child(return_type);
-    add_child(parameters);
-    add_child(body);
-}
-
-function_declaration_syntax::~function_declaration_syntax()
-{
-    for (syntax_base* child : get_children())
-    {
-        delete child;
-    }
-
-    delete identifier_token;
 }
 
 void function_declaration_syntax::emit_code()
@@ -157,6 +170,21 @@ void function_declaration_syntax::emit_code()
 
 root_syntax::root_syntax(list_syntax<function_declaration_syntax>* functions): functions(functions)
 {
+    semantic_analysis();
+
+    add_child(functions);
+}
+
+root_syntax::~root_syntax()
+{
+    for (syntax_base* child : get_children())
+    {
+        delete child;
+    }
+}
+
+void root_syntax::semantic_analysis() const
+{
     const function_symbol* main = static_cast<const function_symbol*>(symtab.get_symbol("main", symbol_kind::Function));
 
     if (main == nullptr)
@@ -167,16 +195,6 @@ root_syntax::root_syntax(list_syntax<function_declaration_syntax>* functions): f
     if (main->type != type_kind::Void || main->parameter_types.size() != 0)
     {
         output::error_main_missing();
-    }
-
-    add_child(functions);
-}
-
-root_syntax::~root_syntax()
-{
-    for (syntax_base* child : get_children())
-    {
-        delete child;
     }
 }
 

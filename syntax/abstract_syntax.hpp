@@ -28,6 +28,7 @@ class syntax_base
     const syntax_base* get_parent() const;
     const std::list<syntax_base*>& get_children() const;
 
+    virtual void semantic_analysis() const = 0;
     virtual void emit_code() = 0;
 
     protected:

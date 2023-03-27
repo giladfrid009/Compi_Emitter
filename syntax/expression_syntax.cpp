@@ -20,10 +20,7 @@ static code_buffer& codebuf = code_buffer::instance();
 cast_expression::cast_expression(type_syntax* destination_type, expression_syntax* value):
     expression_syntax(destination_type->kind), destination_type(destination_type), value(value)
 {
-    if (value->is_numeric() == false || destination_type->is_numeric() == false)
-    {
-        output::error_mismatch(destination_type->type_token->position);
-    }
+    semantic_analysis();
 
     add_child(destination_type);
     add_child(value);
@@ -34,6 +31,14 @@ cast_expression::~cast_expression()
     for (syntax_base* child : get_children())
     {
         delete child;
+    }
+}
+
+void cast_expression::semantic_analysis() const
+{
+    if (value->is_numeric() == false || destination_type->is_numeric() == false)
+    {
+        output::error_mismatch(destination_type->type_token->position);
     }
 }
 
@@ -54,10 +59,7 @@ void cast_expression::emit_code()
 not_expression::not_expression(syntax_token* not_token, expression_syntax* expression):
     expression_syntax(type_kind::Bool), not_token(not_token), expression(expression)
 {
-    if (expression->return_type != type_kind::Bool)
-    {
-        output::error_mismatch(not_token->position);
-    }
+    semantic_analysis();
 
     add_child(expression);
 }
@@ -72,6 +74,14 @@ not_expression::~not_expression()
     delete not_token;
 }
 
+void not_expression::semantic_analysis() const
+{
+    if (expression->return_type != type_kind::Bool)
+    {
+        output::error_mismatch(not_token->position);
+    }
+}
+
 void not_expression::emit_code()
 {
     expression->emit_code();
@@ -82,10 +92,7 @@ void not_expression::emit_code()
 logical_expression::logical_expression(expression_syntax* left, syntax_token* oper_token, expression_syntax* right):
     expression_syntax(type_kind::Bool), left(left), oper_token(oper_token), right(right), oper(parse_operator(oper_token->text))
 {
-    if (left->return_type != type_kind::Bool || right->return_type != type_kind::Bool)
-    {
-        output::error_mismatch(oper_token->position);
-    }
+    semantic_analysis();
 
     add_child(left);
     add_child(right);
@@ -107,6 +114,14 @@ logical_expression::operator_kind logical_expression::parse_operator(string str)
     if (str == "or") return operator_kind::Or;
 
     throw std::invalid_argument("unknown oper");
+}
+
+void logical_expression::semantic_analysis() const
+{
+    if (left->return_type != type_kind::Bool || right->return_type != type_kind::Bool)
+    {
+        output::error_mismatch(oper_token->position);
+    }
 }
 
 void logical_expression::emit_code()
@@ -140,10 +155,7 @@ void logical_expression::emit_code()
 arithmetic_expression::arithmetic_expression(expression_syntax* left, syntax_token* oper_token, expression_syntax* right):
     expression_syntax(types::cast_up(left->return_type, right->return_type)), left(left), oper_token(oper_token), right(right), oper(parse_operator(oper_token->text))
 {
-    if (left->is_numeric() == false || right->is_numeric() == false)
-    {
-        output::error_mismatch(oper_token->position);
-    }
+    semantic_analysis();
 
     add_child(left);
     add_child(right);
@@ -167,6 +179,14 @@ arithmetic_operator arithmetic_expression::parse_operator(string str)
     if (str == "/") return arithmetic_operator::Div;
 
     throw std::invalid_argument("unknown oper");
+}
+
+void arithmetic_expression::semantic_analysis() const
+{
+    if (left->is_numeric() == false || right->is_numeric() == false)
+    {
+        output::error_mismatch(oper_token->position);
+    }
 }
 
 void arithmetic_expression::emit_code()
@@ -206,10 +226,7 @@ void arithmetic_expression::emit_code()
 relational_expression::relational_expression(expression_syntax* left, syntax_token* oper_token, expression_syntax* right):
     expression_syntax(type_kind::Bool), left(left), oper_token(oper_token), right(right), oper(parse_operator(oper_token->text))
 {
-    if (left->is_numeric() == false || right->is_numeric() == false)
-    {
-        output::error_mismatch(oper_token->position);
-    }
+    semantic_analysis();
 
     add_child(left);
     add_child(right);
@@ -237,6 +254,14 @@ relational_operator relational_expression::parse_operator(string str)
     throw std::invalid_argument("unknown oper");
 }
 
+void relational_expression::semantic_analysis() const
+{
+    if (left->is_numeric() == false || right->is_numeric() == false)
+    {
+        output::error_mismatch(oper_token->position);
+    }
+}
+
 void relational_expression::emit_code()
 {
     left->emit_code();
@@ -252,15 +277,7 @@ void relational_expression::emit_code()
 conditional_expression::conditional_expression(expression_syntax* true_value, syntax_token* if_token, expression_syntax* condition, syntax_token* else_token, expression_syntax* false_value):
     expression_syntax(types::cast_up(true_value->return_type, false_value->return_type)), true_value(true_value), if_token(if_token), condition(condition), else_token(else_token), false_value(false_value)
 {
-    if (return_type == type_kind::Void)
-    {
-        output::error_mismatch(if_token->position);
-    }
-
-    if (condition->return_type != type_kind::Bool)
-    {
-        output::error_mismatch(if_token->position);
-    }
+    semantic_analysis();
 
     add_child(true_value);
     add_child(condition);
@@ -276,6 +293,19 @@ conditional_expression::~conditional_expression()
 
     delete if_token;
     delete else_token;
+}
+
+void conditional_expression::semantic_analysis() const
+{
+    if (return_type == type_kind::Void)
+    {
+        output::error_mismatch(if_token->position);
+    }
+
+    if (condition->return_type != type_kind::Bool)
+    {
+        output::error_mismatch(if_token->position);
+    }
 }
 
 void conditional_expression::emit_code()
@@ -310,17 +340,9 @@ void conditional_expression::emit_code()
 identifier_expression::identifier_expression(syntax_token* identifier_token):
     expression_syntax(get_return_type(identifier_token->text)), identifier_token(identifier_token), identifier(identifier_token->text), kind(symbol_kind::Parameter), ptr_reg()
 {
+    semantic_analysis();
+
     const symbol* symbol = symtab.get_symbol(identifier);
-
-    if (symbol == nullptr)
-    {
-        output::error_undef(identifier_token->position, identifier);
-    }
-
-    if (symbol->kind != symbol_kind::Variable && symbol->kind != symbol_kind::Parameter)
-    {
-        output::error_undef(identifier_token->position, identifier);
-    }
 
     kind = symbol->kind;
 
@@ -361,6 +383,21 @@ identifier_expression::~identifier_expression()
     delete identifier_token;
 }
 
+void identifier_expression::semantic_analysis() const
+{
+    const symbol* symbol = symtab.get_symbol(identifier);
+
+    if (symbol == nullptr)
+    {
+        output::error_undef(identifier_token->position, identifier);
+    }
+
+    if (symbol->kind != symbol_kind::Variable && symbol->kind != symbol_kind::Parameter)
+    {
+        output::error_undef(identifier_token->position, identifier);
+    }
+}
+
 void identifier_expression::emit_code()
 {
     string res_type = ir_builder::get_type(return_type);
@@ -378,60 +415,13 @@ void identifier_expression::emit_code()
 invocation_expression::invocation_expression(syntax_token* identifier_token):
     expression_syntax(get_return_type(identifier_token->text)), identifier_token(identifier_token), identifier(identifier_token->text), arguments(nullptr)
 {
-    const function_symbol* symbol = static_cast<const function_symbol*>(symtab.get_symbol(identifier, symbol_kind::Function));
-
-    if (symbol == nullptr)
-    {
-        output::error_undef_func(identifier_token->position, identifier);
-    }
-
-    vector<type_kind> parameter_types = symbol->parameter_types;
-
-    vector<string> params_str;
-
-    for (type_kind type : parameter_types)
-    {
-        params_str.push_back(types::to_string(type));
-    }
-
-    if (parameter_types.size() != 0)
-    {
-        output::error_prototype_mismatch(identifier_token->position, identifier, params_str);
-    }
+    semantic_analysis();
 }
 
 invocation_expression::invocation_expression(syntax_token* identifier_token, list_syntax<expression_syntax>* arguments):
     expression_syntax(get_return_type(identifier_token->text)), identifier_token(identifier_token), identifier(identifier_token->text), arguments(arguments)
 {
-    const function_symbol* function = static_cast<const function_symbol*>(symtab.get_symbol(identifier, symbol_kind::Function));
-
-    if (function == nullptr)
-    {
-        output::error_undef_func(identifier_token->position, identifier);
-    }
-
-    vector<type_kind> parameter_types = function->parameter_types;
-
-    vector<string> params_str;
-
-    for (type_kind type : parameter_types)
-    {
-        params_str.push_back(types::to_string(type));
-    }
-
-    if (parameter_types.size() != arguments->size())
-    {
-        output::error_prototype_mismatch(identifier_token->position, identifier, params_str);
-    }
-
-    size_t i = 0;
-    for (auto arg : *arguments)
-    {
-        if (types::is_implictly_convertible(arg->return_type, parameter_types[i++]) == false)
-        {
-            output::error_prototype_mismatch(identifier_token->position, identifier, params_str);
-        }
-    }
+    semantic_analysis();
 
     add_child(arguments);
 }
@@ -482,6 +472,49 @@ string invocation_expression::get_arguments(const list_syntax<expression_syntax>
     }
 
     return result.str();
+}
+
+void invocation_expression::semantic_analysis() const
+{
+    const function_symbol* function = static_cast<const function_symbol*>(symtab.get_symbol(identifier, symbol_kind::Function));
+
+    if (function == nullptr)
+    {
+        output::error_undef_func(identifier_token->position, identifier);
+    }
+
+    vector<type_kind> parameter_types = function->parameter_types;
+
+    vector<string> params_str;
+
+    for (type_kind type : parameter_types)
+    {
+        params_str.push_back(types::to_string(type));
+    }
+
+    if (arguments == nullptr)
+    {
+        if (parameter_types.size() != 0)
+        {
+            output::error_prototype_mismatch(identifier_token->position, identifier, params_str);
+        }
+    }
+    else
+    {
+        if (parameter_types.size() != arguments->size())
+        {
+            output::error_prototype_mismatch(identifier_token->position, identifier, params_str);
+        }
+
+        size_t i = 0;
+        for (auto arg : *arguments)
+        {
+            if (types::is_implictly_convertible(arg->return_type, parameter_types[i++]) == false)
+            {
+                output::error_prototype_mismatch(identifier_token->position, identifier, params_str);
+            }
+        }
+    }
 }
 
 void invocation_expression::emit_code()

@@ -15,10 +15,7 @@ static code_buffer& codebuf = code_buffer::instance();
 if_statement::if_statement(syntax_token* if_token, expression_syntax* condition, statement_syntax* body):
     if_token(if_token), condition(condition), body(body), else_token(nullptr), else_clause(nullptr)
 {
-    if (condition->return_type != type_kind::Bool)
-    {
-        output::error_mismatch(if_token->position);
-    }
+    semantic_analysis();
 
     add_child(condition);
     add_child(body);
@@ -27,10 +24,7 @@ if_statement::if_statement(syntax_token* if_token, expression_syntax* condition,
 if_statement::if_statement(syntax_token* if_token, expression_syntax* condition, statement_syntax* body, syntax_token* else_token, statement_syntax* else_clause):
     if_token(if_token), condition(condition), body(body), else_token(else_token), else_clause(else_clause)
 {
-    if (condition->return_type != type_kind::Bool)
-    {
-        output::error_mismatch(if_token->position);
-    }
+    semantic_analysis();
 
     add_child(condition);
     add_child(body);
@@ -46,6 +40,14 @@ if_statement::~if_statement()
 
     delete if_token;
     delete else_token;
+}
+
+void if_statement::semantic_analysis() const
+{
+    if (condition->return_type != type_kind::Bool)
+    {
+        output::error_mismatch(if_token->position);
+    }
 }
 
 void if_statement::emit_code()
@@ -100,10 +102,7 @@ void if_statement::emit_code()
 while_statement::while_statement(syntax_token* while_token, expression_syntax* condition, statement_syntax* body):
     while_token(while_token), condition(condition), body(body)
 {
-    if (condition->return_type != type_kind::Bool)
-    {
-        output::error_mismatch(while_token->position);
-    }
+    semantic_analysis();
 
     add_child(condition);
     add_child(body);
@@ -117,6 +116,14 @@ while_statement::~while_statement()
     }
 
     delete while_token;
+}
+
+void while_statement::semantic_analysis() const
+{
+    if (condition->return_type != type_kind::Bool)
+    {
+        output::error_mismatch(while_token->position);
+    }
 }
 
 void while_statement::emit_code()
@@ -148,22 +155,7 @@ void while_statement::emit_code()
 
 branch_statement::branch_statement(syntax_token* branch_token): branch_token(branch_token), kind(parse_kind(branch_token->text))
 {
-    const list<scope>& scopes = symtab.get_scopes();
-
-    if (std::all_of(scopes.rbegin(), scopes.rend(), [](const scope& sc) { return sc.loop_scope == false; }))
-    {
-        if (kind == branch_kind::Break)
-        {
-            output::error_unexpected_break(branch_token->position);
-        }
-
-        if (kind == branch_kind::Continue)
-        {
-            output::error_unexpected_continue(branch_token->position);
-        }
-
-        throw std::runtime_error("unknown branch_kind");
-    }
+    semantic_analysis();
 }
 
 branch_statement::~branch_statement()
@@ -184,6 +176,26 @@ branch_statement::branch_kind branch_statement::parse_kind(string str)
     throw std::invalid_argument("unknown type");
 }
 
+void branch_statement::semantic_analysis() const
+{
+    const list<scope>& scopes = symtab.get_scopes();
+
+    if (std::all_of(scopes.rbegin(), scopes.rend(), [](const scope& sc) { return sc.loop_scope == false; }))
+    {
+        if (kind == branch_kind::Break)
+        {
+            output::error_unexpected_break(branch_token->position);
+        }
+
+        if (kind == branch_kind::Continue)
+        {
+            output::error_unexpected_continue(branch_token->position);
+        }
+
+        throw std::runtime_error("unknown branch_kind");
+    }
+}
+
 void branch_statement::emit_code()
 {
     size_t line = codebuf.emit("br label @");
@@ -202,26 +214,12 @@ void branch_statement::emit_code()
 
 return_statement::return_statement(syntax_token* return_token): return_token(return_token), value(nullptr)
 {
-    auto& global_symbols = symtab.get_scopes().front().get_symbols();
-
-    const symbol* func_sym = global_symbols.back();
-
-    if (func_sym->type != type_kind::Void)
-    {
-        output::error_mismatch(return_token->position);
-    }
+    semantic_analysis();
 }
 
 return_statement::return_statement(syntax_token* return_token, expression_syntax* value): return_token(return_token), value(value)
 {
-    auto& global_symbols = symtab.get_scopes().front().get_symbols();
-
-    const symbol* func_sym = global_symbols.back();
-
-    if (types::is_implictly_convertible(value->return_type, func_sym->type) == false)
-    {
-        output::error_mismatch(return_token->position);
-    }
+    semantic_analysis();
 
     add_child(value);
 }
@@ -234,6 +232,28 @@ return_statement::~return_statement()
     }
 
     delete return_token;
+}
+
+void return_statement::semantic_analysis() const
+{
+    auto& global_symbols = symtab.get_scopes().front().get_symbols();
+
+    const symbol* func_sym = global_symbols.back();
+
+    if (value == nullptr)
+    {
+        if (func_sym->type != type_kind::Void)
+        {
+            output::error_mismatch(return_token->position);
+        }
+    }
+    else
+    {
+        if (types::is_implictly_convertible(value->return_type, func_sym->type) == false)
+        {
+            output::error_mismatch(return_token->position);
+        }
+    }
 }
 
 void return_statement::emit_code()
@@ -265,6 +285,10 @@ expression_statement::~expression_statement()
     }
 }
 
+void expression_statement::semantic_analysis() const
+{
+}
+
 void expression_statement::emit_code()
 {
     expression->emit_code();
@@ -275,22 +299,9 @@ void expression_statement::emit_code()
 assignment_statement::assignment_statement(syntax_token* identifier_token, syntax_token* assign_token, expression_syntax* value):
     identifier_token(identifier_token), identifier(identifier_token->text), assign_token(assign_token), value(value), ptr_reg()
 {
+    semantic_analysis();
+
     const symbol* symbol = symtab.get_symbol(identifier);
-
-    if (symbol == nullptr)
-    {
-        output::error_undef(identifier_token->position, identifier);
-    }
-
-    if (symbol->kind != symbol_kind::Variable && symbol->kind != symbol_kind::Parameter)
-    {
-        output::error_undef(identifier_token->position, identifier);
-    }
-
-    if (types::is_implictly_convertible(value->return_type, symbol->type) == false)
-    {
-        output::error_mismatch(assign_token->position);
-    }
 
     this->ptr_reg = static_cast<const variable_symbol*>(symbol)->ptr_reg;
 
@@ -308,6 +319,26 @@ assignment_statement::~assignment_statement()
     delete assign_token;
 }
 
+void assignment_statement::semantic_analysis() const
+{
+    const symbol* symbol = symtab.get_symbol(identifier);
+
+    if (symbol == nullptr)
+    {
+        output::error_undef(identifier_token->position, identifier);
+    }
+
+    if (symbol->kind != symbol_kind::Variable && symbol->kind != symbol_kind::Parameter)
+    {
+        output::error_undef(identifier_token->position, identifier);
+    }
+
+    if (types::is_implictly_convertible(value->return_type, symbol->type) == false)
+    {
+        output::error_mismatch(assign_token->position);
+    }
+}
+
 void assignment_statement::emit_code()
 {
     string res_type = ir_builder::get_type(value->return_type);
@@ -322,15 +353,7 @@ void assignment_statement::emit_code()
 declaration_statement::declaration_statement(type_syntax* type, syntax_token* identifier_token):
     type(type), identifier_token(identifier_token), identifier(identifier_token->text), assign_token(nullptr), value(nullptr), ptr_reg()
 {
-    if (type->is_special())
-    {
-        output::error_mismatch(identifier_token->position);
-    }
-
-    if (symtab.contains_symbol(identifier))
-    {
-        output::error_def(identifier_token->position, identifier);
-    }
+    semantic_analysis();
 
     symtab.add_variable(identifier, type->kind);
 
@@ -344,20 +367,7 @@ declaration_statement::declaration_statement(type_syntax* type, syntax_token* id
 declaration_statement::declaration_statement(type_syntax* type, syntax_token* identifier_token, syntax_token* assign_token, expression_syntax* value):
     type(type), identifier_token(identifier_token), identifier(identifier_token->text), assign_token(assign_token), value(value), ptr_reg()
 {
-    if (type->is_special() || value->is_special())
-    {
-        output::error_mismatch(identifier_token->position);
-    }
-
-    if (types::is_implictly_convertible(value->return_type, type->kind) == false)
-    {
-        output::error_mismatch(identifier_token->position);
-    }
-
-    if (symtab.contains_symbol(identifier))
-    {
-        output::error_def(identifier_token->position, identifier);
-    }
+    semantic_analysis();
 
     symtab.add_variable(identifier, type->kind);
 
@@ -378,6 +388,27 @@ declaration_statement::~declaration_statement()
 
     delete identifier_token;
     delete assign_token;
+}
+
+void declaration_statement::semantic_analysis() const
+{
+    if (type->is_special())
+    {
+        output::error_mismatch(identifier_token->position);
+    }
+
+    if (value != nullptr)
+    {
+        if (types::is_implictly_convertible(value->return_type, type->kind) == false)
+        {
+            output::error_mismatch(identifier_token->position);
+        }
+    }
+
+    if (symtab.contains_symbol(identifier))
+    {
+        output::error_def(identifier_token->position, identifier);
+    }
 }
 
 void declaration_statement::emit_code()
@@ -414,6 +445,10 @@ block_statement::~block_statement()
     {
         delete child;
     }
+}
+
+void block_statement::semantic_analysis() const
+{
 }
 
 void block_statement::emit_code()
