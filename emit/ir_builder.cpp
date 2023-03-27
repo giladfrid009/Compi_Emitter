@@ -41,7 +41,7 @@ string ir_builder::get_type(type_kind data_type)
 {
     switch (data_type)
     {
-        case type_kind::Bool: return "i32";
+        case type_kind::Bool: return "i1";
         case type_kind::Byte: return "i32";
         case type_kind::Int: return "i32";
         case type_kind::String: return "i8*";

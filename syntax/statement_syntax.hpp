@@ -25,8 +25,6 @@ class if_statement final: public statement_syntax
     if_statement(const if_statement& other) = delete;
     if_statement& operator=(const if_statement& other) = delete;
 
-    protected:
-
     void emit_code() override;
 };
 
@@ -43,8 +41,6 @@ class while_statement final: public statement_syntax
 
     while_statement(const while_statement& other) = delete;
     while_statement& operator=(const while_statement& other) = delete;
-
-    protected:
 
     void emit_code() override;
 };
@@ -64,11 +60,11 @@ class branch_statement final: public statement_syntax
     branch_statement(const branch_statement& other) = delete;
     branch_statement& operator=(const branch_statement& other) = delete;
 
+    void emit_code() override;
+
     protected:
 
     static branch_kind parse_kind(std::string str);
-
-    void emit_code() override;
 };
 
 class return_statement final: public statement_syntax
@@ -85,8 +81,6 @@ class return_statement final: public statement_syntax
     return_statement(const return_statement& other) = delete;
     return_statement& operator=(const return_statement& other) = delete;
 
-    protected:
-
     void emit_code() override;
 };
 
@@ -102,8 +96,6 @@ class expression_statement final: public statement_syntax
     expression_statement(const expression_statement& other) = delete;
     expression_statement& operator=(const expression_statement& other) = delete;
 
-    protected:
-
     void emit_code() override;
 };
 
@@ -116,13 +108,17 @@ class assignment_statement final: public statement_syntax
     const syntax_token* const assign_token;
     expression_syntax* const value;
 
+    private:
+
+    std::string ptr_reg;
+
+    public:
+
     assignment_statement(syntax_token* identifier_token, syntax_token* assign_token, expression_syntax* value);
     ~assignment_statement();
 
     assignment_statement(const assignment_statement& other) = delete;
     assignment_statement& operator=(const assignment_statement& other) = delete;
-
-    protected:
 
     void emit_code() override;
 };
@@ -137,14 +133,18 @@ class declaration_statement final: public statement_syntax
     const syntax_token* const assign_token;
     expression_syntax* const value;
 
+    private:
+
+    std::string ptr_reg;
+
+    public:
+
     declaration_statement(type_syntax* type, syntax_token* identifier_token);
     declaration_statement(type_syntax* type, syntax_token* identifier_token, syntax_token* assign_token, expression_syntax* value);
     ~declaration_statement();
 
     declaration_statement(const declaration_statement& other) = delete;
     declaration_statement& operator=(const declaration_statement& other) = delete;
-
-    protected:
 
     void emit_code() override;
 };
@@ -160,8 +160,6 @@ class block_statement final: public statement_syntax
 
     block_statement(const block_statement& other) = delete;
     block_statement& operator=(const block_statement& other) = delete;
-
-    protected:
 
     void emit_code() override;
 };

@@ -1,8 +1,9 @@
 #include "expression_syntax.hpp"
-#include "symbol_table.hpp"
-#include "hw3_output.hpp"
-#include "code_buffer.hpp"
-#include "ir_builder.hpp"
+#include "../symbol/symbol_table.hpp"
+#include "../output.hpp"
+#include "../emit/code_buffer.hpp"
+#include "../symbol/symbol.hpp"
+#include "../emit/ir_builder.hpp"
 #include <stdexcept>
 #include <list>
 #include <sstream>
@@ -26,8 +27,6 @@ cast_expression::cast_expression(type_syntax* destination_type, expression_synta
 
     add_child(destination_type);
     add_child(value);
-
-    emit();
 }
 
 cast_expression::~cast_expression()
@@ -40,18 +39,15 @@ cast_expression::~cast_expression()
 
 void cast_expression::emit_code()
 {
-    true_list = value->true_list;
-    false_list = value->false_list;
-    start_list = value->start_list;
-    start_label = value->start_label;
+    value->emit_code();
 
     if (value->return_type == type_kind::Int && destination_type->kind == type_kind::Byte)
     {
-        codebuf.emit("%s = and i32 255 , %s", this->place, value->place);
+        codebuf.emit("%s = and i32 255 , %s", this->reg, value->reg);
     }
     else
     {
-        codebuf.emit("%s = add i32 0 , %s", this->place, value->place);
+        codebuf.emit("%s = add i32 0 , %s", this->reg, value->reg);
     }
 }
 
@@ -64,8 +60,6 @@ not_expression::not_expression(syntax_token* not_token, expression_syntax* expre
     }
 
     add_child(expression);
-
-    emit();
 }
 
 not_expression::~not_expression()
@@ -80,11 +74,9 @@ not_expression::~not_expression()
 
 void not_expression::emit_code()
 {
-    start_list = expression->start_list;
-    start_label = expression->start_label;
-    false_list = expression->true_list;
-    true_list = expression->false_list;
-    end_label = expression->end_label;
+    expression->emit_code();
+
+    codebuf.emit("%s = select i1 %s , i1 0 , i1 1", this->reg, expression->reg);
 }
 
 logical_expression::logical_expression(expression_syntax* left, syntax_token* oper_token, expression_syntax* right):
@@ -97,8 +89,6 @@ logical_expression::logical_expression(expression_syntax* left, syntax_token* op
 
     add_child(left);
     add_child(right);
-
-    emit();
 }
 
 logical_expression::~logical_expression()
@@ -121,27 +111,29 @@ logical_expression::operator_kind logical_expression::parse_operator(string str)
 
 void logical_expression::emit_code()
 {
-    start_list = left->start_list;
-    start_label = left->start_label;
-    end_label = right->end_label;
-    
-    codebuf.backpatch(right->start_list, right->start_label);
+    left->emit_code();
 
+    string true_label = ir_builder::fresh_label();
+    string false_label = ir_builder::fresh_label();
+    string assign_label = ir_builder::fresh_label();
+    
     if (oper == operator_kind::Or)
     {
-        codebuf.backpatch(left->false_list, right->start_label);
-
-        true_list = codebuf.merge(left->true_list, right->true_list);
-
-        false_list = right->false_list;
+        codebuf.emit("br i1 %s , label %%%s , label %%%s", left->reg, assign_label, false_label);
+        codebuf.emit("%s:", false_label);
+        right->emit_code();
+        codebuf.emit("br label %%%s", assign_label);
+        codebuf.emit("%s:", assign_label);
+        codebuf.emit("%s = select i1 %s , i1 1 , i1 %s", this->reg, left->reg, right->reg);
     }
-    else
+    else if (oper == operator_kind::And)
     {
-        codebuf.backpatch(left->true_list, right->start_label);
-
-        true_list = right->true_list;
-
-        false_list = codebuf.merge(left->false_list, right->false_list);
+        codebuf.emit("br i1 %s , label %%%s , label %%%s", left->reg, true_label, assign_label);
+        codebuf.emit("%s:", true_label);
+        right->emit_code();
+        codebuf.emit("br label %%%s", assign_label);
+        codebuf.emit("%s:", assign_label);
+        codebuf.emit("%s = select i1 %s , i1 %s , i1 0", this->reg, left->reg, right->reg);
     }
 }
 
@@ -155,8 +147,6 @@ arithmetic_expression::arithmetic_expression(expression_syntax* left, syntax_tok
 
     add_child(left);
     add_child(right);
-
-    emit();
 }
 
 arithmetic_expression::~arithmetic_expression()
@@ -181,10 +171,8 @@ arithmetic_operator arithmetic_expression::parse_operator(string str)
 
 void arithmetic_expression::emit_code()
 {
-    start_list = left->start_list;
-    start_label = left->start_label;
-
-    codebuf.backpatch(right->start_list, right->start_label);
+    left->emit_code();
+    right->emit_code();
 
     if (oper == arithmetic_operator::Div)
     {
@@ -192,7 +180,7 @@ void arithmetic_expression::emit_code()
         string true_label = ir_builder::fresh_label();
         string false_label = ir_builder::fresh_label();
 
-        codebuf.emit("%s = icmp eq i32 0 , %s", cmp_res, right->place);
+        codebuf.emit("%s = icmp eq i32 0 , %s", cmp_res, right->reg);
         codebuf.emit("br i1 %s , label %%%s , label %%%s", cmp_res, true_label, false_label);
         codebuf.emit("%s:", true_label);
         codebuf.emit("call void @error_zero_div()");
@@ -206,12 +194,12 @@ void arithmetic_expression::emit_code()
     {
         string res_reg = ir_builder::fresh_register();
 
-        codebuf.emit("%s = %s i32 %s , %s", res_reg, inst, left->place, right->place);
-        codebuf.emit("%s = and i32 255 , %s", this->place, res_reg);
+        codebuf.emit("%s = %s i32 %s , %s", res_reg, inst, left->reg, right->reg);
+        codebuf.emit("%s = and i32 255 , %s", this->reg, res_reg);
     }
     else if (return_type == type_kind::Int)
     {
-        codebuf.emit("%s = %s i32 %s , %s", this->place, inst, left->place, right->place);
+        codebuf.emit("%s = %s i32 %s , %s", this->reg, inst, left->reg, right->reg);
     }
 }
 
@@ -225,8 +213,6 @@ relational_expression::relational_expression(expression_syntax* left, syntax_tok
 
     add_child(left);
     add_child(right);
-
-    emit();
 }
 
 relational_expression::~relational_expression()
@@ -253,23 +239,14 @@ relational_operator relational_expression::parse_operator(string str)
 
 void relational_expression::emit_code()
 {
-    start_list = left->start_list;
-    start_label = left->start_label;
-    
-    codebuf.backpatch(right->start_list, right->start_label);
-
-    string res_reg = ir_builder::fresh_register();
+    left->emit_code();
+    right->emit_code();
 
     type_kind operands_type = types::cast_up(left->return_type, right->return_type);
 
     string cmp_kind = ir_builder::get_comparison_kind(oper, operands_type == type_kind::Int);
     
-    codebuf.emit("%s = icmp %s i32 %s , %s", res_reg, cmp_kind, left->place, right->place);
-    size_t line = codebuf.emit("br i1 %s , label @ , label @", res_reg);
-    end_label = codebuf.emit_label();
-
-    true_list.push_back(patch_record(line, label_index::First));
-    false_list.push_back(patch_record(line, label_index::Second));
+    codebuf.emit("%s = icmp %s i32 %s , %s", this->reg, cmp_kind, left->reg, right->reg);
 }
 
 conditional_expression::conditional_expression(expression_syntax* true_value, syntax_token* if_token, expression_syntax* condition, syntax_token* else_token, expression_syntax* false_value):
@@ -288,8 +265,6 @@ conditional_expression::conditional_expression(expression_syntax* true_value, sy
     add_child(true_value);
     add_child(condition);
     add_child(false_value);
-
-    emit();
 }
 
 conditional_expression::~conditional_expression()
@@ -305,49 +280,35 @@ conditional_expression::~conditional_expression()
 
 void conditional_expression::emit_code()
 {
-    string control_label = ir_builder::fresh_label();
     string true_label = ir_builder::fresh_label();
     string false_label = ir_builder::fresh_label();
-    string eval_label = ir_builder::fresh_label();
+    string assign_label = ir_builder::fresh_label();
 
-    codebuf.backpatch(true_value->start_list, control_label);
-    codebuf.backpatch(condition->start_list, true_label);
-    codebuf.backpatch(condition->true_list, true_value->start_label);
-    codebuf.backpatch(condition->false_list, false_value->start_label);
-    codebuf.backpatch(false_value->start_list, true_label);
+    string ret_type = ir_builder::get_type(this->return_type);
 
-    codebuf.emit("br label %%%s", false_label);
-    codebuf.emit("%s:", control_label);
-    size_t line = codebuf.emit("br label @");
-    start_label = codebuf.emit_label();
-    codebuf.emit("br label %%%s", condition->start_label);
+    condition->emit_code();
+
+    codebuf.emit("br i1 %s , label %%%s, label %%%s", condition->reg, true_label, false_label);
+
     codebuf.emit("%s:", true_label);
-    codebuf.emit("br label %%%s", eval_label);
+
+    true_value->emit_code();
+
+    codebuf.emit("br label %%%s", assign_label);
+
     codebuf.emit("%s:", false_label);
-    codebuf.emit("br label %%%s", eval_label);
-    codebuf.emit("%s:", eval_label);
 
-    start_list.push_back(patch_record(line, label_index::First));
+    false_value->emit_code();
 
-    if (return_type == type_kind::Bool)
-    {
-        end_label = ir_builder::fresh_label();
-        codebuf.emit("br label %%%s", end_label);
-        codebuf.emit("%s:", end_label);
+    codebuf.emit("br label %%%s", assign_label);
 
-        true_list = codebuf.merge(true_value->true_list, false_value->true_list);
-        false_list = codebuf.merge(true_value->false_list, false_value->false_list);
-    }
-    else
-    {
-        string res_type = ir_builder::get_type(return_type);
+    codebuf.emit("%s:", assign_label);
 
-        codebuf.emit("%s = phi %s [ %s , %%%s ] , [ %s , %%%s ]", place, res_type, true_value->place, true_label, false_value->place, false_label);
-    }
+    codebuf.emit("%s = select i1 %s , %s %s , %s %s", this->reg, condition->reg, ret_type, true_value->reg, ret_type, false_value->reg);
 }
 
 identifier_expression::identifier_expression(syntax_token* identifier_token):
-    expression_syntax(get_return_type(identifier_token->text)), identifier_token(identifier_token), identifier(identifier_token->text)
+    expression_syntax(get_return_type(identifier_token->text)), identifier_token(identifier_token), identifier(identifier_token->text), kind(symbol_kind::Parameter), ptr_reg()
 {
     const symbol* symbol = symtab.get_symbol(identifier);
 
@@ -361,7 +322,16 @@ identifier_expression::identifier_expression(syntax_token* identifier_token):
         output::error_undef(identifier_token->position, identifier);
     }
 
-    emit();
+    kind = symbol->kind;
+
+    if (symbol->kind == symbol_kind::Parameter)
+    {
+        this->ptr_reg = ir_builder::format_string("%%%d", -symbol->offset - 1);
+    }
+    else
+    {
+        this->ptr_reg = static_cast<const variable_symbol*>(symbol)->ptr_reg;
+    }
 }
 
 type_kind identifier_expression::get_return_type(string identifier)
@@ -393,37 +363,15 @@ identifier_expression::~identifier_expression()
 
 void identifier_expression::emit_code()
 {
-    size_t line = codebuf.emit("br label @");
-    start_label = codebuf.emit_label();
-    
-    start_list.push_back(patch_record(line, label_index::First));
+    string res_type = ir_builder::get_type(return_type);
 
-    const symbol* symbol = symtab.get_symbol(identifier);
-
-    if (symbol->kind == symbol_kind::Parameter)
+    if (kind == symbol_kind::Parameter)
     {
-        string param_reg = ir_builder::format_string("%%%d", -symbol->offset - 1);
-
-        codebuf.emit("%s = add i32 0 , %s", this->place, param_reg);
+        codebuf.emit("%s = add %s 0 , %s", this->reg, res_type, ptr_reg);
     }
-    else if (symbol->kind == symbol_kind::Variable)
-    {
-        string ptr_reg = static_cast<const variable_symbol*>(symbol)->ptr_reg;
-        string res_type = ir_builder::get_type(return_type);
-
-        codebuf.emit("%s = load %s , %s* %s", this->place, res_type, res_type, ptr_reg);
-    }
-
-    if (return_type == type_kind::Bool)
-    {
-        string bool_reg = ir_builder::fresh_register();
-
-        codebuf.emit("%s = trunc i32 %s to i1", bool_reg, this->place);
-        size_t line = codebuf.emit("br i1 %s , label @ , label @", bool_reg);
-        end_label = codebuf.emit_label();
-
-        true_list.push_back(patch_record(line, label_index::First));
-        false_list.push_back(patch_record(line, label_index::Second));
+    else if (kind == symbol_kind::Variable)
+    {   
+        codebuf.emit("%s = load %s , %s* %s", this->reg, res_type, res_type, ptr_reg);
     }
 }
 
@@ -450,8 +398,6 @@ invocation_expression::invocation_expression(syntax_token* identifier_token):
     {
         output::error_prototype_mismatch(identifier_token->position, identifier, params_str);
     }
-
-    emit();
 }
 
 invocation_expression::invocation_expression(syntax_token* identifier_token, list_syntax<expression_syntax>* arguments):
@@ -488,8 +434,6 @@ invocation_expression::invocation_expression(syntax_token* identifier_token, lis
     }
 
     add_child(arguments);
-
-    emit();
 }
 
 type_kind invocation_expression::get_return_type(string identifier)
@@ -529,9 +473,7 @@ string invocation_expression::get_arguments(const list_syntax<expression_syntax>
 
         string arg_type = ir_builder::get_type(arg->return_type);
 
-        string arg_reg = arg->return_type != type_kind::Bool ? arg->place : get_bool_reg(arg);
-
-        result << arg_type << " " << arg_reg;
+        result << arg_type << " " << arg->reg;
 
         if (std::distance(iter, arguments->end()) > 1)
         {
@@ -544,27 +486,9 @@ string invocation_expression::get_arguments(const list_syntax<expression_syntax>
 
 void invocation_expression::emit_code()
 {
-    if (arguments == nullptr)
+    if (arguments != nullptr)
     {
-        size_t line = codebuf.emit("br label @");
-        start_label = codebuf.emit_label();
-
-        start_list.push_back(patch_record(line, label_index::First));
-    }
-    else
-    {
-        for (auto arg : *arguments)
-        {
-            if (arg == arguments->front())
-            {
-                start_list = arg->start_list;
-                start_label = arg->start_label;  
-            }
-            else
-            {
-                codebuf.backpatch(arg->start_list, arg->start_label);
-            }
-        }
+        arguments->emit_code();
     }
 
     if (return_type == type_kind::Void)
@@ -575,17 +499,5 @@ void invocation_expression::emit_code()
     
     string ret_str = ir_builder::get_type(return_type);
 
-    codebuf.emit("%s = call %s @%s(%s)", this->place, ret_str, identifier, get_arguments(arguments));
-
-    if (return_type == type_kind::Bool)
-    {
-        string bool_reg = ir_builder::fresh_register();
-
-        codebuf.emit("%s = trunc i32 %s to i1", bool_reg, this->place);
-        size_t line = codebuf.emit("br i1 %s , label @ , label @", bool_reg);
-        end_label = codebuf.emit_label();
-
-        true_list.push_back(patch_record(line, label_index::First));
-        false_list.push_back(patch_record(line, label_index::Second));
-    }
+    codebuf.emit("%s = call %s @%s(%s)", this->reg, ret_str, identifier, get_arguments(arguments));
 }

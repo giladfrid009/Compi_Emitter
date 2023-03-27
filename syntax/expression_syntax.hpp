@@ -4,9 +4,10 @@
 #include "syntax_token.hpp"
 #include "abstract_syntax.hpp"
 #include "generic_syntax.hpp"
-#include "code_buffer.hpp"
+#include "../emit/code_buffer.hpp"
 #include "syntax_operators.hpp"
-#include "hw3_output.hpp"
+#include "../output.hpp"
+#include "../symbol/symbol.hpp"
 #include <vector>
 #include <string>
 #include <stdexcept>
@@ -21,7 +22,6 @@ template<typename literal_type> class literal_expression final: public expressio
     literal_expression(syntax_token* value_token):
         expression_syntax(get_return_type()), value_token(value_token), value(get_literal_value(value_token))
     {
-        emit();
     }
 
     literal_expression(const literal_expression& other) = delete;
@@ -53,17 +53,13 @@ template<typename literal_type> class literal_expression final: public expressio
         delete value_token;
     }
 
-    protected:
-
     void emit_code() override
     {
         code_buffer& codebuf = code_buffer::instance();
 
-        size_t line = codebuf.emit("br label @");
-        start_label = codebuf.emit_label();
-        codebuf.emit("%s = add i32 0 , %d", place, value);
+        std::string ret_type = ir_builder::get_type(return_type);
 
-        start_list.push_back(patch_record(line, label_index::First));
+        codebuf.emit("%s = add %s 0 , %d", this->reg, ret_type, value);
     }
 };
 
@@ -97,28 +93,6 @@ template<> inline bool literal_expression<bool>::get_literal_value(syntax_token*
     throw std::runtime_error("invalid value_token text");
 }
 
-template<> inline void literal_expression<bool>::emit_code()
-{
-    code_buffer& codebuf = code_buffer::instance();
-    
-    size_t line = codebuf.emit("br label @");
-    start_label = codebuf.emit_label();
-
-    start_list.push_back(patch_record(line, label_index::First));
-
-    line = codebuf.emit("br label @");
-    end_label = codebuf.emit_label();
-
-    if (value == true)
-    {
-        true_list.push_back(patch_record(line, label_index::First));
-    }
-    else
-    {
-        false_list.push_back(patch_record(line, label_index::First));
-    }
-}
-
 template<> inline void literal_expression<std::string>::emit_code()
 {
     code_buffer& codebuf = code_buffer::instance();
@@ -129,11 +103,7 @@ template<> inline void literal_expression<std::string>::emit_code()
 
     codebuf.emit_global(ir_builder::format_string("%s = constant %s c\"%s\\00\"", arr_name, arr_type, arr_content));
 
-    size_t line = codebuf.emit("br label @");
-    start_label = codebuf.emit_label();
-    codebuf.emit(ir_builder::format_string("%s = getelementptr %s , %s* %s , i32 0 , i32 0", place, arr_type, arr_type, arr_name));
-
-    start_list.push_back(patch_record(line, label_index::First));
+    codebuf.emit("%s = getelementptr %s , %s* %s , i32 0 , i32 0", reg, arr_type, arr_type, arr_name);
 }
 
 class cast_expression final: public expression_syntax
@@ -148,8 +118,6 @@ class cast_expression final: public expression_syntax
 
     cast_expression(const cast_expression& other) = delete;
     cast_expression& operator=(const cast_expression& other) = delete;
-
-    protected:
 
     void emit_code() override;
 };
@@ -166,8 +134,6 @@ class not_expression final: public expression_syntax
 
     not_expression(const not_expression& other) = delete;
     not_expression& operator=(const not_expression& other) = delete;
-
-    protected:
 
     void emit_code() override;
 };
@@ -191,8 +157,6 @@ class logical_expression final: public expression_syntax
 
     static operator_kind parse_operator(std::string str);
 
-    protected:
-
     void emit_code() override;
 };
 
@@ -210,8 +174,6 @@ class arithmetic_expression final: public expression_syntax
 
     arithmetic_expression(const arithmetic_expression& other) = delete;
     arithmetic_expression& operator=(const arithmetic_expression& other) = delete;
-
-    protected:
 
     static arithmetic_operator parse_operator(std::string str);
 
@@ -233,11 +195,11 @@ class relational_expression final: public expression_syntax
     relational_expression(const relational_expression& other) = delete;
     relational_expression& operator=(const relational_expression& other) = delete;
 
+    void emit_code() override;
+
     protected:
 
     static relational_operator parse_operator(std::string str);
-
-    void emit_code() override;
 };
 
 class conditional_expression final: public expression_syntax
@@ -256,11 +218,12 @@ class conditional_expression final: public expression_syntax
     conditional_expression(const conditional_expression& other) = delete;
     conditional_expression& operator=(const conditional_expression& other) = delete;
 
+    void emit_code() override;
+
     protected:
 
     static type_kind get_return_type(expression_syntax* left, expression_syntax* right);
 
-    void emit_code() override;
 };
 
 class identifier_expression final: public expression_syntax
@@ -270,17 +233,25 @@ class identifier_expression final: public expression_syntax
     const syntax_token* const identifier_token;
     const std::string identifier;
 
+    private:
+
+    symbol_kind kind;
+    std::string ptr_reg;
+
+    public:
+
     identifier_expression(syntax_token* identifier_token);
     ~identifier_expression();
 
     identifier_expression(const identifier_expression& other) = delete;
     identifier_expression& operator=(const identifier_expression& other) = delete;
 
+    void emit_code() override;
+
     protected:
 
     static type_kind get_return_type(std::string identifier);
 
-    void emit_code() override;
 };
 
 class invocation_expression final: public expression_syntax
@@ -298,12 +269,12 @@ class invocation_expression final: public expression_syntax
     invocation_expression(const invocation_expression& other) = delete;
     invocation_expression& operator=(const invocation_expression& other) = delete;
 
+    void emit_code() override;
+
     protected:
 
     static type_kind get_return_type(std::string identifier);
     std::string get_arguments(const list_syntax<expression_syntax>* arguments);
-
-    void emit_code() override;
 };
 
 #endif

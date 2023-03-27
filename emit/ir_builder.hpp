@@ -1,8 +1,8 @@
 #ifndef _IR_BUILDER_HPP_
 #define _IR_BUILDER_HPP_
 
-#include "types.hpp"
-#include "syntax_operators.hpp"
+#include "../types.hpp"
+#include "../syntax/syntax_operators.hpp"
 #include <vector>
 #include <string>
 #include <memory>

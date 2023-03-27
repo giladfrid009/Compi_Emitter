@@ -1,16 +1,17 @@
 #include "generic_syntax.hpp"
-#include "hw3_output.hpp"
-#include "symbol.hpp"
-#include "symbol_table.hpp"
+#include "../output.hpp"
+#include "../symbol/symbol.hpp"
+#include "../symbol/symbol_table.hpp"
+#include <sstream>
 
 using std::string;
+using std::stringstream;
 
 static symbol_table& symtab = symbol_table::instance();
 static code_buffer& codebuf = code_buffer::instance();
 
 type_syntax::type_syntax(syntax_token* type_token): type_token(type_token), kind(types::parse(type_token->text))
 {
-    emit();
 }
 
 bool type_syntax::is_numeric() const
@@ -51,8 +52,6 @@ parameter_syntax::parameter_syntax(type_syntax* type, syntax_token* identifier_t
     }
 
     add_child(type);
-
-    emit();
 }
 
 parameter_syntax::~parameter_syntax()
@@ -67,6 +66,7 @@ parameter_syntax::~parameter_syntax()
 
 void parameter_syntax::emit_code()
 {
+    
 }
 
 function_declaration_syntax::function_declaration_syntax(type_syntax* return_type, syntax_token* identifier_token, list_syntax<parameter_syntax>* parameters, list_syntax<statement_syntax>* body):
@@ -96,8 +96,6 @@ function_declaration_syntax::function_declaration_syntax(type_syntax* return_typ
     add_child(return_type);
     add_child(parameters);
     add_child(body);
-
-    emit();
 }
 
 function_declaration_syntax::~function_declaration_syntax()
@@ -112,6 +110,49 @@ function_declaration_syntax::~function_declaration_syntax()
 
 void function_declaration_syntax::emit_code()
 {
+    parameters->emit_code();
+
+    stringstream instr;
+
+    string ret_type = ir_builder::get_type(this->return_type->kind);
+
+    instr << ir_builder::format_string("define %s @%s (", ret_type, this->identifier);
+
+    for (auto param = parameters->begin(); param != parameters->end(); param++)
+    {
+        instr << ir_builder::get_type((*param)->type->kind);
+
+        if (std::distance(param, parameters->end()) > 1)
+        {
+            instr << " , ";
+        }
+    }
+
+    instr << ") {";
+
+    codebuf.emit(instr.str());
+
+    codebuf.increase_indent();
+
+    body->emit_code();
+
+    if (this->identifier == "main")
+    {
+        codebuf.emit("call void @exit(i32 0)");
+    }
+
+    if (this->return_type->kind == type_kind::Void)
+    {
+        codebuf.emit("ret void");
+    }
+    else
+    {
+        codebuf.emit("ret %s 0", ret_type);
+    }
+
+    codebuf.decrease_indent();
+
+    codebuf.emit("}\n");
 }
 
 root_syntax::root_syntax(list_syntax<function_declaration_syntax>* functions): functions(functions)
@@ -129,8 +170,6 @@ root_syntax::root_syntax(list_syntax<function_declaration_syntax>* functions): f
     }
 
     add_child(functions);
-
-    emit();
 }
 
 root_syntax::~root_syntax()
@@ -143,43 +182,5 @@ root_syntax::~root_syntax()
 
 void root_syntax::emit_code()
 {
-}
-
-jump_syntax::jump_syntax() : start_list()
-{
-    emit();
-}
-
-jump_syntax::~jump_syntax()
-{
-    for (syntax_base* child : get_children())
-    {
-        delete child;
-    }
-}
-
-void jump_syntax::emit_code()
-{
-    size_t line = codebuf.emit("br label @");
-
-    start_list.push_back(patch_record(line, label_index::First));
-}
-
-label_syntax::label_syntax() : label(ir_builder::fresh_label())
-{
-    emit();
-}
-
-label_syntax::~label_syntax()
-{
-    for (syntax_base* child : get_children())
-    {
-        delete child;
-    }
-}
-
-void label_syntax::emit_code()
-{
-    codebuf.emit("br label %%%s", label);
-    codebuf.emit("%s:", label);
+    functions->emit_code();
 }

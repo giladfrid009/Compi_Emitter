@@ -80,10 +80,12 @@ template<typename element_type> class list_syntax final: public syntax_base
         }
     }
 
-    protected:
-
     void emit_code() override
     {
+        for (element_type* element : elements)
+        {
+            element->emit_code();
+        }
     }
 };
 
@@ -103,8 +105,6 @@ class type_syntax final: public syntax_base
     bool is_numeric() const;
     bool is_special() const;
 
-    protected:
-
     void emit_code() override;
 };
 
@@ -121,8 +121,6 @@ class parameter_syntax final: public syntax_base
 
     parameter_syntax(const parameter_syntax& other) = delete;
     parameter_syntax& operator=(const parameter_syntax& other) = delete;
-
-    protected:
 
     void emit_code() override;
 };
@@ -143,8 +141,6 @@ class function_declaration_syntax final: public syntax_base
     function_declaration_syntax(const function_declaration_syntax& other) = delete;
     function_declaration_syntax& operator=(const function_declaration_syntax& other) = delete;
 
-    protected:
-
     void emit_code() override;
 };
 
@@ -159,42 +155,6 @@ class root_syntax final: public syntax_base
 
     root_syntax(const root_syntax& other) = delete;
     root_syntax& operator=(const root_syntax& other) = delete;
-
-    protected:
-
-    void emit_code() override;
-};
-
-class jump_syntax final: public syntax_base
-{
-    public:
-
-    std::list<patch_record> start_list;
-
-    jump_syntax();
-    ~jump_syntax();
-
-    jump_syntax(const jump_syntax& other) = delete;
-    jump_syntax& operator=(const jump_syntax& other) = delete;
-
-    protected:
-
-    void emit_code() override;
-};
-
-class label_syntax final: public syntax_base
-{
-    public:
-
-    const std::string label;
-
-    label_syntax();
-    ~label_syntax();
-
-    label_syntax(const label_syntax& other) = delete;
-    label_syntax& operator=(const label_syntax& other) = delete;
-
-    protected:
 
     void emit_code() override;
 };

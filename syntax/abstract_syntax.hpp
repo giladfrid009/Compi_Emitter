@@ -2,8 +2,8 @@
 #define _ABSTRACT_SYNTAX_HPP_
 
 #include "syntax_token.hpp"
-#include "types.hpp"
-#include "code_buffer.hpp"
+#include "../types.hpp"
+#include "../emit/code_buffer.hpp"
 #include <vector>
 #include <string>
 #include <list>
@@ -28,11 +28,7 @@ class syntax_base
     const syntax_base* get_parent() const;
     const std::list<syntax_base*>& get_children() const;
 
-    void emit();
     virtual void emit_code() = 0;
-    virtual void emit_clean();
-
-    std::string get_bool_reg(const expression_syntax* bool_expression);
 
     protected:
 
@@ -45,12 +41,7 @@ class expression_syntax: public syntax_base
     public:
 
     const type_kind return_type;
-    const std::string place;
-    std::list<patch_record> true_list;
-    std::list<patch_record> false_list;
-    std::string start_label;
-    std::list<patch_record> start_list;
-    std::string end_label;
+    const std::string reg;
 
     expression_syntax(type_kind return_type);
     virtual ~expression_syntax() = default;
@@ -60,10 +51,6 @@ class expression_syntax: public syntax_base
 
     bool is_numeric() const;
     bool is_special() const;
-
-    protected:
-
-    void emit_clean() override;
 };
 
 class statement_syntax: public syntax_base
@@ -78,10 +65,6 @@ class statement_syntax: public syntax_base
 
     statement_syntax(const statement_syntax& other) = delete;
     statement_syntax& operator=(const statement_syntax& other) = delete;
-
-    protected:
-
-    void emit_clean() override;
 };
 
 #endif

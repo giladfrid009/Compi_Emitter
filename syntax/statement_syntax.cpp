@@ -1,6 +1,6 @@
 #include "statement_syntax.hpp"
-#include "hw3_output.hpp"
-#include "symbol_table.hpp"
+#include "../output.hpp"
+#include "../symbol/symbol_table.hpp"
 #include "abstract_syntax.hpp"
 #include <list>
 #include <algorithm>
@@ -50,6 +50,51 @@ if_statement::~if_statement()
 
 void if_statement::emit_code()
 {
+    string true_label = ir_builder::fresh_label();
+    string false_label = ir_builder::fresh_label();
+    string end_label = ir_builder::fresh_label();
+
+    condition->emit_code();
+
+    if (else_clause == nullptr)
+    {
+        codebuf.emit("br i1 %s , label %%%s, label %%%s", condition->reg, true_label, end_label);
+
+        codebuf.increase_indent();
+        codebuf.emit("%s:", true_label);
+        body->emit_code();
+        codebuf.emit("br label %%%s", end_label);
+        codebuf.decrease_indent();
+
+        codebuf.emit("%s:", end_label);
+
+        break_list = body->break_list;
+        continue_list = body->continue_list;
+    }
+    else
+    {
+        codebuf.emit("br i1 %s , label %%%s, label %%%s", condition->reg, true_label, false_label);
+        
+        codebuf.increase_indent();
+        codebuf.emit("%s:", true_label);
+        body->emit_code();
+        codebuf.emit("br label %%%s", end_label);
+        codebuf.decrease_indent();
+
+
+        codebuf.increase_indent();
+        codebuf.emit("%s:", false_label);
+        else_clause->emit_code();
+        codebuf.emit("br label %%%s", end_label);
+        codebuf.decrease_indent();
+
+        codebuf.emit("%s:", end_label);
+
+        break_list =  codebuf.merge(body->break_list, else_clause->break_list);
+        continue_list = codebuf.merge(body->continue_list, else_clause->continue_list);
+    }
+
+    codebuf.new_line();
 }
 
 while_statement::while_statement(syntax_token* while_token, expression_syntax* condition, statement_syntax* body):
@@ -76,6 +121,29 @@ while_statement::~while_statement()
 
 void while_statement::emit_code()
 {
+    string cond_label = ir_builder::fresh_label();
+    string body_label = ir_builder::fresh_label();
+    string end_label = ir_builder::fresh_label();
+
+    codebuf.emit("br label %%%s", cond_label);
+    codebuf.emit("%s:", cond_label);
+    condition->emit_code();
+    codebuf.emit("br i1 %s , label %%%s, label %%%s", condition->reg, body_label, end_label);
+
+    codebuf.increase_indent();
+    codebuf.emit("%s:", body_label);
+    body->emit_code();
+    codebuf.emit("br label %%%s", cond_label);
+    codebuf.decrease_indent();
+
+    codebuf.emit("%s:", end_label);
+    codebuf.new_line();
+
+    codebuf.backpatch(body->break_list, end_label);
+    codebuf.backpatch(body->continue_list, cond_label);
+
+    body->break_list.clear();
+    body->continue_list.clear();
 }
 
 branch_statement::branch_statement(syntax_token* branch_token): branch_token(branch_token), kind(parse_kind(branch_token->text))
@@ -96,8 +164,6 @@ branch_statement::branch_statement(syntax_token* branch_token): branch_token(bra
 
         throw std::runtime_error("unknown branch_kind");
     }
-
-    emit();
 }
 
 branch_statement::~branch_statement()
@@ -144,8 +210,6 @@ return_statement::return_statement(syntax_token* return_token): return_token(ret
     {
         output::error_mismatch(return_token->position);
     }
-
-    emit();
 }
 
 return_statement::return_statement(syntax_token* return_token, expression_syntax* value): return_token(return_token), value(value)
@@ -160,8 +224,6 @@ return_statement::return_statement(syntax_token* return_token, expression_syntax
     }
 
     add_child(value);
-
-    emit();
 }
 
 return_statement::~return_statement()
@@ -179,19 +241,12 @@ void return_statement::emit_code()
     if (value == nullptr)
     {
         codebuf.emit("ret void");
-        codebuf.new_line();
-        return;
-    }
-
-    codebuf.backpatch(value->start_list, value->start_label);
-
-    if (value->return_type != type_kind::Bool)
-    {
-        codebuf.emit("ret %s %s", ir_builder::get_type(value->return_type), value->place);
     }
     else
     {
-        codebuf.emit("ret i32 %s", get_bool_reg(value));
+        value->emit_code();
+
+        codebuf.emit("ret %s %s", ir_builder::get_type(value->return_type), value->reg);
     }
 
     codebuf.new_line();
@@ -200,8 +255,6 @@ void return_statement::emit_code()
 expression_statement::expression_statement(expression_syntax* expression): expression(expression)
 {
     add_child(expression);
-
-    emit();
 }
 
 expression_statement::~expression_statement()
@@ -214,15 +267,13 @@ expression_statement::~expression_statement()
 
 void expression_statement::emit_code()
 {
-    codebuf.backpatch(expression->start_list, expression->start_label);
-    codebuf.backpatch(expression->true_list, expression->end_label);
-    codebuf.backpatch(expression->false_list, expression->end_label);
+    expression->emit_code();
 
     codebuf.new_line();
 }
 
 assignment_statement::assignment_statement(syntax_token* identifier_token, syntax_token* assign_token, expression_syntax* value):
-    identifier_token(identifier_token), identifier(identifier_token->text), assign_token(assign_token), value(value)
+    identifier_token(identifier_token), identifier(identifier_token->text), assign_token(assign_token), value(value), ptr_reg()
 {
     const symbol* symbol = symtab.get_symbol(identifier);
 
@@ -241,9 +292,9 @@ assignment_statement::assignment_statement(syntax_token* identifier_token, synta
         output::error_mismatch(assign_token->position);
     }
 
-    add_child(value);
+    this->ptr_reg = static_cast<const variable_symbol*>(symbol)->ptr_reg;
 
-    emit();
+    add_child(value);
 }
 
 assignment_statement::~assignment_statement()
@@ -259,28 +310,17 @@ assignment_statement::~assignment_statement()
 
 void assignment_statement::emit_code()
 {
-    codebuf.backpatch(value->start_list, value->start_label);
+    string res_type = ir_builder::get_type(value->return_type);
 
-    const symbol* symbol = symtab.get_symbol(identifier);
+    value->emit_code();
 
-    string ptr_reg = static_cast<const variable_symbol*>(symbol)->ptr_reg;
-
-    if (value->return_type != type_kind::Bool)
-    {
-        string type = ir_builder::get_type(value->return_type);
-
-        codebuf.emit("store %s %s , %s* %s", type, value->place, type, ptr_reg);
-    }
-    else
-    {
-        codebuf.emit("store i32 %s , i32* %s", get_bool_reg(value), ptr_reg);
-    }
+    codebuf.emit("store %s %s , %s* %s", res_type, value->reg, res_type, ptr_reg);
 
     codebuf.new_line();
 }
 
 declaration_statement::declaration_statement(type_syntax* type, syntax_token* identifier_token):
-    type(type), identifier_token(identifier_token), identifier(identifier_token->text), assign_token(nullptr), value(nullptr)
+    type(type), identifier_token(identifier_token), identifier(identifier_token->text), assign_token(nullptr), value(nullptr), ptr_reg()
 {
     if (type->is_special())
     {
@@ -294,13 +334,15 @@ declaration_statement::declaration_statement(type_syntax* type, syntax_token* id
 
     symtab.add_variable(identifier, type->kind);
 
-    add_child(type);
+    const symbol* sym = symtab.get_symbol(identifier, symbol_kind::Variable);
 
-    emit();
+    this->ptr_reg = static_cast<const variable_symbol*>(sym)->ptr_reg;
+
+    add_child(type);
 }
 
 declaration_statement::declaration_statement(type_syntax* type, syntax_token* identifier_token, syntax_token* assign_token, expression_syntax* value):
-    type(type), identifier_token(identifier_token), identifier(identifier_token->text), assign_token(assign_token), value(value)
+    type(type), identifier_token(identifier_token), identifier(identifier_token->text), assign_token(assign_token), value(value), ptr_reg()
 {
     if (type->is_special() || value->is_special())
     {
@@ -319,10 +361,12 @@ declaration_statement::declaration_statement(type_syntax* type, syntax_token* id
 
     symtab.add_variable(identifier, type->kind);
 
+    const symbol* sym = symtab.get_symbol(identifier, symbol_kind::Variable);
+
+    this->ptr_reg = static_cast<const variable_symbol*>(sym)->ptr_reg;
+
     add_child(type);
     add_child(value);
-
-    emit();
 }
 
 declaration_statement::~declaration_statement()
@@ -338,30 +382,23 @@ declaration_statement::~declaration_statement()
 
 void declaration_statement::emit_code()
 {
-    string ptr_reg = static_cast<const variable_symbol*>(symtab.get_symbol(identifier, symbol_kind::Variable))->ptr_reg;
+    string res_type = ir_builder::get_type(this->type->kind);
 
-    if (value == nullptr)
+    if (value != nullptr)
     {
-        codebuf.emit("%s = alloca i32", ptr_reg);
-        codebuf.emit("store i32 0 , i32* %s", ptr_reg);
-        codebuf.new_line();
-        return;
+        value->emit_code();
     }
 
-    codebuf.backpatch(value->start_list, value->start_label);
+    codebuf.emit("%s = alloca %s", ptr_reg, res_type);
 
-    if (value->return_type == type_kind::Bool)
+    if (value != nullptr)
     {
-        string bool_reg = get_bool_reg(value);
-        
-        codebuf.emit("%s = alloca i32", ptr_reg);
-        codebuf.emit("store i32 %s , i32* %s", bool_reg, ptr_reg);
+        codebuf.emit("store %s %s , %s* %s", res_type, value->reg, res_type, ptr_reg);
     }
     else
     {
-        codebuf.emit("%s = alloca i32", ptr_reg);
-        codebuf.emit("store i32 %s , i32* %s", value->place, ptr_reg);
-    }   
+        codebuf.emit("store %s 0 , %s* %s", res_type, res_type, ptr_reg);
+    }
 
     codebuf.new_line();
 }
@@ -369,8 +406,6 @@ void declaration_statement::emit_code()
 block_statement::block_statement(list_syntax<statement_syntax>* statements): statements(statements)
 {
     add_child(statements);
-
-    emit();
 }
 
 block_statement::~block_statement()
@@ -383,6 +418,10 @@ block_statement::~block_statement()
 
 void block_statement::emit_code()
 {
+    codebuf.increase_indent();
+    statements->emit_code();
+    codebuf.decrease_indent();
+
     for (auto statement : *statements)
     {
         break_list = codebuf.merge(break_list, statement->break_list);

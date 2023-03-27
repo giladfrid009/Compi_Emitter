@@ -5,7 +5,7 @@
 #include <list>
 #include <string>
 #include "symbol.hpp"
-#include "abstract_syntax.hpp"
+#include "../syntax/abstract_syntax.hpp"
 
 class scope
 {

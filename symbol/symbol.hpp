@@ -3,7 +3,7 @@
 
 #include <string>
 #include <vector>
-#include "abstract_syntax.hpp"
+#include "../syntax/abstract_syntax.hpp"
 
 enum class symbol_kind { Variable, Parameter, Function };
 
