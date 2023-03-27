@@ -128,28 +128,30 @@ void logical_expression::emit_code()
 {
     left->emit_code();
 
-    string true_label = ir_builder::fresh_label();
-    string false_label = ir_builder::fresh_label();
-    string assign_label = ir_builder::fresh_label();
+    string start_label = ir_builder::fresh_label();
+    string right_label = ir_builder::fresh_label();
+    string phi_label = ir_builder::fresh_label();
+    string branch_label = ir_builder::fresh_label();
     
+    codebuf.emit("br label %%%s", start_label);
+    codebuf.emit("%s:", start_label);
+
     if (oper == operator_kind::Or)
     {
-        codebuf.emit("br i1 %s, label %%%s, label %%%s", left->reg, assign_label, false_label);
-        codebuf.emit("%s:", false_label);
-        right->emit_code();
-        codebuf.emit("br label %%%s", assign_label);
-        codebuf.emit("%s:", assign_label);
-        codebuf.emit("%s = select i1 %s, i1 1, i1 %s", this->reg, left->reg, right->reg);
+        codebuf.emit("br i1 %s, label %%%s, label %%%s", left->reg, phi_label, right_label);
     }
     else if (oper == operator_kind::And)
     {
-        codebuf.emit("br i1 %s, label %%%s, label %%%s", left->reg, true_label, assign_label);
-        codebuf.emit("%s:", true_label);
-        right->emit_code();
-        codebuf.emit("br label %%%s", assign_label);
-        codebuf.emit("%s:", assign_label);
-        codebuf.emit("%s = select i1 %s, i1 %s, i1 0", this->reg, left->reg, right->reg);
+        codebuf.emit("br i1 %s, label %%%s, label %%%s", left->reg, right_label, phi_label);
     }
+
+    codebuf.emit("%s:", right_label);
+    right->emit_code();
+    codebuf.emit("br label %%%s", branch_label);
+    codebuf.emit("%s:", branch_label);
+    codebuf.emit("br label %%%s", phi_label);
+    codebuf.emit("%s:", phi_label);
+    codebuf.emit("%s = phi i1 [ %s, %%%s ], [ %s, %%%s ]", this->reg, left->reg, start_label, right->reg, branch_label);
 }
 
 arithmetic_expression::arithmetic_expression(expression_syntax* left, syntax_token* oper_token, expression_syntax* right):
@@ -312,29 +314,26 @@ void conditional_expression::emit_code()
 {
     string true_label = ir_builder::fresh_label();
     string false_label = ir_builder::fresh_label();
-    string assign_label = ir_builder::fresh_label();
+    string true_branch = ir_builder::fresh_label();
+    string false_branch = ir_builder::fresh_label();
+    string phi_label = ir_builder::fresh_label();
 
     string ret_type = ir_builder::get_type(this->return_type);
 
     condition->emit_code();
-
     codebuf.emit("br i1 %s, label %%%s, label %%%s", condition->reg, true_label, false_label);
-
     codebuf.emit("%s:", true_label);
-
     true_value->emit_code();
-
-    codebuf.emit("br label %%%s", assign_label);
-
+    codebuf.emit("br label %%%s", true_branch);
+    codebuf.emit("%s:", true_branch);
+    codebuf.emit("br label %%%s", phi_label);
     codebuf.emit("%s:", false_label);
-
     false_value->emit_code();
-
-    codebuf.emit("br label %%%s", assign_label);
-
-    codebuf.emit("%s:", assign_label);
-
-    codebuf.emit("%s = select i1 %s, %s %s, %s %s", this->reg, condition->reg, ret_type, true_value->reg, ret_type, false_value->reg);
+    codebuf.emit("br label %%%s", false_branch);
+    codebuf.emit("%s:", false_branch);
+    codebuf.emit("br label %%%s", phi_label);
+    codebuf.emit("%s:", phi_label);
+    codebuf.emit("%s = phi %s [ %s, %%%s ], [ %s, %%%s ]", this->reg, ret_type, true_value->reg, true_branch, false_value->reg, false_branch);
 }
 
 identifier_expression::identifier_expression(syntax_token* identifier_token):

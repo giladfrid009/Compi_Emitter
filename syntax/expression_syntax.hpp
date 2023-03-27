@@ -107,7 +107,7 @@ template<> inline void literal_expression<std::string>::emit_code()
 
     std::string arr_name = ir_builder::fresh_global();
     std::string arr_content = value.substr(1, value.length() - 2);
-    std::string arr_type = ir_builder::format_string("[%dxi8]", arr_content.length() + 1);
+    std::string arr_type = ir_builder::format_string("[%d x i8]", arr_content.length() + 1);
 
     codebuf.emit_global(ir_builder::format_string("%s = constant %s c\"%s\\00\"", arr_name, arr_type, arr_content));
 
