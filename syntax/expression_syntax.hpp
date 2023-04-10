@@ -165,10 +165,12 @@ class logical_expression final: public expression_syntax
     logical_expression(const logical_expression& other) = delete;
     logical_expression& operator=(const logical_expression& other) = delete;
 
-    static operator_kind parse_operator(std::string str);
-
     void analyze() const override;
     void emit() override;
+
+    private:
+
+    static operator_kind parse_operator(std::string str);
 };
 
 class arithmetic_expression final: public expression_syntax
@@ -189,7 +191,7 @@ class arithmetic_expression final: public expression_syntax
     void analyze() const override;
     void emit() override;
 
-    protected:
+    private:
 
     static arithmetic_operator parse_operator(std::string str);
 };
@@ -212,7 +214,7 @@ class relational_expression final: public expression_syntax
     void analyze() const override;
     void emit() override;
 
-    protected:
+    private:
 
     static relational_operator parse_operator(std::string str);
 };
@@ -236,7 +238,7 @@ class conditional_expression final: public expression_syntax
     void analyze() const override;
     void emit() override;
 
-    protected:
+    private:
 
     static type_kind get_return_type(expression_syntax* left, expression_syntax* right);
 };
@@ -264,7 +266,7 @@ class identifier_expression final: public expression_syntax
     void analyze() const override;
     void emit() override;
 
-    protected:
+    private:
 
     static type_kind get_return_type(std::string identifier);
 };
@@ -287,7 +289,7 @@ class invocation_expression final: public expression_syntax
     void analyze() const override;
     void emit() override;
 
-    protected:
+    private:
 
     static type_kind get_return_type(std::string identifier);
     static std::string get_arguments(const list_syntax<expression_syntax>* arguments);

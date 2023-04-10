@@ -21,9 +21,7 @@ cast_expression::cast_expression(type_syntax* destination_type, expression_synta
     expression_syntax(destination_type->kind), destination_type(destination_type), value(value)
 {
     analyze();
-
-    add_child(destination_type);
-    add_child(value);
+    add_children({ destination_type, value });
 }
 
 cast_expression::~cast_expression()
@@ -60,7 +58,6 @@ not_expression::not_expression(syntax_token* not_token, expression_syntax* expre
     expression_syntax(type_kind::Bool), not_token(not_token), expression(expression)
 {
     analyze();
-
     add_child(expression);
 }
 
@@ -93,9 +90,7 @@ logical_expression::logical_expression(expression_syntax* left, syntax_token* op
     expression_syntax(type_kind::Bool), left(left), oper_token(oper_token), right(right), oper(parse_operator(oper_token->text))
 {
     analyze();
-
-    add_child(left);
-    add_child(right);
+    add_children({ left, right });
 }
 
 logical_expression::~logical_expression()
@@ -132,7 +127,7 @@ void logical_expression::emit()
     string right_label = ir_builder::fresh_label();
     string phi_label = ir_builder::fresh_label();
     string branch_label = ir_builder::fresh_label();
-    
+
     code_buf.emit("br label %%%s", start_label);
     code_buf.emit("%s:", start_label);
 
@@ -158,9 +153,7 @@ arithmetic_expression::arithmetic_expression(expression_syntax* left, syntax_tok
     expression_syntax(types::cast_up(left->return_type, right->return_type)), left(left), oper_token(oper_token), right(right), oper(parse_operator(oper_token->text))
 {
     analyze();
-
-    add_child(left);
-    add_child(right);
+    add_children({ left, right });
 }
 
 arithmetic_expression::~arithmetic_expression()
@@ -229,9 +222,7 @@ relational_expression::relational_expression(expression_syntax* left, syntax_tok
     expression_syntax(type_kind::Bool), left(left), oper_token(oper_token), right(right), oper(parse_operator(oper_token->text))
 {
     analyze();
-
-    add_child(left);
-    add_child(right);
+    add_children({ left, right });
 }
 
 relational_expression::~relational_expression()
@@ -272,7 +263,7 @@ void relational_expression::emit()
     type_kind operands_type = types::cast_up(left->return_type, right->return_type);
 
     string cmp_kind = ir_builder::get_comparison_kind(oper, operands_type == type_kind::Int);
-    
+
     code_buf.emit("%s = icmp %s i32 %s, %s", this->reg, cmp_kind, left->reg, right->reg);
 }
 
@@ -280,10 +271,7 @@ conditional_expression::conditional_expression(expression_syntax* true_value, sy
     expression_syntax(types::cast_up(true_value->return_type, false_value->return_type)), true_value(true_value), if_token(if_token), condition(condition), else_token(else_token), false_value(false_value)
 {
     analyze();
-
-    add_child(true_value);
-    add_child(condition);
-    add_child(false_value);
+    add_children({ true_value, condition, false_value });
 }
 
 conditional_expression::~conditional_expression()
@@ -406,7 +394,7 @@ void identifier_expression::emit()
         code_buf.emit("%s = add %s 0, %s", this->reg, res_type, _ptr_reg);
     }
     else if (_kind == symbol_kind::Variable)
-    {   
+    {
         code_buf.emit("%s = load %s, %s* %s", this->reg, res_type, res_type, _ptr_reg);
     }
 }
@@ -421,7 +409,6 @@ invocation_expression::invocation_expression(syntax_token* identifier_token, lis
     expression_syntax(get_return_type(identifier_token->text)), identifier_token(identifier_token), identifier(identifier_token->text), arguments(arguments)
 {
     analyze();
-
     add_child(arguments);
 }
 
@@ -528,7 +515,7 @@ void invocation_expression::emit()
         code_buf.emit("call void @%s(%s)", identifier, get_arguments(arguments));
         return;
     }
-    
+
     string ret_str = ir_builder::get_type(return_type);
 
     code_buf.emit("%s = call %s @%s(%s)", this->reg, ret_str, identifier, get_arguments(arguments));

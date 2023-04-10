@@ -74,17 +74,14 @@ void parameter_syntax::analyze() const
 
 void parameter_syntax::emit()
 {
-    
+
 }
 
 function_declaration_syntax::function_declaration_syntax(type_syntax* return_type, syntax_token* identifier_token, list_syntax<parameter_syntax>* parameters, list_syntax<statement_syntax>* body):
     return_type(return_type), identifier_token(identifier_token), identifier(identifier_token->text), parameters(parameters), body(body)
 {
     analyze();
-
-    add_child(return_type);
-    add_child(parameters);
-    add_child(body);
+    add_children({ return_type, parameters, body });
 }
 
 function_declaration_syntax::~function_declaration_syntax()
@@ -171,7 +168,6 @@ void function_declaration_syntax::emit()
 root_syntax::root_syntax(list_syntax<function_declaration_syntax>* functions): functions(functions)
 {
     analyze();
-
     add_child(functions);
 }
 

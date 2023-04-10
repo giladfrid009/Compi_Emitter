@@ -65,7 +65,7 @@ class branch_statement final: public statement_syntax
     void analyze() const override;
     void emit() override;
 
-    protected:
+    private:
 
     static branch_kind parse_kind(std::string str);
 };

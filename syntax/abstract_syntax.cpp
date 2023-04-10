@@ -3,9 +3,11 @@
 #include "../emit/code_buffer.hpp"
 #include <stdexcept>
 #include <string>
+#include <initializer_list>
 
 using std::string;
 using std::list;
+using std::initializer_list;
 
 static code_buffer& code_buf = code_buffer::instance();
 
@@ -27,6 +29,14 @@ void syntax_base::add_child(syntax_base* child)
 
     _children.push_back(child);
     child->_parent = this;
+}
+
+void syntax_base::add_children(initializer_list<syntax_base*> children)
+{
+    for (auto child : children)
+    {
+        add_child(child);
+    }
 }
 
 void syntax_base::add_child_front(syntax_base* child)

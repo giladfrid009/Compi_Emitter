@@ -16,19 +16,14 @@ if_statement::if_statement(syntax_token* if_token, expression_syntax* condition,
     if_token(if_token), condition(condition), body(body), else_token(nullptr), else_clause(nullptr)
 {
     analyze();
-
-    add_child(condition);
-    add_child(body);
+    add_children({ condition , body });
 }
 
 if_statement::if_statement(syntax_token* if_token, expression_syntax* condition, statement_syntax* body, syntax_token* else_token, statement_syntax* else_clause):
     if_token(if_token), condition(condition), body(body), else_token(else_token), else_clause(else_clause)
 {
     analyze();
-
-    add_child(condition);
-    add_child(body);
-    add_child(else_clause);
+    add_children({ condition , body, else_clause });
 }
 
 if_statement::~if_statement()
@@ -76,7 +71,7 @@ void if_statement::emit()
     else
     {
         code_buf.emit("br i1 %s, label %%%s, label %%%s", condition->reg, true_label, false_label);
-        
+
         code_buf.increase_indent();
         code_buf.emit("%s:", true_label);
         body->emit();
@@ -103,9 +98,7 @@ while_statement::while_statement(syntax_token* while_token, expression_syntax* c
     while_token(while_token), condition(condition), body(body)
 {
     analyze();
-
-    add_child(condition);
-    add_child(body);
+    add_children({ condition, body });
 }
 
 while_statement::~while_statement()
@@ -217,7 +210,6 @@ return_statement::return_statement(syntax_token* return_token): return_token(ret
 return_statement::return_statement(syntax_token* return_token, expression_syntax* value): return_token(return_token), value(value)
 {
     analyze();
-
     add_child(value);
 }
 
@@ -366,8 +358,7 @@ declaration_statement::declaration_statement(type_syntax* type, syntax_token* id
 
     this->_ptr_reg = static_cast<const variable_symbol*>(sym)->ptr_reg;
 
-    add_child(type);
-    add_child(value);
+    add_children({ type ,value });
 }
 
 declaration_statement::~declaration_statement()

@@ -7,6 +7,7 @@
 #include <vector>
 #include <string>
 #include <list>
+#include <initializer_list>
 
 class expression_syntax;
 
@@ -35,6 +36,7 @@ class syntax_base
 
     void add_child(syntax_base* child);
     void add_child_front(syntax_base* child);
+    void add_children(std::initializer_list<syntax_base*> children);
 };
 
 class expression_syntax: public syntax_base
