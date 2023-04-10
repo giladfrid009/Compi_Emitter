@@ -29,8 +29,6 @@ void create_function_header(type_syntax* return_type, syntax_token* indentifier_
 
 expression_syntax* validate_bool_expression(expression_syntax* expression);
 
-void print_current_scope();
-
 %}
 
 %code requires 
@@ -249,14 +247,4 @@ expression_syntax* validate_bool_expression(expression_syntax* expression)
     }
 
     return expression;
-}
-
-void print_current_scope()
-{
-    output::end_scope();
-
-    for (auto sym : symbol_table::instance().current_scope().get_symbols())
-    {
-        std::cout << sym->to_string() << std::endl;
-    }
 }

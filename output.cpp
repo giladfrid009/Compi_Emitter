@@ -6,13 +6,6 @@
 
 using namespace std;
 
-string type_list_to_string(const std::vector<string>& arg_types);
-
-void output::end_scope()
-{
-    cout << "---end scope---" << endl;
-}
-
 string type_list_to_string(const std::vector<string>& arg_types)
 {
     stringstream res;

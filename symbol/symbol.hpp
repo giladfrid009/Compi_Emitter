@@ -23,8 +23,6 @@ class symbol
     public:
 
     virtual ~symbol() = default;
-
-    virtual std::string to_string() const = 0;
 };
 
 class variable_symbol: public symbol
@@ -34,8 +32,6 @@ class variable_symbol: public symbol
     const std::string ptr_reg;
 
     variable_symbol(const std::string& name, type_kind type, int offset);
-
-    std::string to_string() const override;
 };
 
 class parameter_symbol: public symbol
@@ -43,8 +39,6 @@ class parameter_symbol: public symbol
     public:
 
     parameter_symbol(const std::string& name, type_kind type, int offset);
-
-    std::string to_string() const override;
 };
 
 class function_symbol: public symbol
@@ -54,8 +48,6 @@ class function_symbol: public symbol
     const std::vector<type_kind> parameter_types;
 
     function_symbol(const std::string& name, type_kind return_type, const std::vector<type_kind>& parameter_types);
-
-    std::string to_string() const override;
 };
 
 #endif

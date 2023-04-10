@@ -6,8 +6,6 @@
 
 namespace output
 {
-    void end_scope();
-
     [[noreturn]] void error_lex(int lineno);
 
     [[noreturn]] void error_syn(int lineno);
