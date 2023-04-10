@@ -18,8 +18,8 @@ extern int yylineno;
 
 extern int yylex();
 
-static symbol_table& symtab = symbol_table::instance();
-static code_buffer& codebuf = code_buffer::instance();
+static symbol_table& sym_tab = symbol_table::instance();
+static code_buffer& code_buf = code_buffer::instance();
 
 void yyerror(const char* message);
 
@@ -173,26 +173,26 @@ Exp 		: LPAREN Exp RPAREN	                                    { $$ = $2; }
 			;
 BoolExp     : Exp                                                   { $$ = validate_bool_expression($1); }
             ;
-OS          : %empty                                                { symtab.open_scope(); } 
+OS          : %empty                                                { sym_tab.open_scope(); } 
             ;
-OSL         : %empty                                                { symtab.open_scope(true); }
+OSL         : %empty                                                { sym_tab.open_scope(true); }
             ;
-CS          : %empty                                                { symtab.close_scope(); }
+CS          : %empty                                                { sym_tab.close_scope(); }
             ;
 %%
 
 int main()
 {
-    symtab.open_scope();
+    sym_tab.open_scope();
     
     add_builtin_functions();
 
     int res = yyparse();
 
-    symtab.close_scope();
+    sym_tab.close_scope();
 
-    codebuf.print_globals();
-    codebuf.print();
+    code_buf.print_globals();
+    code_buf.print();
 
     return res;
 }
@@ -204,17 +204,17 @@ void yyerror(const char* message)
 
 void add_builtin_functions()
 {
-    symtab.add_function("print", type_kind::Void, vector<type_kind>{type_kind::String});
-    symtab.add_function("printi", type_kind::Void, vector<type_kind>{type_kind::Int});
+    sym_tab.add_function("print", type_kind::Void, vector<type_kind>{type_kind::String});
+    sym_tab.add_function("printi", type_kind::Void, vector<type_kind>{type_kind::Int});
 
-    codebuf.emit_from_file("builtin_functions.llvm");
+    code_buf.emit_from_file("builtin_functions.llvm");
 }
 
 void create_function_header(type_syntax* return_type, syntax_token* indentifier_token, list_syntax<parameter_syntax>* parameters)
 {
     string func_name = indentifier_token->text;
 
-    if (symtab.contains_symbol(func_name))
+    if (sym_tab.contains_symbol(func_name))
     {
         output::error_def(indentifier_token->position, func_name);
     }
@@ -226,18 +226,18 @@ void create_function_header(type_syntax* return_type, syntax_token* indentifier_
         param_types.push_back(param->type->kind);
     }
 
-    symtab.add_function(func_name, return_type->kind, param_types);
+    sym_tab.add_function(func_name, return_type->kind, param_types);
 
-    symtab.open_scope();
+    sym_tab.open_scope();
 
     for (auto param : *parameters)
     {
-        if (symtab.contains_symbol(param->identifier))
+        if (sym_tab.contains_symbol(param->identifier))
         {
             output::error_def(param->identifier_token->position, param->identifier);
         }
 
-        symtab.add_parameter(param->identifier, param->type->kind);
+        sym_tab.add_parameter(param->identifier, param->type->kind);
     }
 }
 
