@@ -13,10 +13,10 @@ class scope
 
     private:
 
-    std::list<const symbol*> symbol_list;
-    std::unordered_map<std::string, const symbol*> symbol_map;
-    int offset;
-    int param_offset;
+    std::list<const symbol*> _symbol_list;
+    std::unordered_map<std::string, const symbol*> _symbol_map;
+    int _offset;
+    int _param_offset;
 
     public:
 
@@ -31,7 +31,7 @@ class scope
     const symbol* get_symbol(const std::string& name) const;
     const symbol* get_symbol(const std::string& name, symbol_kind kind) const;
 
-    const std::list<const symbol*>& get_symbols() const;
+    const std::list<const symbol*>& symbols() const;
 
     bool add_variable(const std::string& name, type_kind type);
     bool add_parameter(const std::string& name, type_kind type);

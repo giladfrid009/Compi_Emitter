@@ -105,7 +105,7 @@ expression_syntax* validate_bool_expression(expression_syntax* expression);
 
 %%
 
-Program 	: Funcs END										        { $$ = new root_syntax($1); $$->emit_code(); delete $$; }
+Program 	: Funcs END										        { $$ = new root_syntax($1); $$->emit(); delete $$; }
 			;       
 Funcs   	: %empty                                                { $$ = new list_syntax<function_declaration_syntax>(); }
       		| FuncDecl Funcs					                    { $$ = $2->push_front($1); }

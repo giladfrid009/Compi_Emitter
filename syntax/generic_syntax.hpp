@@ -11,11 +11,11 @@ template<typename element_type> class list_syntax final: public syntax_base
 {
     private:
 
-    std::list<element_type*> elements;
+    std::list<element_type*> _elements;
 
     public:
 
-    list_syntax(): elements()
+    list_syntax(): _elements()
     {
         static_assert(std::is_base_of<syntax_base, element_type>::value, "must be of type syntax_base");
     }
@@ -31,17 +31,17 @@ template<typename element_type> class list_syntax final: public syntax_base
 
     element_type* front() const
     {
-        return elements.front();
+        return _elements.front();
     }
 
     element_type* back() const
     {
-        return elements.back();
+        return _elements.back();
     }
 
     list_syntax<element_type>* push_back(element_type* element)
     {
-        elements.push_back(element);
+        _elements.push_back(element);
 
         add_child(element);
 
@@ -50,7 +50,7 @@ template<typename element_type> class list_syntax final: public syntax_base
 
     list_syntax<element_type>* push_front(element_type* element)
     {
-        elements.push_front(element);
+        _elements.push_front(element);
 
         add_child_front(element);
 
@@ -59,36 +59,36 @@ template<typename element_type> class list_syntax final: public syntax_base
 
     std::size_t size() const
     {
-        return elements.size();
+        return _elements.size();
     }
 
     typename std::list<element_type*>::const_iterator begin() const
     {
-        return elements.begin();
+        return _elements.begin();
     }
 
     typename std::list<element_type*>::const_iterator end() const
     {
-        return elements.end();
+        return _elements.end();
     }
 
     ~list_syntax()
     {
-        for (syntax_base* child : get_children())
+        for (syntax_base* child : children())
         {
             delete child;
         }
     }
 
-    void semantic_analysis() const override
+    void analyze() const override
     {
     }
 
-    void emit_code() override
+    void emit() override
     {
-        for (element_type* element : elements)
+        for (element_type* element : _elements)
         {
-            element->emit_code();
+            element->emit();
         }
     }
 };
@@ -109,8 +109,8 @@ class type_syntax final: public syntax_base
     bool is_numeric() const;
     bool is_special() const;
 
-    void semantic_analysis() const override;
-    void emit_code() override;
+    void analyze() const override;
+    void emit() override;
 };
 
 class parameter_syntax final: public syntax_base
@@ -127,8 +127,8 @@ class parameter_syntax final: public syntax_base
     parameter_syntax(const parameter_syntax& other) = delete;
     parameter_syntax& operator=(const parameter_syntax& other) = delete;
 
-    void semantic_analysis() const override;
-    void emit_code() override;
+    void analyze() const override;
+    void emit() override;
 };
 
 class function_declaration_syntax final: public syntax_base
@@ -147,8 +147,8 @@ class function_declaration_syntax final: public syntax_base
     function_declaration_syntax(const function_declaration_syntax& other) = delete;
     function_declaration_syntax& operator=(const function_declaration_syntax& other) = delete;
 
-    void semantic_analysis() const override;
-    void emit_code() override;
+    void analyze() const override;
+    void emit() override;
 };
 
 class root_syntax final: public syntax_base
@@ -163,8 +163,8 @@ class root_syntax final: public syntax_base
     root_syntax(const root_syntax& other) = delete;
     root_syntax& operator=(const root_syntax& other) = delete;
 
-    void semantic_analysis() const override;
-    void emit_code() override;
+    void analyze() const override;
+    void emit() override;
 };
 
 #endif

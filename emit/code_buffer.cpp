@@ -12,7 +12,7 @@ using std::stringstream;
 
 bool replace(string& str, const string& from, const string& to);
 
-code_buffer::code_buffer(): indent(0), buffer(), global_defs()
+code_buffer::code_buffer(): _indent(0), _buffer(), _global_defs()
 {
 
 }
@@ -25,17 +25,17 @@ code_buffer& code_buffer::instance()
 
 void code_buffer::increase_indent()
 {
-    indent++;
+    _indent++;
 }
 
 void code_buffer::decrease_indent()
 {
-    if (indent <= 0)
+    if (_indent <= 0)
     {
         return;
     }
 
-    indent--;
+    _indent--;
 }
 
 string code_buffer::emit_label()
@@ -51,16 +51,16 @@ size_t code_buffer::emit(const string& line)
 {
     stringstream instr;
 
-    for (int i = 0; i < indent; i++)
+    for (int i = 0; i < _indent; i++)
     {
         instr << "    ";
     }
 
     instr << line;
 
-    buffer.push_back(instr.str());
+    _buffer.push_back(instr.str());
 
-    return buffer.size() - 1;
+    return _buffer.size() - 1;
 }
 
 void code_buffer::new_line()
@@ -84,7 +84,7 @@ size_t code_buffer::emit_from_file(std::string file_path)
         emit(line);
     }
 
-    return buffer.size() - 1;
+    return _buffer.size() - 1;
 }
 
 void code_buffer::backpatch(const list<size_t>& patch_list, const std::string& label)
@@ -93,7 +93,7 @@ void code_buffer::backpatch(const list<size_t>& patch_list, const std::string& l
 
     for (auto& line : patch_list)
     {
-        bool res = replace(buffer[line], "@", to);
+        bool res = replace(_buffer[line], "@", to);
 
         if (res == false)
         {
@@ -104,7 +104,7 @@ void code_buffer::backpatch(const list<size_t>& patch_list, const std::string& l
 
 void code_buffer::print() const
 {
-    for (auto& line : buffer)
+    for (auto& line : _buffer)
     {
         std::cout << line << std::endl;
     }
@@ -117,12 +117,12 @@ void code_buffer::comment(std::string line)
 
 void code_buffer::emit_global(const std::string& line)
 {
-    global_defs.push_back(line);
+    _global_defs.push_back(line);
 }
 
 void code_buffer::print_globals() const
 {
-    for (auto& line : global_defs)
+    for (auto& line : _global_defs)
     {
         std::cout << line << std::endl;
     }

@@ -20,7 +20,7 @@ static code_buffer& code_buf = code_buffer::instance();
 cast_expression::cast_expression(type_syntax* destination_type, expression_syntax* value):
     expression_syntax(destination_type->kind), destination_type(destination_type), value(value)
 {
-    semantic_analysis();
+    analyze();
 
     add_child(destination_type);
     add_child(value);
@@ -28,13 +28,13 @@ cast_expression::cast_expression(type_syntax* destination_type, expression_synta
 
 cast_expression::~cast_expression()
 {
-    for (syntax_base* child : get_children())
+    for (syntax_base* child : children())
     {
         delete child;
     }
 }
 
-void cast_expression::semantic_analysis() const
+void cast_expression::analyze() const
 {
     if (value->is_numeric() == false || destination_type->is_numeric() == false)
     {
@@ -42,9 +42,9 @@ void cast_expression::semantic_analysis() const
     }
 }
 
-void cast_expression::emit_code()
+void cast_expression::emit()
 {
-    value->emit_code();
+    value->emit();
 
     if (value->return_type == type_kind::Int && destination_type->kind == type_kind::Byte)
     {
@@ -59,14 +59,14 @@ void cast_expression::emit_code()
 not_expression::not_expression(syntax_token* not_token, expression_syntax* expression):
     expression_syntax(type_kind::Bool), not_token(not_token), expression(expression)
 {
-    semantic_analysis();
+    analyze();
 
     add_child(expression);
 }
 
 not_expression::~not_expression()
 {
-    for (syntax_base* child : get_children())
+    for (syntax_base* child : children())
     {
         delete child;
     }
@@ -74,7 +74,7 @@ not_expression::~not_expression()
     delete not_token;
 }
 
-void not_expression::semantic_analysis() const
+void not_expression::analyze() const
 {
     if (expression->return_type != type_kind::Bool)
     {
@@ -82,9 +82,9 @@ void not_expression::semantic_analysis() const
     }
 }
 
-void not_expression::emit_code()
+void not_expression::emit()
 {
-    expression->emit_code();
+    expression->emit();
 
     code_buf.emit("%s = select i1 %s, i1 0, i1 1", this->reg, expression->reg);
 }
@@ -92,7 +92,7 @@ void not_expression::emit_code()
 logical_expression::logical_expression(expression_syntax* left, syntax_token* oper_token, expression_syntax* right):
     expression_syntax(type_kind::Bool), left(left), oper_token(oper_token), right(right), oper(parse_operator(oper_token->text))
 {
-    semantic_analysis();
+    analyze();
 
     add_child(left);
     add_child(right);
@@ -100,7 +100,7 @@ logical_expression::logical_expression(expression_syntax* left, syntax_token* op
 
 logical_expression::~logical_expression()
 {
-    for (syntax_base* child : get_children())
+    for (syntax_base* child : children())
     {
         delete child;
     }
@@ -116,7 +116,7 @@ logical_expression::operator_kind logical_expression::parse_operator(string str)
     throw std::invalid_argument("unknown oper");
 }
 
-void logical_expression::semantic_analysis() const
+void logical_expression::analyze() const
 {
     if (left->return_type != type_kind::Bool || right->return_type != type_kind::Bool)
     {
@@ -124,9 +124,9 @@ void logical_expression::semantic_analysis() const
     }
 }
 
-void logical_expression::emit_code()
+void logical_expression::emit()
 {
-    left->emit_code();
+    left->emit();
 
     string start_label = ir_builder::fresh_label();
     string right_label = ir_builder::fresh_label();
@@ -146,7 +146,7 @@ void logical_expression::emit_code()
     }
 
     code_buf.emit("%s:", right_label);
-    right->emit_code();
+    right->emit();
     code_buf.emit("br label %%%s", branch_label);
     code_buf.emit("%s:", branch_label);
     code_buf.emit("br label %%%s", phi_label);
@@ -157,7 +157,7 @@ void logical_expression::emit_code()
 arithmetic_expression::arithmetic_expression(expression_syntax* left, syntax_token* oper_token, expression_syntax* right):
     expression_syntax(types::cast_up(left->return_type, right->return_type)), left(left), oper_token(oper_token), right(right), oper(parse_operator(oper_token->text))
 {
-    semantic_analysis();
+    analyze();
 
     add_child(left);
     add_child(right);
@@ -165,7 +165,7 @@ arithmetic_expression::arithmetic_expression(expression_syntax* left, syntax_tok
 
 arithmetic_expression::~arithmetic_expression()
 {
-    for (syntax_base* child : get_children())
+    for (syntax_base* child : children())
     {
         delete child;
     }
@@ -183,7 +183,7 @@ arithmetic_operator arithmetic_expression::parse_operator(string str)
     throw std::invalid_argument("unknown oper");
 }
 
-void arithmetic_expression::semantic_analysis() const
+void arithmetic_expression::analyze() const
 {
     if (left->is_numeric() == false || right->is_numeric() == false)
     {
@@ -191,10 +191,10 @@ void arithmetic_expression::semantic_analysis() const
     }
 }
 
-void arithmetic_expression::emit_code()
+void arithmetic_expression::emit()
 {
-    left->emit_code();
-    right->emit_code();
+    left->emit();
+    right->emit();
 
     if (oper == arithmetic_operator::Div)
     {
@@ -228,7 +228,7 @@ void arithmetic_expression::emit_code()
 relational_expression::relational_expression(expression_syntax* left, syntax_token* oper_token, expression_syntax* right):
     expression_syntax(type_kind::Bool), left(left), oper_token(oper_token), right(right), oper(parse_operator(oper_token->text))
 {
-    semantic_analysis();
+    analyze();
 
     add_child(left);
     add_child(right);
@@ -236,7 +236,7 @@ relational_expression::relational_expression(expression_syntax* left, syntax_tok
 
 relational_expression::~relational_expression()
 {
-    for (syntax_base* child : get_children())
+    for (syntax_base* child : children())
     {
         delete child;
     }
@@ -256,7 +256,7 @@ relational_operator relational_expression::parse_operator(string str)
     throw std::invalid_argument("unknown oper");
 }
 
-void relational_expression::semantic_analysis() const
+void relational_expression::analyze() const
 {
     if (left->is_numeric() == false || right->is_numeric() == false)
     {
@@ -264,10 +264,10 @@ void relational_expression::semantic_analysis() const
     }
 }
 
-void relational_expression::emit_code()
+void relational_expression::emit()
 {
-    left->emit_code();
-    right->emit_code();
+    left->emit();
+    right->emit();
 
     type_kind operands_type = types::cast_up(left->return_type, right->return_type);
 
@@ -279,7 +279,7 @@ void relational_expression::emit_code()
 conditional_expression::conditional_expression(expression_syntax* true_value, syntax_token* if_token, expression_syntax* condition, syntax_token* else_token, expression_syntax* false_value):
     expression_syntax(types::cast_up(true_value->return_type, false_value->return_type)), true_value(true_value), if_token(if_token), condition(condition), else_token(else_token), false_value(false_value)
 {
-    semantic_analysis();
+    analyze();
 
     add_child(true_value);
     add_child(condition);
@@ -288,7 +288,7 @@ conditional_expression::conditional_expression(expression_syntax* true_value, sy
 
 conditional_expression::~conditional_expression()
 {
-    for (syntax_base* child : get_children())
+    for (syntax_base* child : children())
     {
         delete child;
     }
@@ -297,7 +297,7 @@ conditional_expression::~conditional_expression()
     delete else_token;
 }
 
-void conditional_expression::semantic_analysis() const
+void conditional_expression::analyze() const
 {
     if (return_type == type_kind::Void)
     {
@@ -310,7 +310,7 @@ void conditional_expression::semantic_analysis() const
     }
 }
 
-void conditional_expression::emit_code()
+void conditional_expression::emit()
 {
     string true_label = ir_builder::fresh_label();
     string false_label = ir_builder::fresh_label();
@@ -320,15 +320,15 @@ void conditional_expression::emit_code()
 
     string ret_type = ir_builder::get_type(this->return_type);
 
-    condition->emit_code();
+    condition->emit();
     code_buf.emit("br i1 %s, label %%%s, label %%%s", condition->reg, true_label, false_label);
     code_buf.emit("%s:", true_label);
-    true_value->emit_code();
+    true_value->emit();
     code_buf.emit("br label %%%s", true_branch);
     code_buf.emit("%s:", true_branch);
     code_buf.emit("br label %%%s", phi_label);
     code_buf.emit("%s:", false_label);
-    false_value->emit_code();
+    false_value->emit();
     code_buf.emit("br label %%%s", false_branch);
     code_buf.emit("%s:", false_branch);
     code_buf.emit("br label %%%s", phi_label);
@@ -337,21 +337,21 @@ void conditional_expression::emit_code()
 }
 
 identifier_expression::identifier_expression(syntax_token* identifier_token):
-    expression_syntax(get_return_type(identifier_token->text)), identifier_token(identifier_token), identifier(identifier_token->text), kind(symbol_kind::Parameter), ptr_reg()
+    expression_syntax(get_return_type(identifier_token->text)), identifier_token(identifier_token), identifier(identifier_token->text), _kind(symbol_kind::Parameter), _ptr_reg()
 {
-    semantic_analysis();
+    analyze();
 
     const symbol* symbol = sym_tab.get_symbol(identifier);
 
-    kind = symbol->kind;
+    _kind = symbol->kind;
 
     if (symbol->kind == symbol_kind::Parameter)
     {
-        this->ptr_reg = ir_builder::format_string("%%%d", -symbol->offset - 1);
+        this->_ptr_reg = ir_builder::format_string("%%%d", -symbol->offset - 1);
     }
     else
     {
-        this->ptr_reg = static_cast<const variable_symbol*>(symbol)->ptr_reg;
+        this->_ptr_reg = static_cast<const variable_symbol*>(symbol)->ptr_reg;
     }
 }
 
@@ -374,7 +374,7 @@ type_kind identifier_expression::get_return_type(string identifier)
 
 identifier_expression::~identifier_expression()
 {
-    for (syntax_base* child : get_children())
+    for (syntax_base* child : children())
     {
         delete child;
     }
@@ -382,7 +382,7 @@ identifier_expression::~identifier_expression()
     delete identifier_token;
 }
 
-void identifier_expression::semantic_analysis() const
+void identifier_expression::analyze() const
 {
     const symbol* symbol = sym_tab.get_symbol(identifier);
 
@@ -397,30 +397,30 @@ void identifier_expression::semantic_analysis() const
     }
 }
 
-void identifier_expression::emit_code()
+void identifier_expression::emit()
 {
     string res_type = ir_builder::get_type(return_type);
 
-    if (kind == symbol_kind::Parameter)
+    if (_kind == symbol_kind::Parameter)
     {
-        code_buf.emit("%s = add %s 0, %s", this->reg, res_type, ptr_reg);
+        code_buf.emit("%s = add %s 0, %s", this->reg, res_type, _ptr_reg);
     }
-    else if (kind == symbol_kind::Variable)
+    else if (_kind == symbol_kind::Variable)
     {   
-        code_buf.emit("%s = load %s, %s* %s", this->reg, res_type, res_type, ptr_reg);
+        code_buf.emit("%s = load %s, %s* %s", this->reg, res_type, res_type, _ptr_reg);
     }
 }
 
 invocation_expression::invocation_expression(syntax_token* identifier_token):
     expression_syntax(get_return_type(identifier_token->text)), identifier_token(identifier_token), identifier(identifier_token->text), arguments(nullptr)
 {
-    semantic_analysis();
+    analyze();
 }
 
 invocation_expression::invocation_expression(syntax_token* identifier_token, list_syntax<expression_syntax>* arguments):
     expression_syntax(get_return_type(identifier_token->text)), identifier_token(identifier_token), identifier(identifier_token->text), arguments(arguments)
 {
-    semantic_analysis();
+    analyze();
 
     add_child(arguments);
 }
@@ -439,7 +439,7 @@ type_kind invocation_expression::get_return_type(string identifier)
 
 invocation_expression::~invocation_expression()
 {
-    for (syntax_base* child : get_children())
+    for (syntax_base* child : children())
     {
         delete child;
     }
@@ -473,7 +473,7 @@ string invocation_expression::get_arguments(const list_syntax<expression_syntax>
     return result.str();
 }
 
-void invocation_expression::semantic_analysis() const
+void invocation_expression::analyze() const
 {
     const function_symbol* function = static_cast<const function_symbol*>(sym_tab.get_symbol(identifier, symbol_kind::Function));
 
@@ -516,11 +516,11 @@ void invocation_expression::semantic_analysis() const
     }
 }
 
-void invocation_expression::emit_code()
+void invocation_expression::emit()
 {
     if (arguments != nullptr)
     {
-        arguments->emit_code();
+        arguments->emit();
     }
 
     if (return_type == type_kind::Void)

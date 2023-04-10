@@ -14,8 +14,8 @@ class syntax_base
 {
     private:
 
-    std::list<syntax_base*> children;
-    syntax_base* parent = nullptr;
+    std::list<syntax_base*> _children;
+    syntax_base* _parent = nullptr;
 
     public:
 
@@ -25,11 +25,11 @@ class syntax_base
     syntax_base(const syntax_base& other) = delete;
     syntax_base& operator=(const syntax_base& other) = delete;
 
-    const syntax_base* get_parent() const;
-    const std::list<syntax_base*>& get_children() const;
+    const syntax_base* parent() const;
+    const std::list<syntax_base*>& children() const;
 
-    virtual void semantic_analysis() const = 0;
-    virtual void emit_code() = 0;
+    virtual void analyze() const = 0;
+    virtual void emit() = 0;
 
     protected:
 

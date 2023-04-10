@@ -9,7 +9,7 @@ class symbol_table
 {
     private:
 
-    std::list<scope> scope_list;
+    std::list<scope> _scope_list;
 
     symbol_table();
 
@@ -33,7 +33,7 @@ class symbol_table
     bool add_function(const std::string& name, type_kind return_type);
     bool add_function(const std::string& name, type_kind return_type, const std::vector<type_kind>& parameter_types);
 
-    const std::list<scope>& get_scopes() const;
+    const std::list<scope>& scopes() const;
 };
 
 #endif

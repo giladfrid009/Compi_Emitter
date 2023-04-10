@@ -8,13 +8,13 @@ using std::string;
 using std::vector;
 using std::list;
 
-scope::scope(int offset, bool loop_scope): symbol_list(), symbol_map(), offset(offset), param_offset(offset - 1), loop_scope(loop_scope)
+scope::scope(int offset, bool loop_scope): _symbol_list(), _symbol_map(), _offset(offset), _param_offset(offset - 1), loop_scope(loop_scope)
 {
 }
 
 scope::~scope()
 {
-    for (const symbol* sym : symbol_list)
+    for (const symbol* sym : _symbol_list)
     {
         delete sym;
     }
@@ -22,14 +22,14 @@ scope::~scope()
 
 bool scope::contains_symbol(const string& name) const
 {
-    return symbol_map.find(name) != symbol_map.end();
+    return _symbol_map.find(name) != _symbol_map.end();
 }
 
 bool scope::contains_symbol(const string& name, symbol_kind kind) const
 {
-    auto key_val = symbol_map.find(name);
+    auto key_val = _symbol_map.find(name);
 
-    if (key_val == symbol_map.end() || key_val->second->kind != kind)
+    if (key_val == _symbol_map.end() || key_val->second->kind != kind)
     {
         return false;
     }
@@ -44,7 +44,7 @@ const symbol* scope::get_symbol(const string& name) const
         return nullptr;
     }
 
-    return symbol_map.at(name);
+    return _symbol_map.at(name);
 }
 
 const symbol* scope::get_symbol(const string& name, symbol_kind kind) const
@@ -54,12 +54,12 @@ const symbol* scope::get_symbol(const string& name, symbol_kind kind) const
         return nullptr;
     }
 
-    return symbol_map.at(name);
+    return _symbol_map.at(name);
 }
 
-const list<const symbol*>& scope::get_symbols() const
+const list<const symbol*>& scope::symbols() const
 {
-    return symbol_list;
+    return _symbol_list;
 }
 
 bool scope::add_variable(const string& name, type_kind type)
@@ -69,11 +69,11 @@ bool scope::add_variable(const string& name, type_kind type)
         return false;
     }
 
-    symbol* new_symbol = new variable_symbol(name, type, offset);
+    symbol* new_symbol = new variable_symbol(name, type, _offset);
 
-    symbol_list.push_back(new_symbol);
-    symbol_map[name] = new_symbol;
-    offset += 1;
+    _symbol_list.push_back(new_symbol);
+    _symbol_map[name] = new_symbol;
+    _offset += 1;
     return true;
 }
 
@@ -84,11 +84,11 @@ bool scope::add_parameter(const string& name, type_kind type)
         return false;
     }
 
-    symbol* new_symbol = new parameter_symbol(name, type, param_offset);
+    symbol* new_symbol = new parameter_symbol(name, type, _param_offset);
 
-    symbol_list.push_back(new_symbol);
-    symbol_map[name] = new_symbol;
-    param_offset -= 1;
+    _symbol_list.push_back(new_symbol);
+    _symbol_map[name] = new_symbol;
+    _param_offset -= 1;
     return true;
 }
 
@@ -101,7 +101,7 @@ bool scope::add_function(const string& name, type_kind return_type, const vector
 
     symbol* new_symbol = new function_symbol(name, return_type, parameter_types);
 
-    symbol_list.push_back(new_symbol);
-    symbol_map[name] = new_symbol;
+    _symbol_list.push_back(new_symbol);
+    _symbol_map[name] = new_symbol;
     return true;
 }

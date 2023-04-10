@@ -9,13 +9,13 @@ using std::list;
 
 static code_buffer& code_buf = code_buffer::instance();
 
-syntax_base::syntax_base(): children(), parent(nullptr)
+syntax_base::syntax_base(): _children(), _parent(nullptr)
 {
 }
 
-const syntax_base* syntax_base::get_parent() const
+const syntax_base* syntax_base::parent() const
 {
-    return parent;
+    return _parent;
 }
 
 void syntax_base::add_child(syntax_base* child)
@@ -25,8 +25,8 @@ void syntax_base::add_child(syntax_base* child)
         return;
     }
 
-    children.push_back(child);
-    child->parent = this;
+    _children.push_back(child);
+    child->_parent = this;
 }
 
 void syntax_base::add_child_front(syntax_base* child)
@@ -36,13 +36,13 @@ void syntax_base::add_child_front(syntax_base* child)
         return;
     }
 
-    children.push_front(child);
-    child->parent = this;
+    _children.push_front(child);
+    child->_parent = this;
 }
 
-const list<syntax_base*>& syntax_base::get_children() const
+const list<syntax_base*>& syntax_base::children() const
 {
-    return children;
+    return _children;
 }
 
 expression_syntax::expression_syntax(type_kind return_type):

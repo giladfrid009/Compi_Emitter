@@ -5,7 +5,7 @@ using std::string;
 using std::vector;
 using std::list;
 
-symbol_table::symbol_table(): scope_list()
+symbol_table::symbol_table(): _scope_list()
 {
 
 }
@@ -18,30 +18,30 @@ symbol_table& symbol_table::instance()
 
 void symbol_table::open_scope(bool loop_scope)
 {
-    if (scope_list.size() == 0)
+    if (_scope_list.size() == 0)
     {
-        scope_list.push_back(scope(0, loop_scope));
+        _scope_list.push_back(scope(0, loop_scope));
     }
     else
     {
-        scope_list.push_back(scope(scope_list.back().offset, loop_scope));
+        _scope_list.push_back(scope(_scope_list.back()._offset, loop_scope));
     }
 }
 
 void symbol_table::close_scope()
 {
-    scope_list.pop_back();
+    _scope_list.pop_back();
 }
 
 const scope& symbol_table::current_scope() const
 {
-    return scope_list.back();
+    return _scope_list.back();
 }
 
 
 bool symbol_table::contains_symbol(const string& name) const
 {
-    for (const scope& sc : scope_list)
+    for (const scope& sc : _scope_list)
     {
         if (sc.contains_symbol(name))
         {
@@ -54,7 +54,7 @@ bool symbol_table::contains_symbol(const string& name) const
 
 bool symbol_table::contains_symbol(const string& name, symbol_kind kind) const
 {
-    for (const scope& sc : scope_list)
+    for (const scope& sc : _scope_list)
     {
         if (sc.contains_symbol(name, kind))
         {
@@ -67,7 +67,7 @@ bool symbol_table::contains_symbol(const string& name, symbol_kind kind) const
 
 const symbol* symbol_table::get_symbol(const string& name) const
 {
-    for (const scope& sc : scope_list)
+    for (const scope& sc : _scope_list)
     {
         if (sc.contains_symbol(name))
         {
@@ -80,7 +80,7 @@ const symbol* symbol_table::get_symbol(const string& name) const
 
 const symbol* symbol_table::get_symbol(const string& name, symbol_kind kind) const
 {
-    for (const scope& sc : scope_list)
+    for (const scope& sc : _scope_list)
     {
         if (sc.contains_symbol(name))
         {
@@ -93,32 +93,32 @@ const symbol* symbol_table::get_symbol(const string& name, symbol_kind kind) con
 
 bool symbol_table::add_variable(const string& name, type_kind type)
 {
-    if (scope_list.size() == 0)
+    if (_scope_list.size() == 0)
     {
         return false;
     }
 
-    return scope_list.back().add_variable(name, type);
+    return _scope_list.back().add_variable(name, type);
 }
 
 bool symbol_table::add_parameter(const string& name, type_kind type)
 {
-    if (scope_list.size() == 0)
+    if (_scope_list.size() == 0)
     {
         return false;
     }
 
-    return scope_list.back().add_parameter(name, type);
+    return _scope_list.back().add_parameter(name, type);
 }
 
 bool symbol_table::add_function(const string& name, type_kind return_type, const vector<type_kind>& parameter_types)
 {
-    if (scope_list.size() == 0)
+    if (_scope_list.size() == 0)
     {
         return false;
     }
 
-    return scope_list.back().add_function(name, return_type, parameter_types);
+    return _scope_list.back().add_function(name, return_type, parameter_types);
 }
 
 bool symbol_table::add_function(const string& name, type_kind return_type)
@@ -126,7 +126,7 @@ bool symbol_table::add_function(const string& name, type_kind return_type)
     return add_function(name, return_type, vector<type_kind>());
 }
 
-const list<scope>& symbol_table::get_scopes() const
+const list<scope>& symbol_table::scopes() const
 {
-    return scope_list;
+    return _scope_list;
 }

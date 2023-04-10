@@ -15,7 +15,7 @@ static code_buffer& code_buf = code_buffer::instance();
 if_statement::if_statement(syntax_token* if_token, expression_syntax* condition, statement_syntax* body):
     if_token(if_token), condition(condition), body(body), else_token(nullptr), else_clause(nullptr)
 {
-    semantic_analysis();
+    analyze();
 
     add_child(condition);
     add_child(body);
@@ -24,7 +24,7 @@ if_statement::if_statement(syntax_token* if_token, expression_syntax* condition,
 if_statement::if_statement(syntax_token* if_token, expression_syntax* condition, statement_syntax* body, syntax_token* else_token, statement_syntax* else_clause):
     if_token(if_token), condition(condition), body(body), else_token(else_token), else_clause(else_clause)
 {
-    semantic_analysis();
+    analyze();
 
     add_child(condition);
     add_child(body);
@@ -33,7 +33,7 @@ if_statement::if_statement(syntax_token* if_token, expression_syntax* condition,
 
 if_statement::~if_statement()
 {
-    for (syntax_base* child : get_children())
+    for (syntax_base* child : children())
     {
         delete child;
     }
@@ -42,7 +42,7 @@ if_statement::~if_statement()
     delete else_token;
 }
 
-void if_statement::semantic_analysis() const
+void if_statement::analyze() const
 {
     if (condition->return_type != type_kind::Bool)
     {
@@ -50,13 +50,13 @@ void if_statement::semantic_analysis() const
     }
 }
 
-void if_statement::emit_code()
+void if_statement::emit()
 {
     string true_label = ir_builder::fresh_label();
     string false_label = ir_builder::fresh_label();
     string end_label = ir_builder::fresh_label();
 
-    condition->emit_code();
+    condition->emit();
 
     if (else_clause == nullptr)
     {
@@ -64,7 +64,7 @@ void if_statement::emit_code()
 
         code_buf.increase_indent();
         code_buf.emit("%s:", true_label);
-        body->emit_code();
+        body->emit();
         code_buf.emit("br label %%%s", end_label);
         code_buf.decrease_indent();
 
@@ -79,14 +79,14 @@ void if_statement::emit_code()
         
         code_buf.increase_indent();
         code_buf.emit("%s:", true_label);
-        body->emit_code();
+        body->emit();
         code_buf.emit("br label %%%s", end_label);
         code_buf.decrease_indent();
 
 
         code_buf.increase_indent();
         code_buf.emit("%s:", false_label);
-        else_clause->emit_code();
+        else_clause->emit();
         code_buf.emit("br label %%%s", end_label);
         code_buf.decrease_indent();
 
@@ -102,7 +102,7 @@ void if_statement::emit_code()
 while_statement::while_statement(syntax_token* while_token, expression_syntax* condition, statement_syntax* body):
     while_token(while_token), condition(condition), body(body)
 {
-    semantic_analysis();
+    analyze();
 
     add_child(condition);
     add_child(body);
@@ -110,7 +110,7 @@ while_statement::while_statement(syntax_token* while_token, expression_syntax* c
 
 while_statement::~while_statement()
 {
-    for (syntax_base* child : get_children())
+    for (syntax_base* child : children())
     {
         delete child;
     }
@@ -118,7 +118,7 @@ while_statement::~while_statement()
     delete while_token;
 }
 
-void while_statement::semantic_analysis() const
+void while_statement::analyze() const
 {
     if (condition->return_type != type_kind::Bool)
     {
@@ -126,7 +126,7 @@ void while_statement::semantic_analysis() const
     }
 }
 
-void while_statement::emit_code()
+void while_statement::emit()
 {
     string cond_label = ir_builder::fresh_label();
     string body_label = ir_builder::fresh_label();
@@ -134,12 +134,12 @@ void while_statement::emit_code()
 
     code_buf.emit("br label %%%s", cond_label);
     code_buf.emit("%s:", cond_label);
-    condition->emit_code();
+    condition->emit();
     code_buf.emit("br i1 %s, label %%%s, label %%%s", condition->reg, body_label, end_label);
 
     code_buf.increase_indent();
     code_buf.emit("%s:", body_label);
-    body->emit_code();
+    body->emit();
     code_buf.emit("br label %%%s", cond_label);
     code_buf.decrease_indent();
 
@@ -154,12 +154,12 @@ void while_statement::emit_code()
 
 branch_statement::branch_statement(syntax_token* branch_token): branch_token(branch_token), kind(parse_kind(branch_token->text))
 {
-    semantic_analysis();
+    analyze();
 }
 
 branch_statement::~branch_statement()
 {
-    for (syntax_base* child : get_children())
+    for (syntax_base* child : children())
     {
         delete child;
     }
@@ -175,9 +175,9 @@ branch_statement::branch_kind branch_statement::parse_kind(string str)
     throw std::invalid_argument("unknown type");
 }
 
-void branch_statement::semantic_analysis() const
+void branch_statement::analyze() const
 {
-    const list<scope>& scopes = sym_tab.get_scopes();
+    const list<scope>& scopes = sym_tab.scopes();
 
     if (std::all_of(scopes.rbegin(), scopes.rend(), [](const scope& sc) { return sc.loop_scope == false; }))
     {
@@ -195,7 +195,7 @@ void branch_statement::semantic_analysis() const
     }
 }
 
-void branch_statement::emit_code()
+void branch_statement::emit()
 {
     size_t line = code_buf.emit("br label @");
 
@@ -211,19 +211,19 @@ void branch_statement::emit_code()
 
 return_statement::return_statement(syntax_token* return_token): return_token(return_token), value(nullptr)
 {
-    semantic_analysis();
+    analyze();
 }
 
 return_statement::return_statement(syntax_token* return_token, expression_syntax* value): return_token(return_token), value(value)
 {
-    semantic_analysis();
+    analyze();
 
     add_child(value);
 }
 
 return_statement::~return_statement()
 {
-    for (syntax_base* child : get_children())
+    for (syntax_base* child : children())
     {
         delete child;
     }
@@ -231,9 +231,9 @@ return_statement::~return_statement()
     delete return_token;
 }
 
-void return_statement::semantic_analysis() const
+void return_statement::analyze() const
 {
-    auto& global_symbols = sym_tab.get_scopes().front().get_symbols();
+    auto& global_symbols = sym_tab.scopes().front().symbols();
 
     const symbol* func_sym = global_symbols.back();
 
@@ -253,7 +253,7 @@ void return_statement::semantic_analysis() const
     }
 }
 
-void return_statement::emit_code()
+void return_statement::emit()
 {
     if (value == nullptr)
     {
@@ -261,7 +261,7 @@ void return_statement::emit_code()
     }
     else
     {
-        value->emit_code();
+        value->emit();
 
         code_buf.emit("ret %s %s", ir_builder::get_type(value->return_type), value->reg);
     }
@@ -274,36 +274,36 @@ expression_statement::expression_statement(expression_syntax* expression): expre
 
 expression_statement::~expression_statement()
 {
-    for (syntax_base* child : get_children())
+    for (syntax_base* child : children())
     {
         delete child;
     }
 }
 
-void expression_statement::semantic_analysis() const
+void expression_statement::analyze() const
 {
 }
 
-void expression_statement::emit_code()
+void expression_statement::emit()
 {
-    expression->emit_code();
+    expression->emit();
 }
 
 assignment_statement::assignment_statement(syntax_token* identifier_token, syntax_token* assign_token, expression_syntax* value):
-    identifier_token(identifier_token), identifier(identifier_token->text), assign_token(assign_token), value(value), ptr_reg()
+    identifier_token(identifier_token), identifier(identifier_token->text), assign_token(assign_token), value(value), _ptr_reg()
 {
-    semantic_analysis();
+    analyze();
 
     const symbol* symbol = sym_tab.get_symbol(identifier);
 
-    this->ptr_reg = static_cast<const variable_symbol*>(symbol)->ptr_reg;
+    this->_ptr_reg = static_cast<const variable_symbol*>(symbol)->ptr_reg;
 
     add_child(value);
 }
 
 assignment_statement::~assignment_statement()
 {
-    for (syntax_base* child : get_children())
+    for (syntax_base* child : children())
     {
         delete child;
     }
@@ -312,7 +312,7 @@ assignment_statement::~assignment_statement()
     delete assign_token;
 }
 
-void assignment_statement::semantic_analysis() const
+void assignment_statement::analyze() const
 {
     const symbol* symbol = sym_tab.get_symbol(identifier);
 
@@ -332,39 +332,39 @@ void assignment_statement::semantic_analysis() const
     }
 }
 
-void assignment_statement::emit_code()
+void assignment_statement::emit()
 {
     string res_type = ir_builder::get_type(value->return_type);
 
-    value->emit_code();
+    value->emit();
 
-    code_buf.emit("store %s %s, %s* %s", res_type, value->reg, res_type, ptr_reg);
+    code_buf.emit("store %s %s, %s* %s", res_type, value->reg, res_type, _ptr_reg);
 }
 
 declaration_statement::declaration_statement(type_syntax* type, syntax_token* identifier_token):
-    type(type), identifier_token(identifier_token), identifier(identifier_token->text), assign_token(nullptr), value(nullptr), ptr_reg()
+    type(type), identifier_token(identifier_token), identifier(identifier_token->text), assign_token(nullptr), value(nullptr), _ptr_reg()
 {
-    semantic_analysis();
+    analyze();
 
     sym_tab.add_variable(identifier, type->kind);
 
     const symbol* sym = sym_tab.get_symbol(identifier, symbol_kind::Variable);
 
-    this->ptr_reg = static_cast<const variable_symbol*>(sym)->ptr_reg;
+    this->_ptr_reg = static_cast<const variable_symbol*>(sym)->ptr_reg;
 
     add_child(type);
 }
 
 declaration_statement::declaration_statement(type_syntax* type, syntax_token* identifier_token, syntax_token* assign_token, expression_syntax* value):
-    type(type), identifier_token(identifier_token), identifier(identifier_token->text), assign_token(assign_token), value(value), ptr_reg()
+    type(type), identifier_token(identifier_token), identifier(identifier_token->text), assign_token(assign_token), value(value), _ptr_reg()
 {
-    semantic_analysis();
+    analyze();
 
     sym_tab.add_variable(identifier, type->kind);
 
     const symbol* sym = sym_tab.get_symbol(identifier, symbol_kind::Variable);
 
-    this->ptr_reg = static_cast<const variable_symbol*>(sym)->ptr_reg;
+    this->_ptr_reg = static_cast<const variable_symbol*>(sym)->ptr_reg;
 
     add_child(type);
     add_child(value);
@@ -372,7 +372,7 @@ declaration_statement::declaration_statement(type_syntax* type, syntax_token* id
 
 declaration_statement::~declaration_statement()
 {
-    for (syntax_base* child : get_children())
+    for (syntax_base* child : children())
     {
         delete child;
     }
@@ -381,7 +381,7 @@ declaration_statement::~declaration_statement()
     delete assign_token;
 }
 
-void declaration_statement::semantic_analysis() const
+void declaration_statement::analyze() const
 {
     if (type->is_special())
     {
@@ -402,24 +402,24 @@ void declaration_statement::semantic_analysis() const
     }
 }
 
-void declaration_statement::emit_code()
+void declaration_statement::emit()
 {
     string res_type = ir_builder::get_type(this->type->kind);
 
     if (value != nullptr)
     {
-        value->emit_code();
+        value->emit();
     }
 
-    code_buf.emit("%s = alloca %s", ptr_reg, res_type);
+    code_buf.emit("%s = alloca %s", _ptr_reg, res_type);
 
     if (value != nullptr)
     {
-        code_buf.emit("store %s %s, %s* %s", res_type, value->reg, res_type, ptr_reg);
+        code_buf.emit("store %s %s, %s* %s", res_type, value->reg, res_type, _ptr_reg);
     }
     else
     {
-        code_buf.emit("store %s 0, %s* %s", res_type, res_type, ptr_reg);
+        code_buf.emit("store %s 0, %s* %s", res_type, res_type, _ptr_reg);
     }
 }
 
@@ -430,19 +430,19 @@ block_statement::block_statement(list_syntax<statement_syntax>* statements): sta
 
 block_statement::~block_statement()
 {
-    for (syntax_base* child : get_children())
+    for (syntax_base* child : children())
     {
         delete child;
     }
 }
 
-void block_statement::semantic_analysis() const
+void block_statement::analyze() const
 {
 }
 
-void block_statement::emit_code()
+void block_statement::emit()
 {
-    statements->emit_code();
+    statements->emit();
 
     for (auto statement : *statements)
     {

@@ -24,17 +24,17 @@ bool type_syntax::is_special() const
     return types::is_special(kind);
 }
 
-void type_syntax::semantic_analysis() const
+void type_syntax::analyze() const
 {
 }
 
-void type_syntax::emit_code()
+void type_syntax::emit()
 {
 }
 
 type_syntax::~type_syntax()
 {
-    for (syntax_base* child : get_children())
+    for (syntax_base* child : children())
     {
         delete child;
     }
@@ -60,7 +60,7 @@ parameter_syntax::parameter_syntax(type_syntax* type, syntax_token* identifier_t
 
 parameter_syntax::~parameter_syntax()
 {
-    for (syntax_base* child : get_children())
+    for (syntax_base* child : children())
     {
         delete child;
     }
@@ -68,11 +68,11 @@ parameter_syntax::~parameter_syntax()
     delete identifier_token;
 }
 
-void parameter_syntax::semantic_analysis() const
+void parameter_syntax::analyze() const
 {
 }
 
-void parameter_syntax::emit_code()
+void parameter_syntax::emit()
 {
     
 }
@@ -80,7 +80,7 @@ void parameter_syntax::emit_code()
 function_declaration_syntax::function_declaration_syntax(type_syntax* return_type, syntax_token* identifier_token, list_syntax<parameter_syntax>* parameters, list_syntax<statement_syntax>* body):
     return_type(return_type), identifier_token(identifier_token), identifier(identifier_token->text), parameters(parameters), body(body)
 {
-    semantic_analysis();
+    analyze();
 
     add_child(return_type);
     add_child(parameters);
@@ -89,7 +89,7 @@ function_declaration_syntax::function_declaration_syntax(type_syntax* return_typ
 
 function_declaration_syntax::~function_declaration_syntax()
 {
-    for (syntax_base* child : get_children())
+    for (syntax_base* child : children())
     {
         delete child;
     }
@@ -97,7 +97,7 @@ function_declaration_syntax::~function_declaration_syntax()
     delete identifier_token;
 }
 
-void function_declaration_syntax::semantic_analysis() const
+void function_declaration_syntax::analyze() const
 {
     const function_symbol* function = static_cast<const function_symbol*>(sym_tab.get_symbol(identifier, symbol_kind::Function));
 
@@ -121,9 +121,9 @@ void function_declaration_syntax::semantic_analysis() const
     }
 }
 
-void function_declaration_syntax::emit_code()
+void function_declaration_syntax::emit()
 {
-    parameters->emit_code();
+    parameters->emit();
 
     stringstream instr;
 
@@ -147,7 +147,7 @@ void function_declaration_syntax::emit_code()
 
     code_buf.increase_indent();
 
-    body->emit_code();
+    body->emit();
 
     if (this->identifier == "main")
     {
@@ -170,20 +170,20 @@ void function_declaration_syntax::emit_code()
 
 root_syntax::root_syntax(list_syntax<function_declaration_syntax>* functions): functions(functions)
 {
-    semantic_analysis();
+    analyze();
 
     add_child(functions);
 }
 
 root_syntax::~root_syntax()
 {
-    for (syntax_base* child : get_children())
+    for (syntax_base* child : children())
     {
         delete child;
     }
 }
 
-void root_syntax::semantic_analysis() const
+void root_syntax::analyze() const
 {
     const function_symbol* main = static_cast<const function_symbol*>(sym_tab.get_symbol("main", symbol_kind::Function));
 
@@ -198,7 +198,7 @@ void root_syntax::semantic_analysis() const
     }
 }
 
-void root_syntax::emit_code()
+void root_syntax::emit()
 {
-    functions->emit_code();
+    functions->emit();
 }

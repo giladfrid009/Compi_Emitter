@@ -11,9 +11,9 @@ class code_buffer
 {
     private:
 
-    int indent;
-    std::vector<std::string> buffer;
-    std::vector<std::string> global_defs;
+    int _indent;
+    std::vector<std::string> _buffer;
+    std::vector<std::string> _global_defs;
 
     code_buffer();
 
