@@ -47,8 +47,6 @@ class code_buffer
 
     size_t emit_from_file(std::string file_path);
 
-    static std::list<size_t> merge(const std::list<size_t>& first, const std::list<size_t>& second);
-
     void backpatch(const std::list<size_t>& patch_list, const std::string& label);
 
     void print() const;
