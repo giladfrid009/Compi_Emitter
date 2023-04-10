@@ -10,12 +10,7 @@ using std::string;
 using std::ifstream;
 using std::stringstream;
 
-bool replace(string& str, const string& from, const string& to, const label_index index);
-
-patch_record::patch_record(size_t line, label_index index): line(line), index(index)
-{
-
-}
+bool replace(string& str, const string& from, const string& to);
 
 code_buffer::code_buffer(): indent(0), buffer(), global_defs()
 {
@@ -92,11 +87,13 @@ size_t code_buffer::emit_from_file(std::string file_path)
     return buffer.size() - 1;
 }
 
-void code_buffer::backpatch(const list<patch_record>& patch_list, const std::string& label)
+void code_buffer::backpatch(const list<size_t>& patch_list, const std::string& label)
 {
-    for (auto& entry : patch_list)
+    string to = "%" + label;
+
+    for (auto& line : patch_list)
     {
-        bool res = replace(buffer[entry.line], "@", "%" + label, entry.index);
+        bool res = replace(buffer[line], "@", to);
 
         if (res == false)
         {
@@ -113,9 +110,9 @@ void code_buffer::print() const
     }
 }
 
-list<patch_record> code_buffer::merge(const list<patch_record>& first, const list<patch_record>& second)
+list<size_t> code_buffer::merge(const list<size_t>& first, const list<size_t>& second)
 {
-    list<patch_record> new_list(first.begin(), first.end());
+    list<size_t> new_list(first.begin(), first.end());
     new_list.insert(new_list.end(), second.begin(), second.end());
     return new_list;
 }
@@ -138,18 +135,9 @@ void code_buffer::print_globals() const
     }
 }
 
-bool replace(string& str, const string& from, const string& to, const label_index index)
+bool replace(string& str, const string& from, const string& to)
 {
-    size_t pos = string::npos;
-
-    if (index == label_index::First)
-    {
-        pos = str.find_first_of(from);
-    }
-    else if (index == label_index::Second)
-    {
-        pos = str.find_last_of(from);
-    }
+    size_t pos = str.find_last_of(from);
 
     if (pos == string::npos)
     {

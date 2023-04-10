@@ -199,11 +199,11 @@ void branch_statement::emit_code()
 
     if (kind == branch_kind::Continue)
     {
-        continue_list.push_back(patch_record(line, label_index::First));
+        continue_list.push_back(line);
     }
     else
     {
-        break_list.push_back(patch_record(line, label_index::First));
+        break_list.push_back(line);
     }
 }
 

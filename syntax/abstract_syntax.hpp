@@ -58,8 +58,8 @@ class statement_syntax: public syntax_base
 {
     public:
 
-    std::list<patch_record> break_list;
-    std::list<patch_record> continue_list;
+    std::list<size_t> break_list;
+    std::list<size_t> continue_list;
 
     statement_syntax();
     virtual ~statement_syntax() = default;

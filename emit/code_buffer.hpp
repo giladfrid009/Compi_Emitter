@@ -7,18 +7,6 @@
 #include <string>
 #include <fstream>
 
-enum class label_index { First, Second };
-
-struct patch_record
-{
-    public:
-
-    size_t line;
-    label_index index;
-
-    patch_record(size_t line, label_index index);
-};
-
 class code_buffer
 {
     private:
@@ -59,9 +47,9 @@ class code_buffer
 
     size_t emit_from_file(std::string file_path);
 
-    static std::list<patch_record> merge(const std::list<patch_record>& first, const std::list<patch_record>& second);
+    static std::list<size_t> merge(const std::list<size_t>& first, const std::list<size_t>& second);
 
-    void backpatch(const std::list<patch_record>& patch_list, const std::string& label);
+    void backpatch(const std::list<size_t>& patch_list, const std::string& label);
 
     void print() const;
 
