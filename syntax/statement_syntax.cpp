@@ -92,8 +92,10 @@ void if_statement::emit_code()
 
         code_buf.emit("%s:", end_label);
 
-        break_list =  code_buf.merge(body->break_list, else_clause->break_list);
-        continue_list = code_buf.merge(body->continue_list, else_clause->continue_list);
+        break_list.merge(body->break_list);
+        break_list.merge(else_clause->break_list);
+        continue_list.merge(body->continue_list);
+        continue_list.merge(else_clause->continue_list);
     }
 }
 
@@ -444,7 +446,7 @@ void block_statement::emit_code()
 
     for (auto statement : *statements)
     {
-        break_list = code_buf.merge(break_list, statement->break_list);
-        continue_list = code_buf.merge(continue_list, statement->continue_list);
+        break_list.merge(statement->break_list);
+        continue_list.merge(statement->continue_list);
     }
 }

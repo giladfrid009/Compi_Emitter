@@ -110,13 +110,6 @@ void code_buffer::print() const
     }
 }
 
-list<size_t> code_buffer::merge(const list<size_t>& first, const list<size_t>& second)
-{
-    list<size_t> new_list(first.begin(), first.end());
-    new_list.insert(new_list.end(), second.begin(), second.end());
-    return new_list;
-}
-
 void code_buffer::comment(std::string line)
 {
     emit(";%s", line);
