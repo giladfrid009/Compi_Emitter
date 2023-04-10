@@ -186,10 +186,12 @@ class arithmetic_expression final: public expression_syntax
     arithmetic_expression(const arithmetic_expression& other) = delete;
     arithmetic_expression& operator=(const arithmetic_expression& other) = delete;
 
-    static arithmetic_operator parse_operator(std::string str);
-
     void analyze() const override;
     void emit() override;
+
+    protected:
+
+    static arithmetic_operator parse_operator(std::string str);
 };
 
 class relational_expression final: public expression_syntax
@@ -237,7 +239,6 @@ class conditional_expression final: public expression_syntax
     protected:
 
     static type_kind get_return_type(expression_syntax* left, expression_syntax* right);
-
 };
 
 class identifier_expression final: public expression_syntax
@@ -266,7 +267,6 @@ class identifier_expression final: public expression_syntax
     protected:
 
     static type_kind get_return_type(std::string identifier);
-
 };
 
 class invocation_expression final: public expression_syntax
@@ -290,7 +290,7 @@ class invocation_expression final: public expression_syntax
     protected:
 
     static type_kind get_return_type(std::string identifier);
-    std::string get_arguments(const list_syntax<expression_syntax>* arguments);
+    static std::string get_arguments(const list_syntax<expression_syntax>* arguments);
 };
 
 #endif
