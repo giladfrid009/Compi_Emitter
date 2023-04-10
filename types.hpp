@@ -11,7 +11,7 @@ namespace types
 
     type_kind parse(const std::string& str);
 
-    bool is_implictly_convertible(type_kind from, type_kind to);
+    bool is_implicitly_convertible(type_kind from, type_kind to);
 
     bool is_numeric(type_kind type);
 

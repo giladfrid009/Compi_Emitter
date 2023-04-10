@@ -7,7 +7,7 @@
 using std::string;
 using std::list;
 
-static code_buffer& codebuf = code_buffer::instance();
+static code_buffer& code_buf = code_buffer::instance();
 
 syntax_base::syntax_base(): children(), parent(nullptr)
 {

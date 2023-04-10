@@ -28,7 +28,7 @@ type_kind types::parse(const string& str)
     throw std::invalid_argument("can't parse str");
 }
 
-bool types::is_implictly_convertible(type_kind from, type_kind to)
+bool types::is_implicitly_convertible(type_kind from, type_kind to)
 {
     if (from == type_kind::Invalid || to == type_kind::Invalid)
     {

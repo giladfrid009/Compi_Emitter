@@ -14,8 +14,8 @@ using std::vector;
 using std::list;
 using std::stringstream;
 
-static symbol_table& symtab = symbol_table::instance();
-static code_buffer& codebuf = code_buffer::instance();
+static symbol_table& sym_tab = symbol_table::instance();
+static code_buffer& code_buf = code_buffer::instance();
 
 cast_expression::cast_expression(type_syntax* destination_type, expression_syntax* value):
     expression_syntax(destination_type->kind), destination_type(destination_type), value(value)
@@ -48,11 +48,11 @@ void cast_expression::emit_code()
 
     if (value->return_type == type_kind::Int && destination_type->kind == type_kind::Byte)
     {
-        codebuf.emit("%s = and i32 255, %s", this->reg, value->reg);
+        code_buf.emit("%s = and i32 255, %s", this->reg, value->reg);
     }
     else
     {
-        codebuf.emit("%s = add i32 0, %s", this->reg, value->reg);
+        code_buf.emit("%s = add i32 0, %s", this->reg, value->reg);
     }
 }
 
@@ -86,7 +86,7 @@ void not_expression::emit_code()
 {
     expression->emit_code();
 
-    codebuf.emit("%s = select i1 %s, i1 0, i1 1", this->reg, expression->reg);
+    code_buf.emit("%s = select i1 %s, i1 0, i1 1", this->reg, expression->reg);
 }
 
 logical_expression::logical_expression(expression_syntax* left, syntax_token* oper_token, expression_syntax* right):
@@ -133,25 +133,25 @@ void logical_expression::emit_code()
     string phi_label = ir_builder::fresh_label();
     string branch_label = ir_builder::fresh_label();
     
-    codebuf.emit("br label %%%s", start_label);
-    codebuf.emit("%s:", start_label);
+    code_buf.emit("br label %%%s", start_label);
+    code_buf.emit("%s:", start_label);
 
     if (oper == operator_kind::Or)
     {
-        codebuf.emit("br i1 %s, label %%%s, label %%%s", left->reg, phi_label, right_label);
+        code_buf.emit("br i1 %s, label %%%s, label %%%s", left->reg, phi_label, right_label);
     }
     else if (oper == operator_kind::And)
     {
-        codebuf.emit("br i1 %s, label %%%s, label %%%s", left->reg, right_label, phi_label);
+        code_buf.emit("br i1 %s, label %%%s, label %%%s", left->reg, right_label, phi_label);
     }
 
-    codebuf.emit("%s:", right_label);
+    code_buf.emit("%s:", right_label);
     right->emit_code();
-    codebuf.emit("br label %%%s", branch_label);
-    codebuf.emit("%s:", branch_label);
-    codebuf.emit("br label %%%s", phi_label);
-    codebuf.emit("%s:", phi_label);
-    codebuf.emit("%s = phi i1 [ %s, %%%s ], [ %s, %%%s ]", this->reg, left->reg, start_label, right->reg, branch_label);
+    code_buf.emit("br label %%%s", branch_label);
+    code_buf.emit("%s:", branch_label);
+    code_buf.emit("br label %%%s", phi_label);
+    code_buf.emit("%s:", phi_label);
+    code_buf.emit("%s = phi i1 [ %s, %%%s ], [ %s, %%%s ]", this->reg, left->reg, start_label, right->reg, branch_label);
 }
 
 arithmetic_expression::arithmetic_expression(expression_syntax* left, syntax_token* oper_token, expression_syntax* right):
@@ -202,12 +202,12 @@ void arithmetic_expression::emit_code()
         string true_label = ir_builder::fresh_label();
         string false_label = ir_builder::fresh_label();
 
-        codebuf.emit("%s = icmp eq i32 0, %s", cmp_res, right->reg);
-        codebuf.emit("br i1 %s, label %%%s, label %%%s", cmp_res, true_label, false_label);
-        codebuf.emit("%s:", true_label);
-        codebuf.emit("call void @error_zero_div()");
-        codebuf.emit("br label %%%s", false_label);
-        codebuf.emit("%s:", false_label);
+        code_buf.emit("%s = icmp eq i32 0, %s", cmp_res, right->reg);
+        code_buf.emit("br i1 %s, label %%%s, label %%%s", cmp_res, true_label, false_label);
+        code_buf.emit("%s:", true_label);
+        code_buf.emit("call void @error_zero_div()");
+        code_buf.emit("br label %%%s", false_label);
+        code_buf.emit("%s:", false_label);
     }
 
     string inst = ir_builder::get_binary_instruction(oper, return_type == type_kind::Int);
@@ -216,12 +216,12 @@ void arithmetic_expression::emit_code()
     {
         string res_reg = ir_builder::fresh_register();
 
-        codebuf.emit("%s = %s i32 %s, %s", res_reg, inst, left->reg, right->reg);
-        codebuf.emit("%s = and i32 255, %s", this->reg, res_reg);
+        code_buf.emit("%s = %s i32 %s, %s", res_reg, inst, left->reg, right->reg);
+        code_buf.emit("%s = and i32 255, %s", this->reg, res_reg);
     }
     else if (return_type == type_kind::Int)
     {
-        codebuf.emit("%s = %s i32 %s, %s", this->reg, inst, left->reg, right->reg);
+        code_buf.emit("%s = %s i32 %s, %s", this->reg, inst, left->reg, right->reg);
     }
 }
 
@@ -273,7 +273,7 @@ void relational_expression::emit_code()
 
     string cmp_kind = ir_builder::get_comparison_kind(oper, operands_type == type_kind::Int);
     
-    codebuf.emit("%s = icmp %s i32 %s, %s", this->reg, cmp_kind, left->reg, right->reg);
+    code_buf.emit("%s = icmp %s i32 %s, %s", this->reg, cmp_kind, left->reg, right->reg);
 }
 
 conditional_expression::conditional_expression(expression_syntax* true_value, syntax_token* if_token, expression_syntax* condition, syntax_token* else_token, expression_syntax* false_value):
@@ -321,19 +321,19 @@ void conditional_expression::emit_code()
     string ret_type = ir_builder::get_type(this->return_type);
 
     condition->emit_code();
-    codebuf.emit("br i1 %s, label %%%s, label %%%s", condition->reg, true_label, false_label);
-    codebuf.emit("%s:", true_label);
+    code_buf.emit("br i1 %s, label %%%s, label %%%s", condition->reg, true_label, false_label);
+    code_buf.emit("%s:", true_label);
     true_value->emit_code();
-    codebuf.emit("br label %%%s", true_branch);
-    codebuf.emit("%s:", true_branch);
-    codebuf.emit("br label %%%s", phi_label);
-    codebuf.emit("%s:", false_label);
+    code_buf.emit("br label %%%s", true_branch);
+    code_buf.emit("%s:", true_branch);
+    code_buf.emit("br label %%%s", phi_label);
+    code_buf.emit("%s:", false_label);
     false_value->emit_code();
-    codebuf.emit("br label %%%s", false_branch);
-    codebuf.emit("%s:", false_branch);
-    codebuf.emit("br label %%%s", phi_label);
-    codebuf.emit("%s:", phi_label);
-    codebuf.emit("%s = phi %s [ %s, %%%s ], [ %s, %%%s ]", this->reg, ret_type, true_value->reg, true_branch, false_value->reg, false_branch);
+    code_buf.emit("br label %%%s", false_branch);
+    code_buf.emit("%s:", false_branch);
+    code_buf.emit("br label %%%s", phi_label);
+    code_buf.emit("%s:", phi_label);
+    code_buf.emit("%s = phi %s [ %s, %%%s ], [ %s, %%%s ]", this->reg, ret_type, true_value->reg, true_branch, false_value->reg, false_branch);
 }
 
 identifier_expression::identifier_expression(syntax_token* identifier_token):
@@ -341,7 +341,7 @@ identifier_expression::identifier_expression(syntax_token* identifier_token):
 {
     semantic_analysis();
 
-    const symbol* symbol = symtab.get_symbol(identifier);
+    const symbol* symbol = sym_tab.get_symbol(identifier);
 
     kind = symbol->kind;
 
@@ -357,7 +357,7 @@ identifier_expression::identifier_expression(syntax_token* identifier_token):
 
 type_kind identifier_expression::get_return_type(string identifier)
 {
-    const symbol* symbol = symtab.get_symbol(identifier);
+    const symbol* symbol = sym_tab.get_symbol(identifier);
 
     if (symbol == nullptr)
     {
@@ -384,7 +384,7 @@ identifier_expression::~identifier_expression()
 
 void identifier_expression::semantic_analysis() const
 {
-    const symbol* symbol = symtab.get_symbol(identifier);
+    const symbol* symbol = sym_tab.get_symbol(identifier);
 
     if (symbol == nullptr)
     {
@@ -403,11 +403,11 @@ void identifier_expression::emit_code()
 
     if (kind == symbol_kind::Parameter)
     {
-        codebuf.emit("%s = add %s 0, %s", this->reg, res_type, ptr_reg);
+        code_buf.emit("%s = add %s 0, %s", this->reg, res_type, ptr_reg);
     }
     else if (kind == symbol_kind::Variable)
     {   
-        codebuf.emit("%s = load %s, %s* %s", this->reg, res_type, res_type, ptr_reg);
+        code_buf.emit("%s = load %s, %s* %s", this->reg, res_type, res_type, ptr_reg);
     }
 }
 
@@ -427,7 +427,7 @@ invocation_expression::invocation_expression(syntax_token* identifier_token, lis
 
 type_kind invocation_expression::get_return_type(string identifier)
 {
-    const symbol* function = symtab.get_symbol(identifier, symbol_kind::Function);
+    const symbol* function = sym_tab.get_symbol(identifier, symbol_kind::Function);
 
     if (function == nullptr)
     {
@@ -475,7 +475,7 @@ string invocation_expression::get_arguments(const list_syntax<expression_syntax>
 
 void invocation_expression::semantic_analysis() const
 {
-    const function_symbol* function = static_cast<const function_symbol*>(symtab.get_symbol(identifier, symbol_kind::Function));
+    const function_symbol* function = static_cast<const function_symbol*>(sym_tab.get_symbol(identifier, symbol_kind::Function));
 
     if (function == nullptr)
     {
@@ -508,7 +508,7 @@ void invocation_expression::semantic_analysis() const
         size_t i = 0;
         for (auto arg : *arguments)
         {
-            if (types::is_implictly_convertible(arg->return_type, parameter_types[i++]) == false)
+            if (types::is_implicitly_convertible(arg->return_type, parameter_types[i++]) == false)
             {
                 output::error_prototype_mismatch(identifier_token->position, identifier, params_str);
             }
@@ -525,11 +525,11 @@ void invocation_expression::emit_code()
 
     if (return_type == type_kind::Void)
     {
-        codebuf.emit("call void @%s(%s)", identifier, get_arguments(arguments));
+        code_buf.emit("call void @%s(%s)", identifier, get_arguments(arguments));
         return;
     }
     
     string ret_str = ir_builder::get_type(return_type);
 
-    codebuf.emit("%s = call %s @%s(%s)", this->reg, ret_str, identifier, get_arguments(arguments));
+    code_buf.emit("%s = call %s @%s(%s)", this->reg, ret_str, identifier, get_arguments(arguments));
 }

@@ -7,8 +7,8 @@
 using std::string;
 using std::stringstream;
 
-static symbol_table& symtab = symbol_table::instance();
-static code_buffer& codebuf = code_buffer::instance();
+static symbol_table& sym_tab = symbol_table::instance();
+static code_buffer& code_buf = code_buffer::instance();
 
 type_syntax::type_syntax(syntax_token* type_token): type_token(type_token), kind(types::parse(type_token->text))
 {
@@ -50,7 +50,7 @@ parameter_syntax::parameter_syntax(type_syntax* type, syntax_token* identifier_t
         output::error_mismatch(identifier_token->position);
     }
 
-    if (symtab.contains_symbol(identifier))
+    if (sym_tab.contains_symbol(identifier))
     {
         output::error_def(identifier_token->position, identifier);
     }
@@ -99,7 +99,7 @@ function_declaration_syntax::~function_declaration_syntax()
 
 void function_declaration_syntax::semantic_analysis() const
 {
-    const function_symbol* function = static_cast<const function_symbol*>(symtab.get_symbol(identifier, symbol_kind::Function));
+    const function_symbol* function = static_cast<const function_symbol*>(sym_tab.get_symbol(identifier, symbol_kind::Function));
 
     if (function == nullptr)
     {
@@ -143,29 +143,29 @@ void function_declaration_syntax::emit_code()
 
     instr << ")\n{";
 
-    codebuf.emit(instr.str());
+    code_buf.emit(instr.str());
 
-    codebuf.increase_indent();
+    code_buf.increase_indent();
 
     body->emit_code();
 
     if (this->identifier == "main")
     {
-        codebuf.emit("call void @exit(i32 0)");
+        code_buf.emit("call void @exit(i32 0)");
     }
 
     if (this->return_type->kind == type_kind::Void)
     {
-        codebuf.emit("ret void");
+        code_buf.emit("ret void");
     }
     else
     {
-        codebuf.emit("ret %s 0", ret_type);
+        code_buf.emit("ret %s 0", ret_type);
     }
 
-    codebuf.decrease_indent();
+    code_buf.decrease_indent();
 
-    codebuf.emit("}\n");
+    code_buf.emit("}\n");
 }
 
 root_syntax::root_syntax(list_syntax<function_declaration_syntax>* functions): functions(functions)
@@ -185,7 +185,7 @@ root_syntax::~root_syntax()
 
 void root_syntax::semantic_analysis() const
 {
-    const function_symbol* main = static_cast<const function_symbol*>(symtab.get_symbol("main", symbol_kind::Function));
+    const function_symbol* main = static_cast<const function_symbol*>(sym_tab.get_symbol("main", symbol_kind::Function));
 
     if (main == nullptr)
     {

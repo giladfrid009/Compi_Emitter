@@ -9,8 +9,8 @@
 using std::string;
 using std::list;
 
-static symbol_table& symtab = symbol_table::instance();
-static code_buffer& codebuf = code_buffer::instance();
+static symbol_table& sym_tab = symbol_table::instance();
+static code_buffer& code_buf = code_buffer::instance();
 
 if_statement::if_statement(syntax_token* if_token, expression_syntax* condition, statement_syntax* body):
     if_token(if_token), condition(condition), body(body), else_token(nullptr), else_clause(nullptr)
@@ -60,40 +60,40 @@ void if_statement::emit_code()
 
     if (else_clause == nullptr)
     {
-        codebuf.emit("br i1 %s, label %%%s, label %%%s", condition->reg, true_label, end_label);
+        code_buf.emit("br i1 %s, label %%%s, label %%%s", condition->reg, true_label, end_label);
 
-        codebuf.increase_indent();
-        codebuf.emit("%s:", true_label);
+        code_buf.increase_indent();
+        code_buf.emit("%s:", true_label);
         body->emit_code();
-        codebuf.emit("br label %%%s", end_label);
-        codebuf.decrease_indent();
+        code_buf.emit("br label %%%s", end_label);
+        code_buf.decrease_indent();
 
-        codebuf.emit("%s:", end_label);
+        code_buf.emit("%s:", end_label);
 
         break_list = body->break_list;
         continue_list = body->continue_list;
     }
     else
     {
-        codebuf.emit("br i1 %s, label %%%s, label %%%s", condition->reg, true_label, false_label);
+        code_buf.emit("br i1 %s, label %%%s, label %%%s", condition->reg, true_label, false_label);
         
-        codebuf.increase_indent();
-        codebuf.emit("%s:", true_label);
+        code_buf.increase_indent();
+        code_buf.emit("%s:", true_label);
         body->emit_code();
-        codebuf.emit("br label %%%s", end_label);
-        codebuf.decrease_indent();
+        code_buf.emit("br label %%%s", end_label);
+        code_buf.decrease_indent();
 
 
-        codebuf.increase_indent();
-        codebuf.emit("%s:", false_label);
+        code_buf.increase_indent();
+        code_buf.emit("%s:", false_label);
         else_clause->emit_code();
-        codebuf.emit("br label %%%s", end_label);
-        codebuf.decrease_indent();
+        code_buf.emit("br label %%%s", end_label);
+        code_buf.decrease_indent();
 
-        codebuf.emit("%s:", end_label);
+        code_buf.emit("%s:", end_label);
 
-        break_list =  codebuf.merge(body->break_list, else_clause->break_list);
-        continue_list = codebuf.merge(body->continue_list, else_clause->continue_list);
+        break_list =  code_buf.merge(body->break_list, else_clause->break_list);
+        continue_list = code_buf.merge(body->continue_list, else_clause->continue_list);
     }
 }
 
@@ -130,21 +130,21 @@ void while_statement::emit_code()
     string body_label = ir_builder::fresh_label();
     string end_label = ir_builder::fresh_label();
 
-    codebuf.emit("br label %%%s", cond_label);
-    codebuf.emit("%s:", cond_label);
+    code_buf.emit("br label %%%s", cond_label);
+    code_buf.emit("%s:", cond_label);
     condition->emit_code();
-    codebuf.emit("br i1 %s, label %%%s, label %%%s", condition->reg, body_label, end_label);
+    code_buf.emit("br i1 %s, label %%%s, label %%%s", condition->reg, body_label, end_label);
 
-    codebuf.increase_indent();
-    codebuf.emit("%s:", body_label);
+    code_buf.increase_indent();
+    code_buf.emit("%s:", body_label);
     body->emit_code();
-    codebuf.emit("br label %%%s", cond_label);
-    codebuf.decrease_indent();
+    code_buf.emit("br label %%%s", cond_label);
+    code_buf.decrease_indent();
 
-    codebuf.emit("%s:", end_label);
+    code_buf.emit("%s:", end_label);
 
-    codebuf.backpatch(body->break_list, end_label);
-    codebuf.backpatch(body->continue_list, cond_label);
+    code_buf.backpatch(body->break_list, end_label);
+    code_buf.backpatch(body->continue_list, cond_label);
 
     body->break_list.clear();
     body->continue_list.clear();
@@ -175,7 +175,7 @@ branch_statement::branch_kind branch_statement::parse_kind(string str)
 
 void branch_statement::semantic_analysis() const
 {
-    const list<scope>& scopes = symtab.get_scopes();
+    const list<scope>& scopes = sym_tab.get_scopes();
 
     if (std::all_of(scopes.rbegin(), scopes.rend(), [](const scope& sc) { return sc.loop_scope == false; }))
     {
@@ -195,7 +195,7 @@ void branch_statement::semantic_analysis() const
 
 void branch_statement::emit_code()
 {
-    size_t line = codebuf.emit("br label @");
+    size_t line = code_buf.emit("br label @");
 
     if (kind == branch_kind::Continue)
     {
@@ -231,7 +231,7 @@ return_statement::~return_statement()
 
 void return_statement::semantic_analysis() const
 {
-    auto& global_symbols = symtab.get_scopes().front().get_symbols();
+    auto& global_symbols = sym_tab.get_scopes().front().get_symbols();
 
     const symbol* func_sym = global_symbols.back();
 
@@ -244,7 +244,7 @@ void return_statement::semantic_analysis() const
     }
     else
     {
-        if (types::is_implictly_convertible(value->return_type, func_sym->type) == false)
+        if (types::is_implicitly_convertible(value->return_type, func_sym->type) == false)
         {
             output::error_mismatch(return_token->position);
         }
@@ -255,13 +255,13 @@ void return_statement::emit_code()
 {
     if (value == nullptr)
     {
-        codebuf.emit("ret void");
+        code_buf.emit("ret void");
     }
     else
     {
         value->emit_code();
 
-        codebuf.emit("ret %s %s", ir_builder::get_type(value->return_type), value->reg);
+        code_buf.emit("ret %s %s", ir_builder::get_type(value->return_type), value->reg);
     }
 }
 
@@ -292,7 +292,7 @@ assignment_statement::assignment_statement(syntax_token* identifier_token, synta
 {
     semantic_analysis();
 
-    const symbol* symbol = symtab.get_symbol(identifier);
+    const symbol* symbol = sym_tab.get_symbol(identifier);
 
     this->ptr_reg = static_cast<const variable_symbol*>(symbol)->ptr_reg;
 
@@ -312,7 +312,7 @@ assignment_statement::~assignment_statement()
 
 void assignment_statement::semantic_analysis() const
 {
-    const symbol* symbol = symtab.get_symbol(identifier);
+    const symbol* symbol = sym_tab.get_symbol(identifier);
 
     if (symbol == nullptr)
     {
@@ -324,7 +324,7 @@ void assignment_statement::semantic_analysis() const
         output::error_undef(identifier_token->position, identifier);
     }
 
-    if (types::is_implictly_convertible(value->return_type, symbol->type) == false)
+    if (types::is_implicitly_convertible(value->return_type, symbol->type) == false)
     {
         output::error_mismatch(assign_token->position);
     }
@@ -336,7 +336,7 @@ void assignment_statement::emit_code()
 
     value->emit_code();
 
-    codebuf.emit("store %s %s, %s* %s", res_type, value->reg, res_type, ptr_reg);
+    code_buf.emit("store %s %s, %s* %s", res_type, value->reg, res_type, ptr_reg);
 }
 
 declaration_statement::declaration_statement(type_syntax* type, syntax_token* identifier_token):
@@ -344,9 +344,9 @@ declaration_statement::declaration_statement(type_syntax* type, syntax_token* id
 {
     semantic_analysis();
 
-    symtab.add_variable(identifier, type->kind);
+    sym_tab.add_variable(identifier, type->kind);
 
-    const symbol* sym = symtab.get_symbol(identifier, symbol_kind::Variable);
+    const symbol* sym = sym_tab.get_symbol(identifier, symbol_kind::Variable);
 
     this->ptr_reg = static_cast<const variable_symbol*>(sym)->ptr_reg;
 
@@ -358,9 +358,9 @@ declaration_statement::declaration_statement(type_syntax* type, syntax_token* id
 {
     semantic_analysis();
 
-    symtab.add_variable(identifier, type->kind);
+    sym_tab.add_variable(identifier, type->kind);
 
-    const symbol* sym = symtab.get_symbol(identifier, symbol_kind::Variable);
+    const symbol* sym = sym_tab.get_symbol(identifier, symbol_kind::Variable);
 
     this->ptr_reg = static_cast<const variable_symbol*>(sym)->ptr_reg;
 
@@ -388,13 +388,13 @@ void declaration_statement::semantic_analysis() const
 
     if (value != nullptr)
     {
-        if (types::is_implictly_convertible(value->return_type, type->kind) == false)
+        if (types::is_implicitly_convertible(value->return_type, type->kind) == false)
         {
             output::error_mismatch(identifier_token->position);
         }
     }
 
-    if (symtab.contains_symbol(identifier))
+    if (sym_tab.contains_symbol(identifier))
     {
         output::error_def(identifier_token->position, identifier);
     }
@@ -409,15 +409,15 @@ void declaration_statement::emit_code()
         value->emit_code();
     }
 
-    codebuf.emit("%s = alloca %s", ptr_reg, res_type);
+    code_buf.emit("%s = alloca %s", ptr_reg, res_type);
 
     if (value != nullptr)
     {
-        codebuf.emit("store %s %s, %s* %s", res_type, value->reg, res_type, ptr_reg);
+        code_buf.emit("store %s %s, %s* %s", res_type, value->reg, res_type, ptr_reg);
     }
     else
     {
-        codebuf.emit("store %s 0, %s* %s", res_type, res_type, ptr_reg);
+        code_buf.emit("store %s 0, %s* %s", res_type, res_type, ptr_reg);
     }
 }
 
@@ -444,7 +444,7 @@ void block_statement::emit_code()
 
     for (auto statement : *statements)
     {
-        break_list = codebuf.merge(break_list, statement->break_list);
-        continue_list = codebuf.merge(continue_list, statement->continue_list);
+        break_list = code_buf.merge(break_list, statement->break_list);
+        continue_list = code_buf.merge(continue_list, statement->continue_list);
     }
 }
