@@ -12,6 +12,14 @@ class ir_builder
 {
     public:
 
+    static std::string fresh_register();
+    static std::string fresh_label();
+    static std::string fresh_global();
+
+    static std::string get_ir_type(type_kind type);
+    static std::string get_bin_inst(arithmetic_operator oper, bool is_signed);
+    static std::string get_comp_kind(relational_operator oper, bool is_signed);
+
     template<typename ... Args>
     static std::string format_string(const std::string& format, Args ... args)
     {
@@ -30,18 +38,6 @@ class ir_builder
 
         return std::string(buffer.get(), buffer.get() + size - 1);
     }
-
-    static std::string fresh_register();
-
-    static std::string fresh_label();
-
-    static std::string fresh_global();
-
-    static std::string get_type(type_kind type);
-
-    static std::string get_binary_instruction(arithmetic_operator oper, bool is_signed);
-
-    static std::string get_comparison_kind(relational_operator oper, bool is_signed);
 
     private:
 

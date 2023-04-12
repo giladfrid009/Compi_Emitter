@@ -37,7 +37,7 @@ std::string ir_builder::fresh_global()
     return label;
 }
 
-string ir_builder::get_type(type_kind data_type)
+string ir_builder::get_ir_type(type_kind data_type)
 {
     switch (data_type)
     {
@@ -51,7 +51,7 @@ string ir_builder::get_type(type_kind data_type)
     }
 }
 
-string ir_builder::get_binary_instruction(arithmetic_operator oper, bool is_signed)
+string ir_builder::get_bin_inst(arithmetic_operator oper, bool is_signed)
 {
     switch (oper)
     {
@@ -64,7 +64,7 @@ string ir_builder::get_binary_instruction(arithmetic_operator oper, bool is_sign
     }
 }
 
-string ir_builder::get_comparison_kind(relational_operator oper, bool is_signed)
+string ir_builder::get_comp_kind(relational_operator oper, bool is_signed)
 {
     switch (oper)
     {

@@ -65,7 +65,7 @@ template<typename literal_type> class literal_expression final: public expressio
     {
         code_buffer& code_buf = code_buffer::instance();
 
-        std::string ret_type = ir_builder::get_type(return_type);
+        std::string ret_type = ir_builder::get_ir_type(return_type);
 
         code_buf.emit("%s = add %s 0, %d", this->reg, ret_type, value);
     }

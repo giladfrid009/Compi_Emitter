@@ -4,7 +4,10 @@
 #include <string>
 #include <stdlib.h>
 
-using namespace std;
+using std::string;
+using std::stringstream;
+using std::cout;
+using std::endl;
 
 string type_list_to_string(const std::vector<string>& arg_types)
 {

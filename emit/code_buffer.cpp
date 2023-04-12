@@ -38,15 +38,6 @@ void code_buffer::decrease_indent()
     _indent--;
 }
 
-string code_buffer::emit_label()
-{
-    string label = ir_builder::fresh_label();
-
-    emit(label + ":");
-
-    return label;
-}
-
 size_t code_buffer::emit(const string& line)
 {
     stringstream instr;

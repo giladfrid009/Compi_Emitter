@@ -124,13 +124,13 @@ void function_declaration_syntax::emit()
 
     stringstream instr;
 
-    string ret_type = ir_builder::get_type(this->return_type->kind);
+    string ret_type = ir_builder::get_ir_type(this->return_type->kind);
 
     instr << ir_builder::format_string("define %s @%s (", ret_type, this->identifier);
 
     for (auto param = parameters->begin(); param != parameters->end(); param++)
     {
-        instr << ir_builder::get_type((*param)->type->kind);
+        instr << ir_builder::get_ir_type((*param)->type->kind);
 
         if (std::distance(param, parameters->end()) > 1)
         {

@@ -78,7 +78,6 @@ void if_statement::emit()
         code_buf.emit("br label %%%s", end_label);
         code_buf.decrease_indent();
 
-
         code_buf.increase_indent();
         code_buf.emit("%s:", false_label);
         else_clause->emit();
@@ -255,7 +254,7 @@ void return_statement::emit()
     {
         value->emit();
 
-        code_buf.emit("ret %s %s", ir_builder::get_type(value->return_type), value->reg);
+        code_buf.emit("ret %s %s", ir_builder::get_ir_type(value->return_type), value->reg);
     }
 }
 
@@ -326,7 +325,7 @@ void assignment_statement::analyze() const
 
 void assignment_statement::emit()
 {
-    string res_type = ir_builder::get_type(value->return_type);
+    string res_type = ir_builder::get_ir_type(value->return_type);
 
     value->emit();
 
@@ -395,7 +394,7 @@ void declaration_statement::analyze() const
 
 void declaration_statement::emit()
 {
-    string res_type = ir_builder::get_type(this->type->kind);
+    string res_type = ir_builder::get_ir_type(this->type->kind);
 
     if (value != nullptr)
     {

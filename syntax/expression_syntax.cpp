@@ -203,7 +203,7 @@ void arithmetic_expression::emit()
         code_buf.emit("%s:", false_label);
     }
 
-    string inst = ir_builder::get_binary_instruction(oper, return_type == type_kind::Int);
+    string inst = ir_builder::get_bin_inst(oper, return_type == type_kind::Int);
 
     if (return_type == type_kind::Byte)
     {
@@ -262,7 +262,7 @@ void relational_expression::emit()
 
     type_kind operands_type = types::cast_up(left->return_type, right->return_type);
 
-    string cmp_kind = ir_builder::get_comparison_kind(oper, operands_type == type_kind::Int);
+    string cmp_kind = ir_builder::get_comp_kind(oper, operands_type == type_kind::Int);
 
     code_buf.emit("%s = icmp %s i32 %s, %s", this->reg, cmp_kind, left->reg, right->reg);
 }
@@ -306,7 +306,7 @@ void conditional_expression::emit()
     string false_branch = ir_builder::fresh_label();
     string phi_label = ir_builder::fresh_label();
 
-    string ret_type = ir_builder::get_type(this->return_type);
+    string ret_type = ir_builder::get_ir_type(this->return_type);
 
     condition->emit();
     code_buf.emit("br i1 %s, label %%%s, label %%%s", condition->reg, true_label, false_label);
@@ -387,7 +387,7 @@ void identifier_expression::analyze() const
 
 void identifier_expression::emit()
 {
-    string res_type = ir_builder::get_type(return_type);
+    string res_type = ir_builder::get_ir_type(return_type);
 
     if (_kind == symbol_kind::Parameter)
     {
@@ -447,7 +447,7 @@ string invocation_expression::get_arguments(const list_syntax<expression_syntax>
     {
         expression_syntax* arg = *iter;
 
-        string arg_type = ir_builder::get_type(arg->return_type);
+        string arg_type = ir_builder::get_ir_type(arg->return_type);
 
         result << arg_type << " " << arg->reg;
 
@@ -516,7 +516,7 @@ void invocation_expression::emit()
         return;
     }
 
-    string ret_str = ir_builder::get_type(return_type);
+    string ret_str = ir_builder::get_ir_type(return_type);
 
     code_buf.emit("%s = call %s @%s(%s)", this->reg, ret_str, identifier, get_arguments(arguments));
 }
