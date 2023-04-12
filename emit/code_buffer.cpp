@@ -12,7 +12,7 @@ using std::stringstream;
 
 bool replace(string& str, const string& from, const string& to);
 
-code_buffer::code_buffer(): _indent(0), _buffer(), _global_defs()
+code_buffer::code_buffer(): _indent(0), _buffer(), _global_buffer()
 {
 
 }
@@ -63,28 +63,28 @@ size_t code_buffer::emit(const string& line)
     return _buffer.size() - 1;
 }
 
-void code_buffer::new_line()
+size_t code_buffer::emit_from(std::istream& stream)
 {
-    emit("");
-}
-
-size_t code_buffer::emit_from_file(std::string file_path)
-{
-    ifstream file;
-
-    file.open(file_path.c_str());
-
-    if (file.is_open() == false)
+    if (stream.fail())
     {
-        throw std::runtime_error("couldn't open file.");
+        throw std::runtime_error("bad input steam.");
     }
 
-    for (string line; std::getline(file, line); )
+    for (string line; std::getline(stream, line); )
     {
         emit(line);
     }
 
     return _buffer.size() - 1;
+}
+
+size_t code_buffer::emit_from_file(std::string path)
+{
+    ifstream file;
+
+    file.open(path.c_str());
+
+    return emit_from(file);
 }
 
 void code_buffer::backpatch(const list<size_t>& patch_list, const std::string& label)
@@ -104,28 +104,22 @@ void code_buffer::backpatch(const list<size_t>& patch_list, const std::string& l
 
 void code_buffer::print() const
 {
+    for (auto& line : _global_buffer)
+    {
+        std::cout << line << std::endl;
+    }
+
     for (auto& line : _buffer)
     {
         std::cout << line << std::endl;
     }
 }
 
-void code_buffer::comment(std::string line)
+size_t code_buffer::emit_global(const std::string& line)
 {
-    emit(";%s", line);
-}
+    _global_buffer.push_back(line);
 
-void code_buffer::emit_global(const std::string& line)
-{
-    _global_defs.push_back(line);
-}
-
-void code_buffer::print_globals() const
-{
-    for (auto& line : _global_defs)
-    {
-        std::cout << line << std::endl;
-    }
+    return _global_buffer.size() - 1;
 }
 
 bool replace(string& str, const string& from, const string& to)

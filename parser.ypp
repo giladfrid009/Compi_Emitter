@@ -189,7 +189,6 @@ int main()
 
     sym_tab.close_scope();
 
-    code_buf.print_globals();
     code_buf.print();
 
     return res;
