@@ -131,7 +131,7 @@ class parameter_syntax final: public syntax_base
     void emit() override;
 };
 
-class function_declaration_syntax final: public syntax_base
+class function_header_syntax final: public syntax_base
 {
     public:
 
@@ -139,9 +139,25 @@ class function_declaration_syntax final: public syntax_base
     const syntax_token* const identifier_token;
     const std::string identifier;
     list_syntax<parameter_syntax>* const parameters;
+
+    function_header_syntax(type_syntax* return_type, syntax_token* identifier_token, list_syntax<parameter_syntax>* parameters);
+    ~function_header_syntax();
+
+    function_header_syntax(const function_header_syntax& other) = delete;
+    function_header_syntax& operator=(const function_header_syntax& other) = delete;
+
+    void analyze() const override;
+    void emit() override;
+};
+
+class function_declaration_syntax final: public syntax_base
+{
+    public:
+
+    function_header_syntax* const header;
     list_syntax<statement_syntax>* const body;
 
-    function_declaration_syntax(type_syntax* return_type, syntax_token* identifier_token, list_syntax<parameter_syntax>* parameters, list_syntax<statement_syntax>* body);
+    function_declaration_syntax(function_header_syntax* header, list_syntax<statement_syntax>* body);
     ~function_declaration_syntax();
 
     function_declaration_syntax(const function_declaration_syntax& other) = delete;

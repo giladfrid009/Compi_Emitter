@@ -12,10 +12,8 @@
 
 using std::vector;
 using std::string;
-using std::stringstream;
 
 extern int yylineno;
-
 extern int yylex();
 
 static symbol_table& sym_tab = symbol_table::instance();
@@ -24,8 +22,6 @@ static code_buffer& code_buf = code_buffer::instance();
 void yyerror(const char* message);
 
 void add_builtin_functions();
-
-void create_function_header(type_syntax* return_type, syntax_token* indentifier_token, list_syntax<parameter_syntax>* parameters);
 
 expression_syntax* validate_bool_expression(expression_syntax* expression);
 
@@ -46,6 +42,7 @@ expression_syntax* validate_bool_expression(expression_syntax* expression);
     root_syntax*                              root;
     type_syntax*                              type;  
     parameter_syntax*                         param;     
+    function_header_syntax*                   header;            
     function_declaration_syntax*              function;            
     statement_syntax*                         statement; 	
     expression_syntax*                        expression;  
@@ -90,6 +87,7 @@ expression_syntax* validate_bool_expression(expression_syntax* expression);
 
 %type <root>            Program
 %type <function_list>   Funcs
+%type <header>          FuncHeader
 %type <function>        FuncDecl
 %type <type>            RetType
 %type <param_list> 	    Params
@@ -110,8 +108,9 @@ Program 	: Funcs END										        { $$ = new root_syntax($1); $$->emit(); de
 Funcs   	: %empty                                                { $$ = new list_syntax<function_declaration_syntax>(); }
       		| FuncDecl Funcs					                    { $$ = $2->push_front($1); }
 			;
-FuncDecl 	: RetType ID LPAREN Params RPAREN                       { create_function_header($1, $2, $4); } 
-              LBRACE Statements CS RBRACE                           { $$ = new function_declaration_syntax($1, $2, $4, $8); }
+FuncDecl    : FuncHeader LBRACE Statements CS RBRACE                { $$ = new function_declaration_syntax($1, $3); }
+            ;
+FuncHeader 	: RetType ID LPAREN Params RPAREN                       { $$ = new function_header_syntax($1, $2, $4); } 
 			;
 RetType 	: Type                                                  { $$ = $1; }
         	| VOID                                                  { $$ = new type_syntax($1); }
@@ -205,37 +204,6 @@ void add_builtin_functions()
     sym_tab.add_function("printi", type_kind::Void, vector<type_kind>{type_kind::Int});
 
     code_buf.emit_from_file("builtin_functions.llvm");
-}
-
-void create_function_header(type_syntax* return_type, syntax_token* indentifier_token, list_syntax<parameter_syntax>* parameters)
-{
-    string func_name = indentifier_token->text;
-
-    if (sym_tab.contains_symbol(func_name))
-    {
-        output::error_def(indentifier_token->position, func_name);
-    }
-
-    vector<type_kind> param_types;
-
-    for (auto param : *parameters)
-    {
-        param_types.push_back(param->type->kind);
-    }
-
-    sym_tab.add_function(func_name, return_type->kind, param_types);
-
-    sym_tab.open_scope();
-
-    for (auto param : *parameters)
-    {
-        if (sym_tab.contains_symbol(param->identifier))
-        {
-            output::error_def(param->identifier_token->position, param->identifier);
-        }
-
-        sym_tab.add_parameter(param->identifier, param->type->kind);
-    }
 }
 
 expression_syntax* validate_bool_expression(expression_syntax* expression)

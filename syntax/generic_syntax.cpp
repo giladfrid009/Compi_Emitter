@@ -3,9 +3,11 @@
 #include "../symbol/symbol.hpp"
 #include "../symbol/symbol_table.hpp"
 #include <sstream>
+#include <vector>
 
 using std::string;
 using std::stringstream;
+using std::vector;
 
 static symbol_table& sym_tab = symbol_table::instance();
 static code_buffer& code_buf = code_buffer::instance();
@@ -77,14 +79,31 @@ void parameter_syntax::emit()
 
 }
 
-function_declaration_syntax::function_declaration_syntax(type_syntax* return_type, syntax_token* identifier_token, list_syntax<parameter_syntax>* parameters, list_syntax<statement_syntax>* body):
-    return_type(return_type), identifier_token(identifier_token), identifier(identifier_token->text), parameters(parameters), body(body)
+function_header_syntax::function_header_syntax(type_syntax* return_type, syntax_token* identifier_token, list_syntax<parameter_syntax>* parameters):
+    return_type(return_type), identifier_token(identifier_token), identifier(identifier_token->text), parameters(parameters)
 {
     analyze();
-    add_children({ return_type, parameters, body });
+
+    vector<type_kind> param_types;
+
+    for (auto param : *parameters)
+    {
+        param_types.push_back(param->type->kind);
+    }
+
+    sym_tab.add_function(identifier_token->text, return_type->kind, param_types);
+
+    sym_tab.open_scope();
+
+    for (auto param : *parameters)
+    {
+        sym_tab.add_parameter(param->identifier, param->type->kind);
+    }
+
+    add_children({ return_type, parameters });
 }
 
-function_declaration_syntax::~function_declaration_syntax()
+function_header_syntax::~function_header_syntax()
 {
     for (syntax_base* child : children())
     {
@@ -94,31 +113,25 @@ function_declaration_syntax::~function_declaration_syntax()
     delete identifier_token;
 }
 
-void function_declaration_syntax::analyze() const
+void function_header_syntax::analyze() const
 {
-    const function_symbol* function = static_cast<const function_symbol*>(sym_tab.get_symbol(identifier, symbol_kind::Function));
+    string func_name = identifier_token->text;
 
-    if (function == nullptr)
+    if (sym_tab.contains_symbol(func_name))
     {
-        throw std::logic_error("function should be defined.");
+        output::error_def(identifier_token->position, func_name);
     }
 
-    if (function->parameter_types.size() != parameters->size())
-    {
-        throw std::logic_error("function parameter length mismatch.");
-    }
-
-    size_t i = 0;
     for (auto param : *parameters)
     {
-        if (function->parameter_types[i++] != param->type->kind)
+        if (sym_tab.contains_symbol(param->identifier))
         {
-            throw std::logic_error("function parameter type mismatch.");
+            output::error_def(param->identifier_token->position, param->identifier);
         }
     }
 }
 
-void function_declaration_syntax::emit()
+void function_header_syntax::emit()
 {
     parameters->emit();
 
@@ -138,26 +151,52 @@ void function_declaration_syntax::emit()
         }
     }
 
-    instr << ")\n{";
+    instr << ")";
 
     code_buf.emit(instr.str());
+}
+
+function_declaration_syntax::function_declaration_syntax(function_header_syntax* header, list_syntax<statement_syntax>* body):
+    header(header), body(body)
+{
+    analyze();
+    add_children({ header, body });
+}
+
+function_declaration_syntax::~function_declaration_syntax()
+{
+    for (syntax_base* child : children())
+    {
+        delete child;
+    }
+}
+
+void function_declaration_syntax::analyze() const
+{
+}
+
+void function_declaration_syntax::emit()
+{
+    header->emit();
+
+    code_buf.emit("{");
 
     code_buf.increase_indent();
 
     body->emit();
 
-    if (this->identifier == "main")
+    if (header->identifier == "main")
     {
         code_buf.emit("call void @exit(i32 0)");
     }
 
-    if (this->return_type->kind == type_kind::Void)
+    if (header->return_type->kind == type_kind::Void)
     {
         code_buf.emit("ret void");
     }
     else
     {
-        code_buf.emit("ret %s 0", ret_type);
+        code_buf.emit("ret %s 0", ir_builder::get_ir_type(header->return_type->kind));
     }
 
     code_buf.decrease_indent();
