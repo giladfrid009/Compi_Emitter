@@ -36,11 +36,6 @@ void type_syntax::emit()
 
 type_syntax::~type_syntax()
 {
-    for (syntax_base* child : children())
-    {
-        delete child;
-    }
-
     delete type_token;
 }
 
@@ -53,11 +48,6 @@ parameter_syntax::parameter_syntax(type_syntax* type, syntax_token* identifier_t
 
 parameter_syntax::~parameter_syntax()
 {
-    for (syntax_base* child : children())
-    {
-        delete child;
-    }
-
     delete identifier_token;
 }
 
@@ -104,11 +94,6 @@ function_header_syntax::function_header_syntax(type_syntax* return_type, syntax_
 
 function_header_syntax::~function_header_syntax()
 {
-    for (syntax_base* child : children())
-    {
-        delete child;
-    }
-
     delete identifier_token;
 }
 
@@ -154,14 +139,6 @@ function_declaration_syntax::function_declaration_syntax(function_header_syntax*
     add_children({ header, body });
 }
 
-function_declaration_syntax::~function_declaration_syntax()
-{
-    for (syntax_base* child : children())
-    {
-        delete child;
-    }
-}
-
 void function_declaration_syntax::analyze() const
 {
 }
@@ -199,14 +176,6 @@ root_syntax::root_syntax(list_syntax<function_declaration_syntax>* functions): f
 {
     analyze();
     add_child(functions);
-}
-
-root_syntax::~root_syntax()
-{
-    for (syntax_base* child : children())
-    {
-        delete child;
-    }
 }
 
 void root_syntax::analyze() const

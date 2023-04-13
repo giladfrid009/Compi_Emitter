@@ -25,6 +25,8 @@ template<typename element_type> class list_syntax final: public syntax_base
         push_back(element);
     }
 
+    ~list_syntax() = default;
+
     list_syntax(const list_syntax& other) = delete;
 
     list_syntax& operator=(const list_syntax& other) = delete;
@@ -72,13 +74,6 @@ template<typename element_type> class list_syntax final: public syntax_base
         return _elements.end();
     }
 
-    ~list_syntax()
-    {
-        for (syntax_base* child : children())
-        {
-            delete child;
-        }
-    }
 
     void analyze() const override
     {
@@ -158,7 +153,7 @@ class function_declaration_syntax final: public syntax_base
     list_syntax<statement_syntax>* const body;
 
     function_declaration_syntax(function_header_syntax* header, list_syntax<statement_syntax>* body);
-    ~function_declaration_syntax();
+    ~function_declaration_syntax() = default;
 
     function_declaration_syntax(const function_declaration_syntax& other) = delete;
     function_declaration_syntax& operator=(const function_declaration_syntax& other) = delete;
@@ -174,7 +169,7 @@ class root_syntax final: public syntax_base
     list_syntax<function_declaration_syntax>* const functions;
 
     root_syntax(list_syntax<function_declaration_syntax>* functions);
-    ~root_syntax();
+    ~root_syntax() = default;
 
     root_syntax(const root_syntax& other) = delete;
     root_syntax& operator=(const root_syntax& other) = delete;

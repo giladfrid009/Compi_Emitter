@@ -21,7 +21,7 @@ class syntax_base
     public:
 
     syntax_base();
-    virtual ~syntax_base() = default;
+    virtual ~syntax_base();
 
     syntax_base(const syntax_base& other) = delete;
     syntax_base& operator=(const syntax_base& other) = delete;

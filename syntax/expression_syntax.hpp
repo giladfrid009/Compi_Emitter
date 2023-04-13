@@ -45,11 +45,6 @@ template<typename literal_type> class literal_expression final: public expressio
 
     ~literal_expression()
     {
-        for (syntax_base* child : children())
-        {
-            delete child;
-        }
-
         delete value_token;
     }
 
@@ -122,7 +117,7 @@ class cast_expression final: public expression_syntax
     expression_syntax* const value;
 
     cast_expression(type_syntax* destination_type, expression_syntax* expression);
-    ~cast_expression();
+    ~cast_expression() = default;
 
     cast_expression(const cast_expression& other) = delete;
     cast_expression& operator=(const cast_expression& other) = delete;

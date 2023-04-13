@@ -24,14 +24,6 @@ cast_expression::cast_expression(type_syntax* destination_type, expression_synta
     add_children({ destination_type, value });
 }
 
-cast_expression::~cast_expression()
-{
-    for (syntax_base* child : children())
-    {
-        delete child;
-    }
-}
-
 void cast_expression::analyze() const
 {
     if (value->is_numeric() == false || destination_type->is_numeric() == false)
@@ -63,11 +55,6 @@ not_expression::not_expression(syntax_token* not_token, expression_syntax* expre
 
 not_expression::~not_expression()
 {
-    for (syntax_base* child : children())
-    {
-        delete child;
-    }
-
     delete not_token;
 }
 
@@ -95,11 +82,6 @@ logical_expression::logical_expression(expression_syntax* left, syntax_token* op
 
 logical_expression::~logical_expression()
 {
-    for (syntax_base* child : children())
-    {
-        delete child;
-    }
-
     delete oper_token;
 }
 
@@ -158,11 +140,6 @@ arithmetic_expression::arithmetic_expression(expression_syntax* left, syntax_tok
 
 arithmetic_expression::~arithmetic_expression()
 {
-    for (syntax_base* child : children())
-    {
-        delete child;
-    }
-
     delete oper_token;
 }
 
@@ -227,11 +204,6 @@ relational_expression::relational_expression(expression_syntax* left, syntax_tok
 
 relational_expression::~relational_expression()
 {
-    for (syntax_base* child : children())
-    {
-        delete child;
-    }
-
     delete oper_token;
 }
 
@@ -276,11 +248,6 @@ conditional_expression::conditional_expression(expression_syntax* true_value, sy
 
 conditional_expression::~conditional_expression()
 {
-    for (syntax_base* child : children())
-    {
-        delete child;
-    }
-
     delete if_token;
     delete else_token;
 }
@@ -362,11 +329,6 @@ type_kind identifier_expression::get_return_type(string identifier)
 
 identifier_expression::~identifier_expression()
 {
-    for (syntax_base* child : children())
-    {
-        delete child;
-    }
-
     delete identifier_token;
 }
 
@@ -426,11 +388,6 @@ type_kind invocation_expression::get_return_type(string identifier)
 
 invocation_expression::~invocation_expression()
 {
-    for (syntax_base* child : children())
-    {
-        delete child;
-    }
-
     delete identifier_token;
 }
 

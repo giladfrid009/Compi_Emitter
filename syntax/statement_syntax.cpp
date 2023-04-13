@@ -28,11 +28,6 @@ if_statement::if_statement(syntax_token* if_token, expression_syntax* condition,
 
 if_statement::~if_statement()
 {
-    for (syntax_base* child : children())
-    {
-        delete child;
-    }
-
     delete if_token;
     delete else_token;
 }
@@ -102,11 +97,6 @@ while_statement::while_statement(syntax_token* while_token, expression_syntax* c
 
 while_statement::~while_statement()
 {
-    for (syntax_base* child : children())
-    {
-        delete child;
-    }
-
     delete while_token;
 }
 
@@ -151,11 +141,6 @@ branch_statement::branch_statement(syntax_token* branch_token): branch_token(bra
 
 branch_statement::~branch_statement()
 {
-    for (syntax_base* child : children())
-    {
-        delete child;
-    }
-
     delete branch_token;
 }
 
@@ -214,11 +199,6 @@ return_statement::return_statement(syntax_token* return_token, expression_syntax
 
 return_statement::~return_statement()
 {
-    for (syntax_base* child : children())
-    {
-        delete child;
-    }
-
     delete return_token;
 }
 
@@ -263,14 +243,6 @@ expression_statement::expression_statement(expression_syntax* expression): expre
     add_child(expression);
 }
 
-expression_statement::~expression_statement()
-{
-    for (syntax_base* child : children())
-    {
-        delete child;
-    }
-}
-
 void expression_statement::analyze() const
 {
 }
@@ -294,11 +266,6 @@ assignment_statement::assignment_statement(syntax_token* identifier_token, synta
 
 assignment_statement::~assignment_statement()
 {
-    for (syntax_base* child : children())
-    {
-        delete child;
-    }
-
     delete identifier_token;
     delete assign_token;
 }
@@ -362,11 +329,6 @@ declaration_statement::declaration_statement(type_syntax* type, syntax_token* id
 
 declaration_statement::~declaration_statement()
 {
-    for (syntax_base* child : children())
-    {
-        delete child;
-    }
-
     delete identifier_token;
     delete assign_token;
 }
@@ -416,14 +378,6 @@ void declaration_statement::emit()
 block_statement::block_statement(list_syntax<statement_syntax>* statements): statements(statements)
 {
     add_child(statements);
-}
-
-block_statement::~block_statement()
-{
-    for (syntax_base* child : children())
-    {
-        delete child;
-    }
 }
 
 void block_statement::analyze() const

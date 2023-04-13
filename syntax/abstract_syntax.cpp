@@ -15,6 +15,14 @@ syntax_base::syntax_base(): _children(), _parent(nullptr)
 {
 }
 
+syntax_base::~syntax_base()
+{
+    for (syntax_base* child : _children)
+    {
+        delete child;
+    }
+}
+
 const syntax_base* syntax_base::parent() const
 {
     return _parent;

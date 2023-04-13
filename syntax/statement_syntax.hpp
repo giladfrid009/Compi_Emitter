@@ -95,7 +95,7 @@ class expression_statement final: public statement_syntax
     expression_syntax* const expression;
 
     expression_statement(expression_syntax* expression);
-    ~expression_statement();
+    ~expression_statement() = default;
 
     expression_statement(const expression_statement& other) = delete;
     expression_statement& operator=(const expression_statement& other) = delete;
@@ -163,7 +163,7 @@ class block_statement final: public statement_syntax
     list_syntax<statement_syntax>* const statements;
 
     block_statement(list_syntax<statement_syntax>* statements);
-    ~block_statement();
+    ~block_statement() = default;
 
     block_statement(const block_statement& other) = delete;
     block_statement& operator=(const block_statement& other) = delete;
