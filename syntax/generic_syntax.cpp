@@ -47,16 +47,7 @@ type_syntax::~type_syntax()
 parameter_syntax::parameter_syntax(type_syntax* type, syntax_token* identifier_token):
     type(type), identifier_token(identifier_token), identifier(identifier_token->text)
 {
-    if (type->kind == type_kind::Void)
-    {
-        output::error_mismatch(identifier_token->position);
-    }
-
-    if (sym_tab.contains_symbol(identifier))
-    {
-        output::error_def(identifier_token->position, identifier);
-    }
-
+    analyze();
     add_child(type);
 }
 
@@ -72,11 +63,19 @@ parameter_syntax::~parameter_syntax()
 
 void parameter_syntax::analyze() const
 {
+    if (type->kind == type_kind::Void)
+    {
+        output::error_mismatch(identifier_token->position);
+    }
+
+    if (sym_tab.contains_symbol(identifier))
+    {
+        output::error_def(identifier_token->position, identifier);
+    }
 }
 
 void parameter_syntax::emit()
 {
-
 }
 
 function_header_syntax::function_header_syntax(type_syntax* return_type, syntax_token* identifier_token, list_syntax<parameter_syntax>* parameters):
@@ -121,39 +120,31 @@ void function_header_syntax::analyze() const
     {
         output::error_def(identifier_token->position, func_name);
     }
-
-    for (auto param : *parameters)
-    {
-        if (sym_tab.contains_symbol(param->identifier))
-        {
-            output::error_def(param->identifier_token->position, param->identifier);
-        }
-    }
 }
 
 void function_header_syntax::emit()
 {
     parameters->emit();
 
-    stringstream instr;
+    stringstream header_text;
 
     string ret_type = ir_builder::get_ir_type(this->return_type->kind);
 
-    instr << ir_builder::format_string("define %s @%s (", ret_type, this->identifier);
+    header_text << ir_builder::format_string("define %s @%s (", ret_type, this->identifier);
 
     for (auto param = parameters->begin(); param != parameters->end(); param++)
     {
-        instr << ir_builder::get_ir_type((*param)->type->kind);
+        header_text << ir_builder::get_ir_type((*param)->type->kind);
 
         if (std::distance(param, parameters->end()) > 1)
         {
-            instr << " , ";
+            header_text << " , ";
         }
     }
 
-    instr << ")";
+    header_text << ")";
 
-    code_buf.emit(instr.str());
+    code_buf.emit(header_text.str());
 }
 
 function_declaration_syntax::function_declaration_syntax(function_header_syntax* header, list_syntax<statement_syntax>* body):
