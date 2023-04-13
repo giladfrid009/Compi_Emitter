@@ -16,7 +16,7 @@ class syntax_base
     private:
 
     std::list<syntax_base*> _children;
-    syntax_base* _parent = nullptr;
+    syntax_base* _parent;
 
     public:
 
