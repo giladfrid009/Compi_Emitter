@@ -4,5 +4,5 @@
 lex.yy.c
 parser.tab.*pp
 hw5
-tests*
+test*
 .vscode

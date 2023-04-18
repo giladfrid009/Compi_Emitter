@@ -1,13 +1,13 @@
 #include <iostream>
-#include "output.hpp"
 #include <sstream>
 #include <string>
 #include <stdlib.h>
+#include "output.hpp"
+#include "emit/ir_builder.hpp"
 
 using std::string;
 using std::stringstream;
 using std::cout;
-using std::endl;
 
 string type_list_to_string(const std::vector<string>& arg_types)
 {
@@ -25,66 +25,67 @@ string type_list_to_string(const std::vector<string>& arg_types)
 
 void output::error_lex(int lineno)
 {
-    cout << "line " << lineno << ":" << " lexical error" << endl;
+    cout << ir_builder::format_string("line %d: lexical error\n", lineno);
     exit(-1);
 }
 
 void output::error_syn(int lineno)
 {
-    cout << "line " << lineno << ":" << " syntax error" << endl;
+    cout << ir_builder::format_string("line %d: syntax error\n", lineno);
     exit(-1);
 }
 
 void output::error_undef(int lineno, const string& id)
 {
-    cout << "line " << lineno << ":" << " variable " << id << " is not defined" << endl;
+    cout << ir_builder::format_string("line %d: variable %s is not defined\n", lineno, id);
     exit(-1);
 }
 
 void output::error_def(int lineno, const string& id)
 {
-    cout << "line " << lineno << ":" << " identifier " << id << " is already defined" << endl;
+    cout << ir_builder::format_string("line %d: identifier %s is already defined\n", lineno, id);
     exit(-1);
 }
 
 void output::error_undef_func(int lineno, const string& id)
 {
-    cout << "line " << lineno << ":" << " function " << id << " is not defined" << endl;
+    cout << ir_builder::format_string("line %d: function %s is not defined\n", lineno, id);
     exit(-1);
 }
 
 void output::error_mismatch(int lineno)
 {
-    cout << "line " << lineno << ":" << " type mismatch" << endl;
+    cout << ir_builder::format_string("line %d: type mismatch\n", lineno);
     exit(-1);
 }
 
 void output::error_prototype_mismatch(int lineno, const string& id, std::vector<string>& arg_types)
 {
-    cout << "line " << lineno << ": prototype mismatch, function " << id << " expects arguments " << type_list_to_string(arg_types) << endl;
+    cout << ir_builder::format_string("line %d: prototype mismatch, function $s expects arguments %s\n", 
+        lineno, id, type_list_to_string(arg_types));
     exit(-1);
 }
 
 void output::error_unexpected_break(int lineno)
 {
-    cout << "line " << lineno << ":" << " unexpected break statement" << endl;
+    cout << ir_builder::format_string("line %d: unexpected break statement\n", lineno);
     exit(-1);
 }
 
 void output::error_unexpected_continue(int lineno)
 {
-    cout << "line " << lineno << ":" << " unexpected continue statement" << endl;
+    cout << ir_builder::format_string("line %d: unexpected continue statement\n", lineno);
     exit(-1);
 }
 
 void output::error_main_missing()
 {
-    cout << "Program has no 'void main()' function" << endl;
+    cout << "Program has no 'void main()' function\n";
     exit(-1);
 }
 
 void output::error_byte_too_large(int lineno, const string& value)
 {
-    cout << "line " << lineno << ": byte value " << value << " out of range" << endl;
+    cout << ir_builder::format_string("line %d: byte value %s out of range\n", lineno, value);
     exit(-1);
 }
