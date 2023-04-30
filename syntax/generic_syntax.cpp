@@ -1,5 +1,5 @@
 #include "generic_syntax.hpp"
-#include "../output.hpp"
+#include "../errors.hpp"
 #include "../symbol/symbol.hpp"
 #include "../symbol/symbol_table.hpp"
 #include <sstream>

@@ -1,5 +1,5 @@
 #include "abstract_syntax.hpp"
-#include "../output.hpp"
+#include "../errors.hpp"
 #include "../emit/code_buffer.hpp"
 #include <stdexcept>
 #include <string>

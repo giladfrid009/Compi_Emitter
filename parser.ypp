@@ -1,6 +1,6 @@
 %{
 
-#include "output.hpp"
+#include "errors.hpp"
 #include "symbol/symbol_table.hpp"
 #include "syntax/generic_syntax.hpp" 
 #include "emit/code_buffer.hpp"
@@ -22,8 +22,6 @@ static code_buffer& code_buf = code_buffer::instance();
 void yyerror(const char* message);
 
 void add_builtin_functions();
-
-expression_syntax* validate_bool_expression(expression_syntax* expression);
 
 %}
 
@@ -99,7 +97,6 @@ expression_syntax* validate_bool_expression(expression_syntax* expression);
 %type <expression_list> ExpList
 %type <type>			Type
 %type <expression>      Exp
-%type <expression>      BoolExp
 
 %%
 
@@ -133,10 +130,10 @@ Statement	: LBRACE OS Statements CS RBRACE                        { $$ = new blo
 			| Call SC                                               { $$ = new expression_statement($1); }
 			| RETURN SC	                                            { $$ = new return_statement($1); }
 			| RETURN Exp SC                                         { $$ = new return_statement($1, $2); }
-			| IF LPAREN BoolExp RPAREN OS Statement CS              { $$ = new if_statement($1, $3, $6); }
-			| IF LPAREN BoolExp RPAREN OS Statement CS
+			| IF LPAREN Exp RPAREN OS Statement CS                  { $$ = new if_statement($1, $3, $6); }
+			| IF LPAREN Exp RPAREN OS Statement CS
               ELSE OS Statement CS                                  { $$ = new if_statement($1, $3, $6, $8, $10); }
-			| WHILE LPAREN BoolExp RPAREN OSL Statement CS          { $$ = new while_statement($1, $3, $6); }
+			| WHILE LPAREN Exp RPAREN OSL Statement CS              { $$ = new while_statement($1, $3, $6); }
 			| BREAK SC                                              { $$ = new branch_statement($1); }
 			| CONTINUE SC                                           { $$ = new branch_statement($1); }
             ;       
@@ -168,8 +165,6 @@ Exp 		: LPAREN Exp RPAREN	                                    { $$ = $2; }
             | Exp EQOP Exp                                          { $$ = new relational_expression($1, $2, $3); } 
 			| LPAREN Type RPAREN Exp %prec NOT                      { $$ = new cast_expression($2, $4); }
 			;
-BoolExp     : Exp                                                   { $$ = validate_bool_expression($1); }
-            ;
 OS          : %empty                                                { sym_tab.open_scope(); } 
             ;
 OSL         : %empty                                                { sym_tab.open_scope(true); }
@@ -204,14 +199,4 @@ void add_builtin_functions()
     sym_tab.add_function("printi", type_kind::Void, vector<type_kind>{type_kind::Int});
 
     code_buf.emit_from_file("builtin_functions.llvm");
-}
-
-expression_syntax* validate_bool_expression(expression_syntax* expression)
-{
-    if (expression->return_type != type_kind::Bool)
-    {
-        output::error_mismatch(yylineno);
-    }
-
-    return expression;
 }

@@ -6,7 +6,7 @@
 #include "generic_syntax.hpp"
 #include "../emit/code_buffer.hpp"
 #include "syntax_operators.hpp"
-#include "../output.hpp"
+#include "../errors.hpp"
 #include "../symbol/symbol.hpp"
 #include <vector>
 #include <string>

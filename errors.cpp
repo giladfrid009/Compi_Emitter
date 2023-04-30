@@ -2,7 +2,7 @@
 #include <sstream>
 #include <string>
 #include <stdlib.h>
-#include "output.hpp"
+#include "errors.hpp"
 #include "emit/ir_builder.hpp"
 
 using std::string;

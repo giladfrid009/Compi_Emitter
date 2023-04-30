@@ -1,5 +1,5 @@
-#ifndef _236360_3_
-#define _236360_3_
+#ifndef _ERRORS_H_
+#define _ERRORS_H_
 
 #include <vector>
 #include <string>

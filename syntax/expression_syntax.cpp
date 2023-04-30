@@ -1,6 +1,6 @@
 #include "expression_syntax.hpp"
 #include "../symbol/symbol_table.hpp"
-#include "../output.hpp"
+#include "../errors.hpp"
 #include "../emit/code_buffer.hpp"
 #include "../symbol/symbol.hpp"
 #include "../emit/ir_builder.hpp"

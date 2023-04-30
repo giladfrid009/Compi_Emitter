@@ -1,5 +1,5 @@
 #include "statement_syntax.hpp"
-#include "../output.hpp"
+#include "../errors.hpp"
 #include "../symbol/symbol_table.hpp"
 #include "abstract_syntax.hpp"
 #include <list>
